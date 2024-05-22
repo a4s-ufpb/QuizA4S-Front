@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Question from "../../components/question/Question";
 import InformationBox from "../../components/informationBox/InformationBox";
 import Loading from "../../components/loading/Loading";
@@ -28,7 +28,7 @@ const Quiz = () => {
 
   const [quizFinished, setQuizFinished] = useState(false);
 
-  const { id: themeId } = JSON.parse(localStorage.getItem("theme"));
+  const { id: themeId } = useParams();
 
   useEffect(() => {
     async function getQuestionsByThemeId() {
