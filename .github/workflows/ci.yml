@@ -44,5 +44,5 @@ jobs:
         script: |
           cd Quiz-A4S
           docker rm -f container-front-quiz
-          docker pull a4sufpb/frontend-quiz
+          docker rmi a4sufpb/frontend-quiz
           docker compose up -d
