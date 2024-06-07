@@ -3,7 +3,7 @@ import Header from "./components/header/Header";
 import { Outlet} from "react-router-dom";
 import Footer from "./components/footer/Footer";
 import { useContext } from "react";
-import { AuthenticationContext } from "./context/AutenticationContext";
+import { AuthenticationContext } from "./context/AuthenticationContext";
 import Loading from "./components/loading/Loading";
 import { useFooter } from "./hooks/useFooter";
 
