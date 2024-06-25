@@ -4,6 +4,7 @@ import Pagination from "../../components/pagination/Pagination";
 import Loading from "../../components/loading/Loading";
 import NotFoundComponent from "../../components/notFound/NotFoundComponent";
 import { ApiFetch } from "../../util/ApiFetch";
+import { BsCheckCircleFill, BsFillXCircleFill } from "react-icons/bs";
 
 import "./MyResponse.css";
 
@@ -74,7 +75,7 @@ const MyResponse = () => {
                   <td>{response.question.title}</td>
                   <td>{response.user.name}</td>
                   <td>{response.alternative.text}</td>
-                  <td>{response.alternative.correct ? "Sim" : "Não"}</td>
+                  <td>{response.alternative.correct ? <BsCheckCircleFill className="correct-response"/> : <BsFillXCircleFill className="fail-response"/>}</td>
                 </tr>
               ))}
           </tbody>

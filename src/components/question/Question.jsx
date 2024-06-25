@@ -17,7 +17,7 @@ const Question = ({
   useEffect(() => {
     async function getImage() {
       const questionImgUrl = String(questionImg).trim();
-      if (questionImgUrl === "" || questionImgUrl === null) {
+      if (questionImgUrl == "" || questionImgUrl == null || questionImgUrl == undefined) {
         setImageValid(false);
         return;
       }

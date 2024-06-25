@@ -98,7 +98,7 @@ const Quiz = () => {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }, 1500);
 
-    if (token && user.uuid !== creatorId) {
+    if (token) {
       postResponse(user.uuid, questionId, alternativeId);
     }
   }
