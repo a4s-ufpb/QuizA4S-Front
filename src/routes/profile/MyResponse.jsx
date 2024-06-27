@@ -12,35 +12,31 @@ const MyResponse = () => {
   const apiFetch = new ApiFetch();
 
   const [responses, setResponses] = useState([]);
-
   const [loading, setLoading] = useState(false);
-
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-
   const [date, setDate] = useState("");
   const [questionId, setQuestionId] = useState("");
 
-  const basePath = `/response/question/creator?page=${currentPage}&date=${date}&questionId=${questionId}`;
-
   useEffect(() => {
     setLoading(true);
+    const endpoint = `/response/question/creator?page=${currentPage}`;
 
-    const promisse = apiFetch.getPages(basePath, "Resposta não encontrada");
-
+    const promisse = apiFetch.getPages(endpoint, "Resposta não encontrada");
     promisse.then((response) => {
       if (!response.success) {
         setLoading(false);
         setResponses([]);
         setTotalPages(0);
         setCurrentPage(0);
+        return;
       }
 
       setLoading(false);
       setResponses(response.data);
       setTotalPages(response.totalPages);
     });
-  }, [currentPage, totalPages]);
+  }, [currentPage]);
 
   function changeData(propsData) {
     setDate(propsData.date);
@@ -50,7 +46,6 @@ const MyResponse = () => {
   return (
     <div className="container-my-response">
       <FilterComponent
-        basePath={`/response/question/creator?page=${currentPage}`}
         onData={changeData}
         setResponses={setResponses}
         setCurrentPage={setCurrentPage}
@@ -75,14 +70,20 @@ const MyResponse = () => {
                   <td>{response.question.title}</td>
                   <td>{response.user.name}</td>
                   <td>{response.alternative.text}</td>
-                  <td>{response.alternative.correct ? <BsCheckCircleFill className="correct-response"/> : <BsFillXCircleFill className="fail-response"/>}</td>
+                  <td>
+                    {response.alternative.correct ? (
+                      <BsCheckCircleFill className="correct-response" />
+                    ) : (
+                      <BsFillXCircleFill className="fail-response" />
+                    )}
+                  </td>
                 </tr>
               ))}
           </tbody>
         </table>
       </div>
 
-      {!loading && responses.length == 0 && (
+      {!loading && responses.length === 0 && (
         <NotFoundComponent title="Nenhuma resposta encontrada" />
       )}
 
