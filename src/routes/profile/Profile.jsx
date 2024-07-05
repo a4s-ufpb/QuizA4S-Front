@@ -8,6 +8,7 @@ import ConfirmBox from "../../components/confirmBox/ConfirmBox";
 import UpdateBox from "../../components/updateBox/UpdateBox";
 
 import "./Profile.css";
+import MyStatistics from "./MyStatistics";
 
 const Profile = () => {
   const apiFetch = new ApiFetch();
@@ -30,18 +31,25 @@ const Profile = () => {
   };
 
   const [currentItem, setCurrentItem] = useState(0);
-  const componentsItens = [<MyTheme />, <MyResponse />];
+  const componentsItens = [<MyTheme />, <MyResponse />, <MyStatistics />];
 
   useEffect(() => {
     const btnQuiz = document.getElementById("btn-quiz");
     const btnResponse = document.getElementById("btn-response");
+    const btnStatistic = document.getElementById("btn-statistic");
 
     if (currentItem === 0) {
       btnQuiz.classList.add("selected-btn")
       btnResponse.classList.remove("selected-btn")
-    } else {
+      btnStatistic.classList.remove("selected-btn")
+    } else if(currentItem === 1) {
       btnQuiz.classList.remove("selected-btn")
       btnResponse.classList.add("selected-btn")
+      btnStatistic.classList.remove("selected-btn")
+    } else {
+      btnQuiz.classList.remove("selected-btn")
+      btnResponse.classList.remove("selected-btn")
+      btnStatistic.classList.add("selected-btn")
     }
   }, [currentItem]);
 
@@ -166,6 +174,14 @@ const Profile = () => {
             className="select-user-btn"
           >
             Painel de Respostas
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentItem(2)}
+            id="btn-statistic"
+            className="select-user-btn"
+          >
+            Estatistícas
           </button>
         </div>
 
