@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { URL_BASE } from "../../App";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
@@ -98,6 +98,13 @@ const ThemeMenu = ({ setThemeMenu }) => {
     formState: { errors },
   } = useForm({resolver: yupResolver(schema)});
 
+  const inputImageUrl = useRef();
+
+  function getUrlOfImage(imageUrl) {
+    inputImageUrl.current.value = imageUrl;
+    setSearchImage(false);
+  }
+
   return (
     <div className="theme-menu">
       <form onSubmit={onSubmit(handleSubmit)} className="form-menu">
@@ -126,6 +133,7 @@ const ThemeMenu = ({ setThemeMenu }) => {
             type="text"
             placeholder="Digite a URL da imagem"
             {...register("imageUrl")}
+            ref={inputImageUrl}
           />
           <span className="span-error-message">{errors?.imageUrl?.message}</span>
         </label>
@@ -147,7 +155,7 @@ const ThemeMenu = ({ setThemeMenu }) => {
           />
         )}
         {loadin && <Loading />}
-        {searchImage && <SearchImage />}
+        {searchImage && <SearchImage setSearchImage={setSearchImage} getUrlOfImage={getUrlOfImage}/>}
       </form>
     </div>
   );

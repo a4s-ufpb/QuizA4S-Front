@@ -1,0 +1,87 @@
+.container-search-image {
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    background: linear-gradient(145deg, #0099ff, #0055cc);
+    border-radius: 10px;
+    padding: 30px;
+    display: flex;
+    align-items: start;
+    justify-content: center;
+}
+
+.search-image {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2em;
+    position: relative;
+    margin-top: 1em;
+}
+
+.search-image-button-close{
+    position: absolute;
+    top: -25px;
+    right: 0;
+    font-size: 1.5em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.search-image-button-close:hover {
+    color: rgb(204, 16, 16);
+}
+
+.search-image label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-image label input {
+    width: 300px;
+    height: 30px;
+    border-radius: 10px;
+    padding: 8px;
+    font-size: .9em;
+    border: none;
+    outline: none;
+}
+
+.search-image-button {
+    margin-left: -25px;
+    background-color: #000;
+    height: 30px;
+    width: 35px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    color: #fff;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.search-image-data {
+    width: 100%;
+    height: 550px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    overflow-y: scroll;
+}
+
+.image-data {
+    width: 140px;
+    height: 200px;
+}
+
+.image-data img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+}
