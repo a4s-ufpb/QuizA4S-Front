@@ -8,12 +8,14 @@ import { object, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
 import "./ThemeMenu.css";
+import SearchImage from "../searchImageComponent/SearchImage";
 
 const url = `${URL_BASE}/theme`;
 
 const ThemeMenu = ({ setThemeMenu }) => {
   const [loadin, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
+  const [searchImage, setSearchImage] = useState(false);
 
   const navigate = useNavigate();
 
@@ -128,6 +130,10 @@ const ThemeMenu = ({ setThemeMenu }) => {
           <span className="span-error-message">{errors?.imageUrl?.message}</span>
         </label>
 
+        <button type="button" className="theme-menu-btn" onClick={() => setSearchImage(true)}>
+          Pesquisar Imagem na Web
+        </button>
+
         <button type="submit" className="theme-menu-btn">
           Criar
         </button>
@@ -141,6 +147,7 @@ const ThemeMenu = ({ setThemeMenu }) => {
           />
         )}
         {loadin && <Loading />}
+        {searchImage && <SearchImage />}
       </form>
     </div>
   );
