@@ -25,11 +25,19 @@ const ThemeMenu = ({ setThemeMenu }) => {
     icon: "",
   });
 
+  const inputImageUrl = document.getElementById("input-image-url");
+
+  function getUrlOfImage(imageUrl) {
+    inputImageUrl.value = imageUrl;
+    setSearchImage(false);
+  }
+
   function handleSubmit(themeRequest) {
     const token = localStorage.getItem("token");
 
     if (!token) return;
 
+    themeRequest.imageUrl = inputImageUrl.value
     postTheme(token, themeRequest);
   }
 
@@ -98,16 +106,9 @@ const ThemeMenu = ({ setThemeMenu }) => {
     formState: { errors },
   } = useForm({resolver: yupResolver(schema)});
 
-  const inputImageUrl = useRef();
-
-  function getUrlOfImage(imageUrl) {
-    inputImageUrl.current.value = imageUrl;
-    setSearchImage(false);
-  }
-
   return (
     <div className="theme-menu">
-      <form onSubmit={onSubmit(handleSubmit)} className="form-menu">
+      <form className="form-menu">
         <div className="theme-menu-close">
           <i
             className="bi bi-x-circle-fill"
@@ -130,10 +131,10 @@ const ThemeMenu = ({ setThemeMenu }) => {
         <label className="theme-menu-input">
           <p>Imagem:</p>
           <input
+            id="input-image-url"
             type="text"
             placeholder="Digite a URL da imagem"
             {...register("imageUrl")}
-            ref={inputImageUrl}
           />
           <span className="span-error-message">{errors?.imageUrl?.message}</span>
         </label>
@@ -142,7 +143,7 @@ const ThemeMenu = ({ setThemeMenu }) => {
           Pesquisar Imagem na Web
         </button>
 
-        <button type="submit" className="theme-menu-btn">
+        <button type="button" className="theme-menu-btn" onClick={onSubmit(handleSubmit)}>
           Criar
         </button>
 

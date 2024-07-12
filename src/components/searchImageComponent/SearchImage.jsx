@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "pexels";
 import { BsSearch } from "react-icons/bs";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
+import Pagination from "../pagination/Pagination"
 import "./SearchImage.css";
 
 function SearchImage({ setSearchImage, getUrlOfImage }) {
@@ -16,13 +17,18 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
   function searchImage() {
     setLoading(true);
 
     client.photos
-      .search({ query: imageName, per_page: 40 })
+      .search({ query: imageName, per_page: 40, page: currentPage })
       .then((response) => {
         setLoading(false);
+        setCurrentPage(response.page)
+        setTotalPages(response.total_results)
         setImages(response.photos);
       })
       .catch((error) => {
@@ -31,6 +37,15 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
       });
   }
 
+  useEffect(() => {
+    searchImage();
+  }, [currentPage, totalPages])
+
+  function handleKeyDown(event) {
+    if(event.key === "Enter") {
+      searchImage();
+    }
+  }
 
   return (
     <div className="container-search-image">
@@ -47,6 +62,7 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
             placeholder="Digite o nome da imagem"
             value={imageName}
             onChange={(e) => setImageName(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
           <BsSearch onClick={searchImage} className="search-image-button" />
         </label>
@@ -64,8 +80,12 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
                 />
               </div>
             ))}
+
+          {images.length == 0 && <h2 style={{textAlign: "center"}}>Nenhuma imagem encontrada</h2>}
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages}/>
 
       {loading && <Loading />}
       {informationBox && (
