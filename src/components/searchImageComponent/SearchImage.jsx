@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
-import { createClient } from "pexels";
 import { BsSearch } from "react-icons/bs";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
-import Pagination from "../pagination/Pagination"
+import Pagination from "../pagination/Pagination";
 import "./SearchImage.css";
 
 function SearchImage({ setSearchImage, getUrlOfImage }) {
-  const client = createClient(
-    "VobhRhGYqprkaxYAvXjE07UsDOglWJwSU4cHbpWu0qGphVyZQUGW3CSS"
-  );
+  const clientID = "VobhRhGYqprkaxYAvXjE07UsDOglWJwSU4cHbpWu0qGphVyZQUGW3CSS";
 
   const [imageName, setImageName] = useState("");
   const [images, setImages] = useState([]);
@@ -17,19 +14,27 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+
+  const apiImageUrl = `https://api.pexels.com/v1/search?query=${imageName}&per_page=40&page=${currentPage}`;
 
   function searchImage() {
     setLoading(true);
 
-    client.photos
-      .search({ query: imageName, per_page: 40, page: currentPage })
+    fetch(apiImageUrl, {
+      headers: {
+        Authorization: clientID,
+      },
+    })
       .then((response) => {
         setLoading(false);
-        setCurrentPage(response.page)
-        setTotalPages(response.total_results)
-        setImages(response.photos);
+        return response.json();
+      })
+      .then((data) => {
+        setCurrentPage(data.page);
+        setTotalPages(data.total_results);
+        setImages(data.photos);
       })
       .catch((error) => {
         setLoading(false);
@@ -38,11 +43,14 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
   }
 
   useEffect(() => {
-    searchImage();
-  }, [currentPage, totalPages])
+    if (imageName) {
+      searchImage();
+    }
+  }, [currentPage]);
 
   function handleKeyDown(event) {
-    if(event.key === "Enter") {
+    if (event.key === "Enter") {
+      setCurrentPage(1);
       searchImage();
     }
   }
@@ -64,7 +72,7 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
             onChange={(e) => setImageName(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <BsSearch onClick={searchImage} className="search-image-button" />
+          <BsSearch onClick={() => { setCurrentPage(1); searchImage(); }} className="search-image-button" />
         </label>
 
         <div className="search-image-data">
@@ -81,11 +89,17 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
               </div>
             ))}
 
-          {images.length == 0 && <h2 style={{textAlign: "center"}}>Nenhuma imagem encontrada</h2>}
+          {images && images.length === 0 && (
+            <h2 style={{ textAlign: "center" }}>Nenhuma imagem encontrada</h2>
+          )}
         </div>
       </div>
 
-      <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages}/>
+      <Pagination
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
+      />
 
       {loading && <Loading />}
       {informationBox && (
