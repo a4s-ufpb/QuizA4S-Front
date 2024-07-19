@@ -133,7 +133,7 @@ const ThemeMenu = ({ setThemeMenu }) => {
           <input
             id="input-image-url"
             type="text"
-            placeholder="Digite a URL da imagem"
+            placeholder="Digite ou Pesquise a URL da imagem"
             {...register("imageUrl")}
           />
           <span className="span-error-message">{errors?.imageUrl?.message}</span>
