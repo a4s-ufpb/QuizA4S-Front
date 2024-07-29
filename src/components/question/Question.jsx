@@ -17,21 +17,16 @@ const Question = ({
   useEffect(() => {
     async function getImage() {
       const questionImgUrl = String(questionImg).trim();
-      if (questionImgUrl == "" || questionImgUrl == null || questionImgUrl == undefined) {
+      if (
+        questionImgUrl == "" ||
+        questionImgUrl == null ||
+        questionImgUrl == undefined
+      ) {
         setImageValid(false);
         return;
       }
 
-      try {
-        const response = await fetch(questionImgUrl);
-        if (response.ok) {
-          setImageValid(true);
-        } else {
-          setImageValid(false);
-        }
-      } catch (error) {
-        setImageValid(false);
-      }
+      setImageValid(true);
     }
 
     getImage();
