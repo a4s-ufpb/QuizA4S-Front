@@ -3,11 +3,11 @@ import { BsSearch } from "react-icons/bs";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
 import Pagination from "../pagination/Pagination";
+import SearchImageService from "../../service/SearchImageService";
 import "./SearchImage.css";
 
 function SearchImage({ setSearchImage, getUrlOfImage }) {
-  const clientID = "VobhRhGYqprkaxYAvXjE07UsDOglWJwSU4cHbpWu0qGphVyZQUGW3CSS";
-
+  const imageService = new SearchImageService();
   const [imageName, setImageName] = useState("");
   const [images, setImages] = useState([]);
 
@@ -17,36 +17,27 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  const apiImageUrl = `https://api.pexels.com/v1/search?query=${imageName}&per_page=40&page=${currentPage}`;
-
-  function searchImage() {
-    setLoading(true);
-
-    fetch(apiImageUrl, {
-      headers: {
-        Authorization: clientID,
-      },
-    })
-      .then((response) => {
-        setLoading(false);
-        return response.json();
-      })
-      .then((data) => {
-        setCurrentPage(data.page);
-        setTotalPages(data.total_results);
-        setImages(data.photos);
-      })
-      .catch((error) => {
-        setLoading(false);
-        console.error(error);
-      });
-  }
-
   useEffect(() => {
     if (imageName) {
       searchImage();
     }
   }, [currentPage]);
+
+  async function searchImage() {
+    setLoading(true);
+    const response = await imageService.searchImages(imageName, currentPage);
+    setLoading(false);
+
+    if (response.success) {
+      const { data } = response;
+      setCurrentPage(data.page);
+      setTotalPages(data.total_results);
+      setImages(data.photos);
+    } else {
+      console.error(response.message);
+      setInformationBox(true);
+    }
+  }
 
   function handleKeyDown(event) {
     if (event.key === "Enter") {
@@ -72,7 +63,13 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
             onChange={(e) => setImageName(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <BsSearch onClick={() => { setCurrentPage(1); searchImage(); }} className="search-image-button" />
+          <BsSearch
+            onClick={() => {
+              setCurrentPage(1);
+              searchImage();
+            }}
+            className="search-image-button"
+          />
         </label>
 
         <div className="search-image-data">
