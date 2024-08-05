@@ -1,41 +1,29 @@
 import { apiAxios } from "../axios/AxiosConfig";
 
-export class UserService {
-  async insertScore(score, userId, themeId) {
+export class ScoreService {
+  async handleRequest(method, url, data = null) {
     const response = {
       data: {},
       message: "",
+      success: false
     };
 
     try {
-      const asyncResponse = await apiAxios.post(`/score/${userId}/${themeId}`, score);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
+      const asyncResponse = await apiAxios[method](url, data);
+      response.data = asyncResponse.data;
+      response.success = true;
     } catch (error) {
-      response.message = error.response.data;
-      return response;
+      response.message = error.response?.data.message || "An error occurred";
     }
+
+    return response;
   }
 
-  async findRankingByTheme(themeId) {
-    const response = {
-      data: {},
-      message: "",
-    };
+  insertScore(score, userId, themeId) {
+    return this.handleRequest("post", `/score/${userId}/${themeId}`, score);
+  }
 
-    try {
-      const asyncResponse = await apiAxios.get(`/score/${themeId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findRankingByTheme(themeId) {
+    return this.handleRequest("get", `/score/${themeId}`);
   }
 }

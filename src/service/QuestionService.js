@@ -1,156 +1,53 @@
 import { apiAxios } from "../axios/AxiosConfig";
 
-export class UserService {
-  async insertQuestion(question, idTheme) {
+export class QuestionService {
+  async handleRequest(method, url, data = null) {
     const response = {
       data: {},
       message: "",
+      success: false,
     };
 
     try {
-      const asyncResponse = await apiAxios.post(`/question/${idTheme}`, question);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
+      const asyncResponse = await apiAxios[method](url, data);
+      response.data = asyncResponse.data;
+      response.success = true;
     } catch (error) {
-      response.message = error.response.data;
-      return response;
+      response.message = error.response?.data.message || "An error occurred";
     }
+
+    return response;
   }
 
-
-  async findQuestionById(questionId) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/question/${questionId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  insertQuestion(question, idTheme) {
+    return this.handleRequest("post", `/question/${idTheme}`, question);
   }
 
-  async removeQuestion(questionId) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.delete(`/question/${questionId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findQuestionById(questionId) {
+    return this.handleRequest("get", `/question/${questionId}`);
   }
 
-  async updateQuestion(questionId, questionUpdate) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.patch(`/question/${questionId}`, questionUpdate);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  removeQuestion(questionId) {
+    return this.handleRequest("delete", `/question/${questionId}`);
   }
 
-  async find10QuestionsByThemeId(themeId) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/question/quiz/${themeId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  updateQuestion(questionId, questionUpdate) {
+    return this.handleRequest("patch", `/question/${questionId}`, questionUpdate);
   }
 
-  async findQuestionsByCreator(themeId) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/question/creator/theme/${themeId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  find10QuestionsByThemeId(themeId) {
+    return this.handleRequest("get", `/question/quiz/${themeId}`);
   }
 
-  async find10QuestionsByThemeIdAndCreatorId(themeId) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/question/creator/quiz/${themeId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findQuestionsByCreator(themeId, currentPage, title) {
+    return this.handleRequest("get", `/question/creator/theme/${themeId}?page=${currentPage}&title=${title}`);
   }
 
-  async findAllQuestionsByTheme(themeId) {
-    const response = {
-      data: {},
-      message: "",
-    };
+  find10QuestionsByThemeIdAndCreatorId(themeId) {
+    return this.handleRequest("get", `/question/creator/quiz/${themeId}`);
+  }
 
-    try {
-      const asyncResponse = await apiAxios.get(`/question/all/theme/${themeId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findAllQuestionsByTheme(themeId, currentPage) {
+    return this.handleRequest("get", `/question/all/theme/${themeId}?page=${currentPage}`);
   }
 }

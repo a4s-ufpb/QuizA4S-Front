@@ -1,98 +1,46 @@
 import { apiAxios } from "../axios/AxiosConfig";
 
 export class UserService {
-  async registerUser(user) {
+  async handleRequest(method, url, data = null) {
     const response = {
       data: {},
       message: "",
+      success: false,
     };
 
     try {
-      const asyncResponse = await apiAxios.post("/user/register", user);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
+      const asyncResponse = await apiAxios[method](url, data);
+      response.data = asyncResponse.data;
+      response.success = true;
     } catch (error) {
-      response.message = error.response.data;
-      return response;
+      response.message = error.response?.data.message || "An error occurred";
     }
+
+    return response;
   }
 
-  async loginUser(userLogin) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.post("/user/login", userLogin);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  registerUser(user) {
+    return this.handleRequest("post", "/user/register", user);
   }
 
-  async findUser(userId) {
-    const response = {
-      data: {},
-      message: "",
-    };
+  loginUser(userLogin) {
+    return this.handleRequest("post", "/user/login", userLogin);
+  }
 
-    try {
-      const asyncResponse = await apiAxios.get(`/user/find/${userId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findUser(userId) {
+    return this.handleRequest("get", `/user/find/${userId}`);
   }
 
   async removeUser(userId) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.delete(`/user/${userId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
+    const response = await this.handleRequest("delete", `/user/${userId}`);
+    if (response.success) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
     }
   }
 
-  async updateUser(userId, userUpdate) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.patch(`/user/${userId}`, userUpdate);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  updateUser(userId, userUpdate) {
+    return this.handleRequest("patch", `/user/${userId}`, userUpdate);
   }
 }

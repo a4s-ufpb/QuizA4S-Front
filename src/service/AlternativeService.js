@@ -1,79 +1,37 @@
 import { apiAxios } from "../axios/AxiosConfig";
 
-export class UserService {
-  async insertAlternative(idQuestion, alternative) {
+export class AlternativeService {
+  async handleRequest(method, url, data = null) {
     const response = {
       data: {},
       message: "",
+      success: false
     };
 
     try {
-      const asyncResponse = await apiAxios.post(`/alternative/${idQuestion}`, alternative);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
+      const asyncResponse = await apiAxios[method](url, data);
+      response.data = asyncResponse.data;
+      response.success = true;
     } catch (error) {
-      response.message = error.response.data;
-      return response;
+      response.message = error.response?.data.message || "An error occurred";
     }
+
+    return response;
   }
 
-  async insertAllAlternatives(idQuestion, alternatives) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.post(`/alternative/all/${idQuestion}`, alternatives);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  insertAlternative(idQuestion, alternative) {
+    return this.handleRequest("post", `/alternative/${idQuestion}`, alternative);
   }
 
-  async removeAlternative(alternativeId) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.delete(`/alternative/${alternativeId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  insertAllAlternatives(idQuestion, alternatives) {
+    return this.handleRequest("post", `/alternative/all/${idQuestion}`, alternatives);
   }
 
-  async updateAlternative(alternativeId, alternativeUpdate) {
-    const response = {
-      data: {},
-      message: "",
-    };
+  removeAlternative(alternativeId) {
+    return this.handleRequest("delete", `/alternative/${alternativeId}`);
+  }
 
-    try {
-      const asyncResponse = await apiAxios.patch(`/alternative/${alternativeId}`, alternativeUpdate);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  updateAlternative(alternativeId, alternativeUpdate) {
+    return this.handleRequest("patch", `/alternative/${alternativeId}`, alternativeUpdate);
   }
 }

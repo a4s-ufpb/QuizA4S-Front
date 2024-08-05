@@ -1,117 +1,45 @@
 import { apiAxios } from "../axios/AxiosConfig";
 
-export class UserService {
-  async insertTheme(theme) {
+export class ThemeService {
+  async handleRequest(method, url, data = null) {
     const response = {
       data: {},
       message: "",
+      success: false
     };
 
     try {
-      const asyncResponse = await apiAxios.post("/theme", theme);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
+      const asyncResponse = await apiAxios[method](url, data);
+      response.data = asyncResponse.data;
+      response.success = true;
     } catch (error) {
-      response.message = error.response.data;
-      return response;
+      response.message = error.response?.data.message || "An error occurred";
     }
+
+    return response;
   }
 
-  async removeTheme(themeId) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.delete(`/theme/${themeId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  insertTheme(theme) {
+    return this.handleRequest("post", "/theme", theme);
   }
 
-  async findAllThemes(name) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/theme?name=${name}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  removeTheme(themeId) {
+    return this.handleRequest("delete", `/theme/${themeId}`);
   }
 
-  async findThemesByCreator(name) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/theme/creator?name=${name}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findAllThemes(name, currentPage) {
+    return this.handleRequest("get", `/theme?name=${name}&page=${currentPage}`);
   }
 
-  async findThemeById(idTheme) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/theme/${idTheme}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findThemesByCreator(name, currentPage) {
+    return this.handleRequest("get", `/theme/creator?name=${name}&page=${currentPage}`);
   }
 
-  async updateTheme(themeId, themeUpdate) {
-    const response = {
-      data: {},
-      message: "",
-    };
+  findThemeById(idTheme) {
+    return this.handleRequest("get", `/theme/${idTheme}`);
+  }
 
-    try {
-      const asyncResponse = await apiAxios.patch(`/theme/${themeId}`, themeUpdate);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  updateTheme(themeId, themeUpdate) {
+    return this.handleRequest("patch", `/theme/${themeId}`, themeUpdate);
   }
 }

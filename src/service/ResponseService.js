@@ -1,155 +1,53 @@
 import { apiAxios } from "../axios/AxiosConfig";
 
-export class UserService {
-  async insertResponse(idUser, idQuestion, idAlternative) {
+export class ResponseService {
+  async handleRequest(method, url, data = null) {
     const response = {
       data: {},
       message: "",
+      success: false
     };
 
     try {
-      const asyncResponse = await apiAxios.post(`/response/${idUser}/${idQuestion}/${idAlternative}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
+      const asyncResponse = await apiAxios[method](url, data);
+      response.data = asyncResponse.data;
+      response.success = false
     } catch (error) {
-      response.message = error.response.data;
-      return response;
+      response.message = error.response?.data.message || "An error occurred";
     }
+
+    return response;
   }
 
-  async findResponsesByUser() {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get("/response/user");
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  insertResponse(idUser, idQuestion, idAlternative) {
+    return this.handleRequest("post", `/response/${idUser}/${idQuestion}/${idAlternative}`);
   }
 
-  async findResponsesByQuestionCreator() {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/response/question/creator`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findResponsesByUser(currentPage) {
+    return this.handleRequest("get", `/response/user?page=${currentPage}`);
   }
 
-  async findResponsesByQuestionCreatorId(questionId) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/response/question/creator/id?questionId=${questionId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findResponsesByQuestionCreator(currentPage) {
+    return this.handleRequest("get", `/response/question/creator?page=${currentPage}`);
   }
 
-  async findResponsesByUserName(name) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/response/question/creator?name=${name}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findResponsesByQuestionCreatorId(questionId, currentPage) {
+    return this.handleRequest("get", `/response/question/creator/id?questionId=${questionId}&page=${currentPage}`);
   }
 
-  async findResponsesByDate(currentDate, finalDate) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/response/question/date?currentDate=${currentDate}&finalDate=${finalDate}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findResponsesByUserName(name, currentPage) {
+    return this.handleRequest("get", `/response/question/creator?name=${name}&page=${currentPage}`);
   }
 
-  async findResponsesStatistics(themeName) {
-    const response = {
-      data: {},
-      message: "",
-    };
-
-    try {
-      const asyncResponse = await apiAxios.get(`/response/statistic/${themeName}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  findResponsesByDate(currentDate, finalDate, currentPage) {
+    return this.handleRequest("get", `/response/question/date?currentDate=${currentDate}&finalDate=${finalDate}&page=${currentPage}`);
   }
 
-  async removeResponse(responseId) {
-    const response = {
-      data: {},
-      message: "",
-    };
+  findResponsesStatistics(themeName) {
+    return this.handleRequest("get", `/response/statistic/${themeName}`);
+  }
 
-    try {
-      const asyncResponse = await apiAxios.delete(`/response/${responseId}`);
-
-      const data = asyncResponse.data;
-
-      response.data = data;
-      return response;
-    } catch (error) {
-      response.message = error.response.data;
-      return response;
-    }
+  removeResponse(responseId) {
+    return this.handleRequest("delete", `/response/${responseId}`);
   }
 }
