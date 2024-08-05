@@ -3,13 +3,13 @@ import FilterComponent from "../../components/filterComponent/FilterComponent";
 import Pagination from "../../components/pagination/Pagination";
 import Loading from "../../components/loading/Loading";
 import NotFoundComponent from "../../components/notFound/NotFoundComponent";
-import { ApiFetch } from "../../util/ApiFetch";
 import { BsCheckCircleFill, BsFillXCircleFill } from "react-icons/bs";
+import { ResponseService } from "../../service/ResponseService";
 
 import "./MyResponse.css";
 
 const MyResponse = () => {
-  const apiFetch = new ApiFetch();
+  const responseService = new ResponseService();
 
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,23 +19,26 @@ const MyResponse = () => {
   const [questionId, setQuestionId] = useState("");
 
   useEffect(() => {
-    setLoading(true);
-    const endpoint = `/response/question/creator?page=${currentPage}`;
+    async function fetchData() {
+      setLoading(true);
 
-    const promisse = apiFetch.getPages(endpoint, "Resposta não encontrada");
-    promisse.then((response) => {
+      const response = await responseService.findResponsesByQuestionCreator(
+        currentPage
+      );
+
+      setLoading(false);
       if (!response.success) {
-        setLoading(false);
         setResponses([]);
         setTotalPages(0);
         setCurrentPage(0);
         return;
       }
 
-      setLoading(false);
       setResponses(response.data);
       setTotalPages(response.totalPages);
-    });
+    }
+
+    fetchData();
   }, [currentPage]);
 
   function changeData(propsData) {

@@ -1,52 +1,52 @@
-import { useEffect, useState } from "react"
-import "./MyStatistics.css"
-import { ApiFetch } from './../../util/ApiFetch';
+import { useEffect, useState } from "react";
+import "./MyStatistics.css";
 import Loading from "../../components/loading/Loading";
 import NotFoundComponent from "../../components/notFound/NotFoundComponent";
+import { ThemeService } from "../../service/ThemeService";
+import { ResponseService } from "./../../service/ResponseService";
 
 function MyStatistics() {
-  const apiFetch = new ApiFetch();
+  const themeService = new ThemeService();
+  const responseService = new ResponseService();
+
   const [loading, setLoading] = useState(false);
 
   const [themeNamesList, setThemeNamesList] = useState([]);
 
-  const [statistics, setStatistics] = useState([])
+  const [statistics, setStatistics] = useState([]);
 
-  useEffect(() =>{
-    setLoading(true);
-    const promisse = apiFetch.getPages("/theme/creator", "Nenhum tema encontrado");
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      const response = await themeService.findThemesByCreator("", 0);
+      setLoading(false);
 
-    promisse.then((response) =>{
-      if(!response.success) {
-        setLoading(false);
+      if (!response.success) {
         return;
       }
-      
-      setThemeNamesList(response.data);
-      setLoading(false);
-    })
-  }, [])
 
-  function searchStatistics(nameOfTheme){
-    if(nameOfTheme === ""){
+      setThemeNamesList(response.data);
+    }
+
+    fetchData();
+  }, []);
+
+  async function searchStatistics(nameOfTheme) {
+    if (nameOfTheme === "") {
       setStatistics([]);
       return;
     }
-    
+
     setLoading(true);
 
-    const promisse = apiFetch.get(`/response/statistic/${nameOfTheme}`, "Nenhuma estatística encontrada");
-
-    promisse.then((response) =>{
-      if(!response.success){
-        setLoading(false);
-      }
-
-      setStatistics(response.data);
+    const response = responseService.findResponsesStatistics(nameOfTheme);
+    if (!response.success) {
       setLoading(false);
-    })
-  }
+    }
 
+    setStatistics(response.data);
+    setLoading(false);
+  }
 
   return (
     <div className="container-statistics">
@@ -54,9 +54,12 @@ function MyStatistics() {
         <span>Selecione um tema</span>
         <select name="theme" onChange={(e) => searchStatistics(e.target.value)}>
           <option value="">Vazio</option>
-          {themeNamesList && themeNamesList.map((theme) => (
-            <option value={theme.name} key={theme.name}>{theme.name}</option>
-          ))}
+          {themeNamesList &&
+            themeNamesList.map((theme) => (
+              <option value={theme.name} key={theme.name}>
+                {theme.name}
+              </option>
+            ))}
         </select>
       </div>
 
@@ -75,7 +78,7 @@ function MyStatistics() {
           </thead>
 
           <tbody>
-          {statistics &&
+            {statistics &&
               statistics.map((statistic) => (
                 <tr key={statistic.questionId}>
                   <td>{statistic.questionId}</td>
@@ -91,13 +94,13 @@ function MyStatistics() {
         </table>
       </div>
 
-     {loading && <Loading />}
+      {loading && <Loading />}
 
-     {!loading && themeNamesList.length == 0 && (
-        <NotFoundComponent title="Nenhuma Estatística"/>
+      {!loading && themeNamesList.length == 0 && (
+        <NotFoundComponent title="Nenhuma Estatística" />
       )}
     </div>
-  )
+  );
 }
 
-export default MyStatistics
+export default MyStatistics;

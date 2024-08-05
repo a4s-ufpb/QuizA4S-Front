@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
 import MyTheme from "./MyTheme";
 import MyResponse from "./MyResponse";
-import { ApiFetch } from "../../util/ApiFetch";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
 import ConfirmBox from "../../components/confirmBox/ConfirmBox";
 import UpdateBox from "../../components/updateBox/UpdateBox";
+import MyStatistics from "./MyStatistics";
+import { UserService } from "./../../service/UserService";
 
 import "./Profile.css";
-import MyStatistics from "./MyStatistics";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
-  const apiFetch = new ApiFetch();
+
+  const userService = new UserService();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
@@ -39,17 +42,17 @@ const Profile = () => {
     const btnStatistic = document.getElementById("btn-statistic");
 
     if (currentItem === 0) {
-      btnQuiz.classList.add("selected-btn")
-      btnResponse.classList.remove("selected-btn")
-      btnStatistic.classList.remove("selected-btn")
-    } else if(currentItem === 1) {
-      btnQuiz.classList.remove("selected-btn")
-      btnResponse.classList.add("selected-btn")
-      btnStatistic.classList.remove("selected-btn")
+      btnQuiz.classList.add("selected-btn");
+      btnResponse.classList.remove("selected-btn");
+      btnStatistic.classList.remove("selected-btn");
+    } else if (currentItem === 1) {
+      btnQuiz.classList.remove("selected-btn");
+      btnResponse.classList.add("selected-btn");
+      btnStatistic.classList.remove("selected-btn");
     } else {
-      btnQuiz.classList.remove("selected-btn")
-      btnResponse.classList.remove("selected-btn")
-      btnStatistic.classList.add("selected-btn")
+      btnQuiz.classList.remove("selected-btn");
+      btnResponse.classList.remove("selected-btn");
+      btnStatistic.classList.add("selected-btn");
     }
   }, [currentItem]);
 
@@ -75,46 +78,43 @@ const Profile = () => {
     name: newName,
   };
 
-  function updateAccount() {
+  async function updateAccount() {
     setLoading(true);
-    const promisse = apiFetch.patch(`/user/${uuid}`, userUpdate);
-
-    promisse.then((response) => {
-      if (!response.success) {
-        activeInformationBox(true, response.message)
-        setLoading(false);
-        return;
-      }
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ uuid: uuid, name: userUpdate.name, email: email })
-      );
+    const response = await userService.updateUser(uuid, userUpdate);
+    if (!response.success) {
+      activeInformationBox(true, response.message);
       setLoading(false);
+      return;
+    }
 
-      activeInformationBox(false, "Nome atualizado com sucesso!");
-
-      setUpdateBox(false);
-    });
-  }
-
-  function removeAccount() {
-    setLoading(true);
-    const promisse = apiFetch.delete(`/user/${uuid}`, true);
+    localStorage.setItem(
+      "user",
+      JSON.stringify({ uuid: uuid, name: userUpdate.name, email: email })
+    );
     setLoading(false);
-    promisse.then((response) => {
-      if (!response.removed) {
-        setInformationData((prevData) => {
-          return { ...prevData, text: response.message };
-        });
-        setInformationBox(true);
-        return;
-      }
-    });
+
+    activeInformationBox(false, "Nome atualizado com sucesso!");
+
+    setUpdateBox(false);
   }
 
-  function activeInformationBox(isFail, message){
-    if(isFail){
+  async function removeAccount() {
+    setLoading(true);
+    const response = await userService.removeUser(uuid);
+    setLoading(false);
+
+    if (!response.success) {
+      setInformationData((prevData) => {
+        return { ...prevData, text: response.message };
+      });
+      setInformationBox(true);
+    }
+
+    navigate("/");
+  }
+
+  function activeInformationBox(isFail, message) {
+    if (isFail) {
       setInformationData((prevData) => {
         return { ...prevData, text: message };
       });
