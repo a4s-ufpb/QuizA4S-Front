@@ -3,7 +3,7 @@ import { BsSearch } from "react-icons/bs";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
 import Pagination from "../pagination/Pagination";
-import SearchImageService from "../../service/SearchImageService";
+import { SearchImageService } from "../../service/SearchImageService";
 import "./SearchImage.css";
 
 function SearchImage({ setSearchImage, getUrlOfImage }) {
