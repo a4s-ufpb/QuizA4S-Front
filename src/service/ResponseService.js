@@ -11,7 +11,7 @@ export class ResponseService {
     try {
       const asyncResponse = await apiAxios[method](url, data);
       response.data = asyncResponse.data;
-      response.success = false
+      response.success = true;
     } catch (error) {
       response.message = error.response?.data.message || "An error occurred";
     }

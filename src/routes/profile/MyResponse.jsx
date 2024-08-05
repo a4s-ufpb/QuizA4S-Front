@@ -34,8 +34,8 @@ const MyResponse = () => {
         return;
       }
 
-      setResponses(response.data);
-      setTotalPages(response.totalPages);
+      setResponses(response.data.content);
+      setTotalPages(response.data.totalPages);
     }
 
     fetchData();

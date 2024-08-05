@@ -105,13 +105,11 @@ const Quiz = () => {
     return event.currentTarget.getAttribute("value") === "true";
   }
 
-  function postResponse(uuid, questionId, alternativeId) {
-    const response = responseService.insertResponse(uuid, questionId, alternativeId);
-    response.then(res => {
-      if(!res.success) {
-        console.log("Usuário está jogando sem salvar suas respostas")
-      }
-    })
+  async function postResponse(uuid, questionId, alternativeId) {
+    const response = await responseService.insertResponse(uuid, questionId, alternativeId);
+    if(!response.success) {
+      console.log("Usuário está jogando sem salvar suas respostas")
+    }
   }
 
   function restart() {

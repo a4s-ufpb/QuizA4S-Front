@@ -25,7 +25,7 @@ function MyStatistics() {
         return;
       }
 
-      setThemeNamesList(response.data);
+      setThemeNamesList(response.data.content);
     }
 
     fetchData();
@@ -38,14 +38,14 @@ function MyStatistics() {
     }
 
     setLoading(true);
+    const response = await responseService.findResponsesStatistics(nameOfTheme);
+    setLoading(false);
 
-    const response = responseService.findResponsesStatistics(nameOfTheme);
     if (!response.success) {
-      setLoading(false);
+      return;
     }
 
     setStatistics(response.data);
-    setLoading(false);
   }
 
   return (

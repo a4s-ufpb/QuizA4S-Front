@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import Loading from "../loading/Loading";
 import { useEffect, useState } from "react";
-import { ScoreService } from './../../service/ScoreService';
+import { ScoreService } from "./../../service/ScoreService";
 
 import "./Ranking.css";
 
@@ -16,20 +16,22 @@ const Ranking = () => {
 
   const [isNotFound, setNotFound] = useState(false);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect( async () => {
-    const { id: themeId } = JSON.parse(localStorage.getItem("theme"));
+  useEffect(() => {
+    async function fetchData() {
+      const { id: themeId } = JSON.parse(localStorage.getItem("theme"));
 
-    setLoading(true);
-    const response = await scoreService.findRankingByTheme(themeId);
-    setLoading(false);
+      setLoading(true);
+      const response = await scoreService.findRankingByTheme(themeId);
+      setLoading(false);
 
-    if (!response.success) {
-      setNotFound(true);
-      return;
+      if (!response.success) {
+        setNotFound(true);
+        return;
+      }
+
+      setRanking(response.data);
     }
-
-    setRanking(response.data);
+    fetchData();
   }, []);
 
   return (
@@ -50,12 +52,13 @@ const Ranking = () => {
               </tr>
             </thead>
             <tbody>
-              {ranking && ranking.map((score) => (
-                <tr key={score.id}>
-                  <td>{score.user.name}</td>
-                  <td>{score.result}</td>
-                </tr>
-              ))}
+              {ranking &&
+                ranking.map((score) => (
+                  <tr key={score.id}>
+                    <td>{score.user.name}</td>
+                    <td>{score.result}</td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
