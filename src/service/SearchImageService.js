@@ -1,7 +1,9 @@
+import { PEXELS_CLIENT_ID, PEXELS_URL } from './../vite-env'
+
 export class SearchImageService {
   constructor() {
-    this.clientID = import.meta.env.VITE_PEXELS_CLIENT_ID;
-    this.baseUrl = import.meta.env.VITE_PEXELS_URL;
+    this.clientID = PEXELS_CLIENT_ID;
+    this.baseUrl = PEXELS_URL;
   }
 
   async searchImages(imageName, currentPage) {

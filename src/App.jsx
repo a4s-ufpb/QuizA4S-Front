@@ -10,9 +10,6 @@ import { useFooter } from "./hooks/useFooter";
 // Css
 import "./App.css";
 
-export const URL_BASE = import.meta.env.VITE_URL_API;
-export const DEFAULT_IMG = import.meta.env.VITE_DEFAULT_IMG_URL;
-
 function App() {
   const { isAuthenticated, loading } = useContext(AuthenticationContext);
   const showFooter = useFooter();

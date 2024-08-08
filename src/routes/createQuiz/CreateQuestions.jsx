@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { URL_BASE } from "../../App";
-import { DEFAULT_IMG } from "../../App";
+import { URL_BASE } from "../../vite-env";
+import { DEFAULT_IMG } from "../../vite-env";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
 

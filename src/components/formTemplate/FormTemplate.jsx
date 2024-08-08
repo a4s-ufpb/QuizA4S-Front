@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import InformationBox from "../informationBox/InformationBox";
-import { URL_BASE } from "../../App";
+import { URL_BASE } from "../../vite-env";
 import Loading from "../loading/Loading";
 import { AuthenticationContext } from "../../context/AuthenticationContext";
 import { useForm } from "react-hook-form";
