@@ -7,7 +7,7 @@ import ConfirmBox from "../../components/confirmBox/ConfirmBox";
 import UpdateBox from "../../components/updateBox/UpdateBox";
 import NotFoundComponent from "../../components/notFound/NotFoundComponent";
 import MyAlternative from "./MyAlternative";
-import { DEFAULT_IMG } from "../../App";
+import { DEFAULT_IMG } from "../../vite-env";
 import { QuestionService } from "./../../service/QuestionService";
 
 import "./MyQuestion.css";

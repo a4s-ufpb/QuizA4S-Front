@@ -3,7 +3,7 @@ import ConfirmBox from "../confirmBox/ConfirmBox";
 import UpdateBox from "../updateBox/UpdateBox";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
-import { DEFAULT_IMG } from "../../App";
+import { DEFAULT_IMG } from "../../vite-env";
 import { useNavigate } from "react-router-dom";
 import { ThemeService } from "../../service/ThemeService";
 

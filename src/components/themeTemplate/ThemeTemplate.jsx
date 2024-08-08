@@ -4,7 +4,7 @@ import Loading from "../loading/Loading";
 import SearchComponent from "../searchComponent/SearchComponent";
 import NotFoundComponent from "../notFound/NotFoundComponent";
 import Pagination from "../pagination/Pagination";
-import { DEFAULT_IMG } from "../../App";
+import { DEFAULT_IMG } from "../../vite-env";
 import { ThemeService } from "./../../service/ThemeService";
 
 //Css

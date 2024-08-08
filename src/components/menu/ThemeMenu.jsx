@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { URL_BASE } from "../../App";
+import { useState } from "react";
+import { URL_BASE } from "../../vite-env";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
 import { useNavigate } from "react-router-dom";

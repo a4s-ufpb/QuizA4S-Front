@@ -1,4 +1,4 @@
-import { URL_BASE } from "../App";
+import { URL_BASE } from "../vite-env";
 
 export class ApiFetch {
   constructor() {}
