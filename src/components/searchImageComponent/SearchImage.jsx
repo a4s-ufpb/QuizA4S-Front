@@ -12,12 +12,8 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
-<<<<<<< HEAD
-  const [currentPage, setCurrentPage] = useState(1);
-=======
 
   const [currentPage, setCurrentPage] = useState(0);
->>>>>>> main
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
