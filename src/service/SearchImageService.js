@@ -1,11 +1,11 @@
 export class SearchImageService {
   constructor() {
-    this.clientID = "VobhRhGYqprkaxYAvXjE07UsDOglWJwSU4cHbpWu0qGphVyZQUGW3CSS";
-    this.baseUrl = "https://api.pexels.com/v1/search";
+    this.clientID = import.meta.env.VITE_PEXELS_CLIENT_ID;
+    this.baseUrl = import.meta.env.VITE_PEXELS_URL;
   }
 
-  async searchImages(imageName, currentPage = 1) {
-    const apiImageUrl = `${this.baseUrl}?query=${imageName}&per_page=40&page=${currentPage}`;
+  async searchImages(imageName, currentPage) {
+    const apiImageUrl = `${this.baseUrl}?query=${imageName}&per_page=40&page=${currentPage}&locale=pt-BR`;
     try {
       const response = await fetch(apiImageUrl, {
         headers: {

@@ -14,7 +14,7 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
 
   function handleKeyDown(event) {
     if (event.key === "Enter") {
-      setCurrentPage(1);
+      setCurrentPage(0);
       searchImage();
     }
   }
@@ -65,7 +65,7 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
           />
           <BsSearch
             onClick={() => {
-              setCurrentPage(1);
+              setCurrentPage(0);
               searchImage();
             }}
             className="search-image-button"
