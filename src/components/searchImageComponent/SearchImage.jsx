@@ -10,6 +10,7 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
   const imageService = new SearchImageService();
   const [imageName, setImageName] = useState("");
   const [images, setImages] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
 
@@ -28,10 +29,12 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
     setLoading(false);
 
     if (response.success) {
-      setImages(response.items);
-      setTotalPages(response.totalPages);
+      const { data } = response;
+      setCurrentPage(data.page);
+      setTotalPages(data.total_results);
+      setImages(data.photos);
     } else {
-      console.log(response.message);
+      console.error(response.message);
       setInformationBox(true);
     }
   }
@@ -71,14 +74,14 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
 
         <div className="search-image-data">
           {images &&
-            images.map((img, index) => (
-              <div key={index} className="image-data">
+            images.map((img) => (
+              <div key={img.id} className="image-data">
                 <img
-                  src={img.image.thumbnailLink}
-                  alt={img.title}
+                  src={img.src.medium}
+                  alt={img.alt}
                   width={140}
                   height={200}
-                  onClick={() => getUrlOfImage(img.image.thumbnailLink)}
+                  onClick={() => getUrlOfImage(img.src.medium)}
                 />
               </div>
             ))}
