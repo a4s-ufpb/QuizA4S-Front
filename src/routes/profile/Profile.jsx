@@ -12,7 +12,6 @@ import "./Profile.css";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
-
   const userService = new UserService();
   const navigate = useNavigate();
 
@@ -20,11 +19,12 @@ const Profile = () => {
   const [informationBox, setInformationBox] = useState(false);
   const [confirmBox, setConfirmBox] = useState(false);
   const [updateBox, setUpdateBox] = useState(false);
+  const [passwordBox, setPasswordBox] = useState(false);
 
   const [informationData, setInformationData] = useState({
     text: "",
-    icon: "exclamation",
-    color: "red",
+    icon: "",
+    color: "",
   });
 
   const confirmBoxData = {
@@ -78,6 +78,48 @@ const Profile = () => {
     name: newName,
   };
 
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+
+  const passwordBoxData = {
+    title: "Alterar senha",
+    inputs: [
+      {
+        label: "Nova senha:",
+        type: "password",
+        placeholder: "Digite sua nova senha",
+        value: newPassword,
+        maxLength: 20,
+        minLength: 8,
+      },
+      {
+        label: "Confirmar senha:",
+        type: "password",
+        placeholder: "Digite novamente sua nova senha",
+        value: confirmNewPassword,
+        maxLength: 20,
+        minLength: 8,
+      },
+    ],
+  };
+
+  const userPassword = {
+    password: newPassword,
+  };
+
+  function changeValueForPasswordBox(value, label) {
+    switch (label) {
+      case "Nova senha:":
+        setNewPassword(value);
+        break;
+      case "Confirmar senha:":
+        setConfirmNewPassword(value);
+        break;
+      default:
+        break;
+    }
+  }
+
   async function updateAccount() {
     setLoading(true);
     const response = await userService.updateUser(uuid, userUpdate);
@@ -113,18 +155,68 @@ const Profile = () => {
     navigate("/");
   }
 
+  async function updatePassword() {
+    const validate = validatePassword();
+
+    if (!validate.valid) {
+      activeInformationBox(true, validate.message);
+      return;
+    }
+
+    setLoading(true);
+    const response = await userService.updatePassword(uuid, userPassword);
+    if (!response.success) {
+      activeInformationBox(true, response.message);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
+    activeInformationBox(false, "Senha atualizada com sucesso!");
+
+    setPasswordBox(false);
+  }
+
+  function validatePassword() {
+    let validAndMessage = {
+      valid: true,
+      message: "",
+    };
+
+    if (newPassword != confirmNewPassword) {
+      validAndMessage.valid = false;
+      validAndMessage.message = "Senhas diferentes";
+    } else if (newPassword.length < 8 || newPassword.length > 20) {
+      validAndMessage.valid = false;
+      validAndMessage.message = "A senha deve conter de 8 a 20 caracteres";
+    } else if (
+      confirmNewPassword.length < 8 ||
+      confirmNewPassword.length > 20
+    ) {
+      validAndMessage.valid = false;
+      validAndMessage.message = "A senha deve conter de 8 a 20 caracteres";
+    }
+
+    return validAndMessage;
+  }
+
   function activeInformationBox(isFail, message) {
     if (isFail) {
-      setInformationData((prevData) => {
-        return { ...prevData, text: message };
+      setInformationData({
+        color: "red",
+        icon: "exclamation",
+        text: message
       });
       setInformationBox(true);
-    } else {
-      setInformationData((prevData) => {
-        return { ...prevData, text: message, icon: "check", color: "green" };
-      });
-      setInformationBox(true);
-    }
+      return;
+    } 
+
+    setInformationData({
+      color: "green",
+      icon: "check",
+      text: message
+    });
+    setInformationBox(true);
   }
 
   function showConfirmationBox() {
@@ -133,6 +225,12 @@ const Profile = () => {
 
   function showUpdateBox() {
     setUpdateBox(true);
+  }
+
+  function showPasswordBox() {
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setPasswordBox(true);
   }
 
   return (
@@ -147,6 +245,13 @@ const Profile = () => {
           onClick={showUpdateBox}
         >
           Editar Perfil
+        </button>
+        <button
+          id="user-profile-btn-update"
+          type="button"
+          onClick={showPasswordBox}
+        >
+          Alterar Senha
         </button>
         <button
           id="user-profile-btn-delete"
@@ -213,6 +318,15 @@ const Profile = () => {
           onChange={setNewName}
           onClickSave={updateAccount}
           onClickCancel={() => setUpdateBox(false)}
+        />
+      )}
+      {passwordBox && (
+        <UpdateBox
+          title={passwordBoxData.title}
+          inputs={passwordBoxData.inputs}
+          onChange={changeValueForPasswordBox}
+          onClickSave={updatePassword}
+          onClickCancel={() => setPasswordBox(false)}
         />
       )}
     </div>
