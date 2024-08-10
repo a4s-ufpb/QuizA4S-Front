@@ -104,7 +104,8 @@ const Profile = () => {
   };
 
   const userPassword = {
-    password: newPassword,
+    newPassword: newPassword,
+    confirmNewPassword: confirmNewPassword,
   };
 
   function changeValueForPasswordBox(value, label) {
