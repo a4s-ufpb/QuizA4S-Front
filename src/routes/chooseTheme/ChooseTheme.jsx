@@ -13,7 +13,7 @@ const ChooseTheme = () => {
   }
 
   return (
-    <ThemeTemplate baseUrl={baseUrl} onClickFunction={startQuiz} />
+    <ThemeTemplate path={baseUrl} onClickFunction={startQuiz} />
   );
 };
 

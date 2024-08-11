@@ -5,13 +5,13 @@ import SearchComponent from "../searchComponent/SearchComponent";
 import NotFoundComponent from "../notFound/NotFoundComponent";
 import Pagination from "../pagination/Pagination";
 import { DEFAULT_IMG } from "../../vite-env";
-import { ThemeService } from "./../../service/ThemeService";
 
 //Css
 import "./ThemeTemplate.css";
+import { ApiFetch } from "../../util/ApiFetch";
 
-const ThemeTemplate = ({ baseUrl, onClickFunction }) => {
-  const themeService = new ThemeService();
+const ThemeTemplate = ({ path, onClickFunction }) => {
+  const apiFetch = new ApiFetch();
 
   const [themes, setThemes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,28 +26,32 @@ const ThemeTemplate = ({ baseUrl, onClickFunction }) => {
   }
 
   useLayoutEffect(() => {
-    async function fetchData() {
       setLoading(true);
 
-      const response = await themeService.findAllThemes(themeName, currentPage);
-      setLoading(false);
-      if (!response.success) {
-        setTotalPages(0);
-        setThemes([]);
-        return;
-      }
-      setTotalPages(response.data.totalPages);
-      setThemes(response.data.content);
-    }
+      const promisse = apiFetch.getPages(
+        `${path}?page=${currentPage}&name=${themeName}`,
+        "Tema não encontrado"
+      );
 
-    fetchData();
-  }, [currentPage]);
+      promisse.then((response) => {
+        if (!response.success) {
+          setLoading(false);
+          setTotalPages(0);
+          setThemes([]);
+          return;
+        }
+
+        setLoading(false);
+        setTotalPages(response.totalPages);
+        setThemes(response.data);
+      });
+  }, [currentPage, path, themeName]);
 
   return (
     <div className="container-theme outlet">
       <SearchComponent
         title="Escolha o tema do seu Quiz"
-        url={`${baseUrl}?page=${currentPage}&name=`}
+        url={`${path}?page=${currentPage}&name=`}
         placeholder="Digite o nome de um tema"
         onSearch={changeName}
         setCurrentPage={setCurrentPage}

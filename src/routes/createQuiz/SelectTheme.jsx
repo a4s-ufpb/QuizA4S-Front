@@ -4,7 +4,7 @@ import ThemeTemplate from "../../components/themeTemplate/ThemeTemplate";
 import "./SelectTheme.css";
 
 const SelectTheme = () => {
-  const baseUrl = "/theme/creator";
+  const path = "/theme/creator";
   const navigate = useNavigate();
 
   function showCreateQuestion(theme) {
@@ -15,7 +15,7 @@ const SelectTheme = () => {
   return (
     <div className="container-select-theme">
 
-      <ThemeTemplate baseUrl={baseUrl} onClickFunction={showCreateQuestion} />
+      <ThemeTemplate path={path} onClickFunction={showCreateQuestion} />
 
     </div>
   );
