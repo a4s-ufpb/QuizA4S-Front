@@ -53,7 +53,7 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
 
         {percentage >= 0 && percentage <= 30 && (
           <div className="quiz-finished-score">
-            <span>{`${percentage}% de acertividade!`}</span>
+            <span>{`${percentage}% de acertos!`}</span>
             <p>
               Não desanime! Cada erro é uma oportunidade de aprender algo novo.
             </p>
@@ -61,7 +61,7 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
         )}
         {percentage > 30 && percentage <= 60 && (
           <div className="quiz-finished-score">
-            <span>{`${percentage}% de acertividade!`}</span>
+            <span>{`${percentage}% de acertos!`}</span>
             <p>
               Você está indo bem! Com um pouco mais de prática, vai dominar este
               quiz!
@@ -70,7 +70,7 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
         )}
         {percentage > 60 && percentage <= 90 && (
           <div className="quiz-finished-score">
-            <span>{`${percentage}% de acertividade!`}</span>
+            <span>{`${percentage}% de acertos!`}</span>
             <p>
               Impressionante! Você está quase lá, apenas mais um passo para a
               perfeição!
@@ -79,7 +79,7 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
         )}
         {percentage == 100 && (
           <div className="quiz-finished-score">
-            <span>{`${percentage}% de acertividade!`}</span>
+            <span>{`${percentage}% de acertos!`}</span>
             <p>
               Uau! Pontuação máxima! Você é um verdadeiro mestre neste assunto!
             </p>
