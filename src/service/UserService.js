@@ -47,4 +47,8 @@ export class UserService {
   updatePassword(userId, userPassword) {
     return this.handleRequest("patch", `/user/password/${userId}`, userPassword);
   }
+
+  validateIfUserIsAdmin(userId) {
+    return this.handleRequest("get", `/user/admin/${userId}`);
+  }
 }

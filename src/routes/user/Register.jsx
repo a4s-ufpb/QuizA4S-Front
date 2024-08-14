@@ -27,8 +27,6 @@ const fields = [
   },
 ];
 
-
-
 const Register = () => {
   return (
     <FormTemplate
@@ -38,6 +36,7 @@ const Register = () => {
       redirectLink="/login"
       fields={fields}
       baseUrl="/user/register"
+      isRegister={true}
     />
   );
 };

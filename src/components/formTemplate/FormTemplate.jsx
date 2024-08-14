@@ -1,93 +1,54 @@
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import InformationBox from "../informationBox/InformationBox";
-import { URL_BASE } from "../../vite-env";
 import Loading from "../loading/Loading";
 import { AuthenticationContext } from "../../context/AuthenticationContext";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { object, string } from "yup";
+import { UserService } from "../../service/UserService.js";
 
 import "./FormTemplate.css";
 
 const FormTemplate = ({
   title,
-  baseUrl,
   fields,
   buttonText,
   redirectText,
   redirectLink,
+  isRegister,
 }) => {
   const [activeInformationBox, setInformationBox] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setAuthenticated } = useContext(AuthenticationContext);
+  const userService = new UserService();
 
-  const handleSubmit = (formData) => {
+  const handleSubmit = async (formData) => {
     if (isInvalidPassword(formData)) return;
 
-    handleRequest(`${URL_BASE}${baseUrl}`, formData);
-  };
-
-  const handleRequest = async (url, formData) => {
-    setLoading(true);
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
-    setLoading(false);
-
-    if (response.status === 500) {
-      setError("Erro no servidor. Tente novamente mais tarde!");
-      setInformationBox(true);
-      return;
-    } else if (response.status === 400) {
-      setError("Tente novamente com outro email!");
-      setInformationBox(true);
-      return;
-    } else if(response.status === 403){
-      setError("Credenviais inválidas!");
-      setInformationBox(true);
+    let response;
+    if (isRegister) {
+      response = await userService.registerUser(formData);
+      if (response.success) {
+        response = await userService.loginUser({
+          email: formData.email,
+          password: formData.password,
+        });
+      }
+    } else {
+      response = await userService.loginUser(formData);
     }
 
-    const responseJson = await response.json();
-    if (responseJson.token) {
-      window.localStorage.setItem("token", responseJson.token);
-      setAuthenticated(true);
-    }
-
-    if (url.includes("register")) {
-      let newUrl = url.replace("register", "login");
-
-      setLoading(true);
-      const responseLogin = await fetch(newUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-      setLoading(false);
-
-      const responseJson = await responseLogin.json();
-      window.localStorage.setItem("token", responseJson.token);
-      setAuthenticated(true);
-    }
-
-    navigate("/");
+    handleResponse(response);
   };
 
   const isInvalidPassword = (formData) => {
     const password = formData.password;
     const confirmPassword = formData.confirmPassword;
 
-    if (!password || !confirmPassword) return;
-
-    if (password !== confirmPassword) {
+    if (isRegister && password !== confirmPassword) {
       setError("Senhas diferentes");
       setInformationBox(true);
       return true;
@@ -100,55 +61,53 @@ const FormTemplate = ({
     setInformationBox(false);
   };
 
+  const handleResponse = (response) => {
+    setLoading(false);
+
+    if (!response.success) {
+      setError(response.message);
+      setInformationBox(true);
+      return;
+    }
+
+    if (response.data.token) {
+      window.localStorage.setItem("token", response.data.token);
+      setAuthenticated(true);
+      navigate("/");
+    }
+  };
+
+
   const requiredFieldMessage = "Campo obrigatório";
   const regexValidatedEmail =
     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-  function resolverSchema() {
-    let schema;
-    if (baseUrl === "/user/register") {
-      schema = object().shape({
-        email: string()
-          .required(requiredFieldMessage)
-          .matches(regexValidatedEmail, "Email Inválido")
-          .max(100, "Máximo de 100 caracteres"),
-        password: string()
-          .required(requiredFieldMessage)
-          .min(8, "Mínimo de 8 caracteres")
-          .max(20, "Máximo de 20 caracteres"),
-        name: string()
-          .required(requiredFieldMessage)
-          .min(3, "Mínimo de 3 caracteres")
-          .max(30, "Máximo de 30 caracteres"),
-        confirmPassword: string()
-          .required(requiredFieldMessage)
-          .min(8, "Mínimo de 8 caracteres")
-          .max(20, "Máximo de 20 caracteres"),
-      });
-
-      return schema;
-    } else {
-      schema = object().shape({
-        email: string()
-          .required(requiredFieldMessage)
-          .matches(regexValidatedEmail, "Email Inválido")
-          .max(100, "Máximo de 100 caracteres"),
-        password: string()
-          .required(requiredFieldMessage)
-          .min(8, "Mínimo de 8 caracteres")
-          .max(20, "Máximo de 20 caracteres"),
-      });
-
-      return schema;
-    }
-  }
+  const resolverSchema = object().shape({
+    email: string()
+      .required(requiredFieldMessage)
+      .matches(regexValidatedEmail, "Email Inválido")
+      .max(100, "Máximo de 100 caracteres"),
+    password: string()
+      .required(requiredFieldMessage)
+      .min(8, "Mínimo de 8 caracteres")
+      .max(20, "Máximo de 20 caracteres"),
+    ...(isRegister && {
+      name: string()
+        .required(requiredFieldMessage)
+        .min(3, "Mínimo de 3 caracteres")
+        .max(30, "Máximo de 30 caracteres"),
+      confirmPassword: string()
+        .required(requiredFieldMessage)
+        .min(8, "Mínimo de 8 caracteres")
+        .max(20, "Máximo de 20 caracteres"),
+    }),
+  });
 
   const {
     register,
     handleSubmit: onSubmit,
-    watch,
     formState: { errors },
-  } = useForm({ resolver: yupResolver(resolverSchema()) });
+  } = useForm({ resolver: yupResolver(resolverSchema) });
 
   return (
     <div className="container">
