@@ -14,6 +14,7 @@ const Login = () => {
       redirectLink="/register"
       fields={fields}
       baseUrl="/user/login"
+      isRegister={false}
     />
   );
 };

@@ -10,8 +10,11 @@ import { UserService } from "./../../service/UserService";
 
 import "./Profile.css";
 import { useNavigate } from "react-router-dom";
+import Admin from "./Admin";
 
 const Profile = () => {
+  
+  const { uuid, name, email } = JSON.parse(localStorage.getItem("user"));
   const userService = new UserService();
   const navigate = useNavigate();
 
@@ -27,6 +30,8 @@ const Profile = () => {
     color: "",
   });
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const confirmBoxData = {
     title: "Deseja remover sua conta?",
     textBtn1: "Sim",
@@ -34,29 +39,44 @@ const Profile = () => {
   };
 
   const [currentItem, setCurrentItem] = useState(0);
-  const componentsItens = [<MyTheme />, <MyResponse />, <MyStatistics />];
+  const componentsItens = [
+    <MyTheme />, 
+    <MyResponse />, 
+    <MyStatistics />,
+    isAdmin && <Admin />
+  ];
+
+  const buttons = [
+    { id: "btn-quiz", label: "Meus Temas", index: 0 },
+    { id: "btn-response", label: "Painel de Respostas", index: 1 },
+    { id: "btn-statistic", label: "Estatísticas", index: 2 },
+    ...(isAdmin ? [{ id: "btn-admin", label: "Admin", index: 3 }] : []),
+  ];
 
   useEffect(() => {
-    const btnQuiz = document.getElementById("btn-quiz");
-    const btnResponse = document.getElementById("btn-response");
-    const btnStatistic = document.getElementById("btn-statistic");
+    async function verifyUserAdmin() {
+      const response = await userService.validateIfUserIsAdmin(uuid);
+      
+      if(response.data.isAdmin){
+        setIsAdmin(true);
+      }
 
-    if (currentItem === 0) {
-      btnQuiz.classList.add("selected-btn");
-      btnResponse.classList.remove("selected-btn");
-      btnStatistic.classList.remove("selected-btn");
-    } else if (currentItem === 1) {
-      btnQuiz.classList.remove("selected-btn");
-      btnResponse.classList.add("selected-btn");
-      btnStatistic.classList.remove("selected-btn");
-    } else {
-      btnQuiz.classList.remove("selected-btn");
-      btnResponse.classList.remove("selected-btn");
-      btnStatistic.classList.add("selected-btn");
+      verifyButtons();
     }
+
+    verifyUserAdmin();
   }, [currentItem]);
 
-  const { uuid, name, email } = JSON.parse(localStorage.getItem("user"));
+  function verifyButtons() {
+    const btnElements = document.querySelectorAll(".select-user-btn");
+    btnElements.forEach((btn, idx) => {
+      if (idx === currentItem) {
+        btn.classList.add("selected-btn");
+      } else {
+        btn.classList.remove("selected-btn");
+      }
+    });
+  }
 
   const [newName, setNewName] = useState("");
 
@@ -206,16 +226,16 @@ const Profile = () => {
       setInformationData({
         color: "red",
         icon: "exclamation",
-        text: message
+        text: message,
       });
       setInformationBox(true);
       return;
-    } 
+    }
 
     setInformationData({
       color: "green",
       icon: "check",
-      text: message
+      text: message,
     });
     setInformationBox(true);
   }
@@ -265,30 +285,17 @@ const Profile = () => {
 
       <div className="container-user-itens">
         <div className="select-user-item">
-          <button
-            type="button"
-            onClick={() => setCurrentItem(0)}
-            id="btn-quiz"
-            className="select-user-btn"
-          >
-            Meus Temas
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentItem(1)}
-            id="btn-response"
-            className="select-user-btn"
-          >
-            Painel de Respostas
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentItem(2)}
-            id="btn-statistic"
-            className="select-user-btn"
-          >
-            Estatistícas
-          </button>
+          {buttons.map((button, index) => (
+            <button
+              key={button.id}
+              type="button"
+              onClick={() => setCurrentItem(button.index)}
+              className={`select-user-btn ${currentItem === index ? "selected-btn" : ""}`}
+              id={button.id}
+            >
+              {button.label}
+            </button>
+          ))}
         </div>
 
         <div className="user-itens">{componentsItens[currentItem]}</div>
