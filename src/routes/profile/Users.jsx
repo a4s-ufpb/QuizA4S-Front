@@ -1,9 +1,84 @@
-import "./Users.css"
+import { useEffect } from "react";
+import { UserService } from "../../service/UserService";
+import { useState } from "react";
+import Loading from "../../components/loading/Loading";
+import Pagination from "../../components/pagination/Pagination";
+import SearchComponent from "../../components/searchComponent/SearchComponent";
+
+import "./Users.css";
+import NotFoundComponent from "../../components/notFound/NotFoundComponent";
 
 function Users() {
+  const userService = new UserService();
+  const [users, setUsers] = useState([]);
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const [loading, setLoading] = useState(false);
+
+  const { uuid: userId } = JSON.parse(localStorage.getItem("user"));
+
+  async function fetchData() {
+    try {
+      setLoading(true);
+      const response = await userService.findAllUsers(userId);
+
+      if (!response.success) {
+        setUsers([]);
+        setTotalPages(0);
+        return;
+      }
+
+      setUsers(response.data.content);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      setUsers([]);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   return (
-    <div>Users</div>
-  )
+    <div className="container-external-users">
+      <SearchComponent
+        title=""
+        placeholder="Digite o nome de um usuário"
+        setCurrentPage={setCurrentPage}
+        setTotalPages={setTotalPages}
+        setData={setUsers}
+        onSearch=""
+        url=""
+      />
+
+      <div className="container-users">
+        {users &&
+          users.map((user) => (
+            <div key={user.uuid} className="user-data">
+              <p>{user.name}</p>
+              <p>{user.email}</p>
+            </div>
+          ))}
+      </div>
+
+      <Pagination
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
+      />
+
+      {loading && <Loading />}
+
+      {!loading && users.length == 0 && (
+        <NotFoundComponent title="Nenhum usuário cadastrado" />
+      )}
+    </div>
+  );
 }
 
-export default Users
+export default Users;

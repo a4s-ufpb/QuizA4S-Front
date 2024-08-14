@@ -21,18 +21,23 @@ function MyStatistics() {
 
   async function fetchData() {
     setLoading(true);
-    const validateUser = await userService.validateIfUserIsAdmin(userId);
 
-    if (validateUser.data.isAdmin) {
-      const pageOfAllThemes = await themeService.findAllThemes("", 0);
-      setThemeNamesList(pageOfAllThemes.data.content);
+    try {
+      const validateUser = await userService.validateIfUserIsAdmin(userId);
+      const isAdmin = validateUser.data.isAdmin;
+
+      const fetchThemes = isAdmin
+        ? themeService.findAllThemes("", 0)
+        : themeService.findThemesByCreator("", 0);
+
+      const response = await fetchThemes;
+
+      setThemeNamesList(response.data.content || []);
+    } catch (error) {
+      setThemeNamesList([]);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const pageOfThemesByCreator = await themeService.findThemesByCreator("", 0);
-    setThemeNamesList(pageOfThemesByCreator.data.content);
-    setLoading(false);
   }
 
   useEffect(() => {
@@ -46,7 +51,10 @@ function MyStatistics() {
     }
 
     setLoading(true);
-    const response = await responseService.findResponsesStatistics(nameOfTheme, userId);
+    const response = await responseService.findResponsesStatistics(
+      nameOfTheme,
+      userId
+    );
     setLoading(false);
 
     if (!response.success) {

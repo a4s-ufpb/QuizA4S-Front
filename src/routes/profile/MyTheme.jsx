@@ -30,26 +30,34 @@ const MyTheme = () => {
 
   async function fetchData() {
     setLoading(true);
-    const validateUser = await userService.validateIfUserIsAdmin(userId);
 
-    if (validateUser.data.isAdmin) {
-      const pageOfAllThemes = await themeService.findAllThemes(
-        themeName,
-        currentPage
-      );
-      setTotalPages(pageOfAllThemes.data.totalPages);
-      setThemes(pageOfAllThemes.data.content);
+    try {
+      const validateUser = await userService.validateIfUserIsAdmin(userId);
+      const isAdmin = validateUser.data.isAdmin;
+
+      const fetchThemes = isAdmin
+        ? themeService.findAllThemes(themeName, currentPage)
+        : themeService.findThemesByCreator(themeName, currentPage);
+
+      const response = await fetchThemes;
+
+      if (!response.success) {
+        handleNoThemes();
+        return;
+      }
+
+      setTotalPages(response.data.totalPages || 0);
+      setThemes(response.data.content || []);
+    } catch (error) {
+      handleNoThemes();
+    } finally {
       setLoading(false);
-      return;
     }
+  }
 
-    const pageOfThemesByCreator = await themeService.findThemesByCreator(
-      themeName,
-      currentPage
-    );
-    setTotalPages(pageOfThemesByCreator.totalPages);
-    setThemes(pageOfThemesByCreator.content);
-    setLoading(false);
+  function handleNoThemes() {
+    setTotalPages(0);
+    setThemes([]);
   }
 
   useEffect(() => {
