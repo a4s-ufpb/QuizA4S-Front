@@ -1,0 +1,45 @@
+.feedback-box {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  animation: slideDown 2s ease-in-out forwards;
+}
+
+@keyframes slideDown {
+  0% {
+    top: -50px;
+    opacity: 0;
+  }
+  20% {
+    top: 20px;
+    opacity: 1;
+  }
+  80% {
+    top: 20px;
+    opacity: 1;
+  }
+  100% {
+    top: -50px;
+    opacity: 0;
+  }
+}
+
+.feedback-box.green {
+  background-color: #4caf50;
+  color: white;
+}
+
+.feedback-box.red {
+  background-color: #f44336;
+  color: white;
+}
+
+.feedback-box p {
+    font-size: 1.1em;
+}

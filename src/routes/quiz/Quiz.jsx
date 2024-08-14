@@ -6,7 +6,7 @@ import Loading from "../../components/loading/Loading";
 import QuestionFinished from "../../components/quizFinished/QuizFinished";
 import { QuestionService } from "../../service/QuestionService";
 import { ResponseService } from "../../service/ResponseService";
-import { ToastContainer, toast } from 'react-toastify';
+import FeedbackBox from "../../components/feedbackBox/FeedbackBox";
 
 //Css
 import "./Quiz.css";
@@ -37,8 +37,8 @@ const Quiz = () => {
 
     const questionResponse = questionService.find10QuestionsByThemeId(themeId);
 
-    questionResponse.then(response => {
-      if(!response.success) {
+    questionResponse.then((response) => {
+      if (!response.success) {
         setTextAlert(response.message);
         setInformationAlert(true);
         return;
@@ -46,16 +46,20 @@ const Quiz = () => {
 
       setQuestions(response.data);
 
-      if(response.data.length < 5){
+      if (response.data.length < 5) {
         setTextAlert("Cadastre no mínimo 5 questões para jogar esse quiz");
         setInformationAlert(true);
       }
 
       setLoading(false);
-    })
+    });
   }, [themeId]);
 
   const [clickEnabled, setClickEnabled] = useState(true);
+
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackColor, setFeedbackColor] = useState("");
+  const [showFeedback, setShowFeedback] = useState(false);
 
   function handleAnswerClick(event, alternativeId, questionId) {
     setClickEnabled(false);
@@ -82,13 +86,18 @@ const Quiz = () => {
     if (isCorrect) {
       event.currentTarget.classList.add("correct-answer");
       setScore(score + 1);
-      toast.success("Parabens, você acertou!", { autoClose: 1500 });
+      setFeedbackMessage("Parabéns, você acertou!");
+      setFeedbackColor("green");
     } else {
       event.currentTarget.classList.add("wrong-answer");
-      toast.error("Que pena, você errou!", { autoClose: 1500 });
+      setFeedbackMessage("Que pena, você errou!");
+      setFeedbackColor("red");
     }
 
+    setShowFeedback(true);
+
     setTimeout(() => {
+      setShowFeedback(false);
       setClickEnabled(true);
 
       if (currentQuestionIndex === questions.length - 1) {
@@ -109,9 +118,13 @@ const Quiz = () => {
   }
 
   async function postResponse(uuid, questionId, alternativeId) {
-    const response = await responseService.insertResponse(uuid, questionId, alternativeId);
-    if(!response.success) {
-      console.log("Usuário está jogando sem salvar suas respostas")
+    const response = await responseService.insertResponse(
+      uuid,
+      questionId,
+      alternativeId
+    );
+    if (!response.success) {
+      console.log("Usuário está jogando sem salvar suas respostas");
     }
   }
 
@@ -129,36 +142,29 @@ const Quiz = () => {
 
   return (
     <div className="container-quiz-external">
-      <ToastContainer
-        position="top-center"
-        autoClose={1000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-      />
       <div className="container-quiz">
         <div className="timer">
           <p>{time}s</p>
         </div>
 
         {questions.length > 0 && (
-          <Question
-            title={questions[currentQuestionIndex].title}
-            questionId={questions[currentQuestionIndex].id}
-            questionImg={questions[currentQuestionIndex].imageUrl}
-            creatorId={questions[currentQuestionIndex].creatorId}
-            alternatives={questions[currentQuestionIndex].alternatives}
-            onAnswerClick={
-              clickEnabled ? handleAnswerClick : () => console.log()
-            }
-            currentQuestion={currentQuestionIndex + 1}
-            lastQuestion={questions.length}
-          />
+          <>
+            <Question
+              title={questions[currentQuestionIndex].title}
+              questionId={questions[currentQuestionIndex].id}
+              questionImg={questions[currentQuestionIndex].imageUrl}
+              creatorId={questions[currentQuestionIndex].creatorId}
+              alternatives={questions[currentQuestionIndex].alternatives}
+              onAnswerClick={
+                clickEnabled ? handleAnswerClick : () => console.log()
+              }
+              currentQuestion={currentQuestionIndex + 1}
+              lastQuestion={questions.length}
+            />
+            {showFeedback && (
+              <FeedbackBox title={feedbackMessage} color={feedbackColor} />
+            )}
+          </>
         )}
       </div>
 
@@ -172,7 +178,7 @@ const Quiz = () => {
           color="red"
         />
       )}
-      
+
       {!quizFinished && incrementTime()}
 
       {quizFinished && (
