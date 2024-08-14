@@ -6,6 +6,7 @@ import Loading from "../../components/loading/Loading";
 import QuestionFinished from "../../components/quizFinished/QuizFinished";
 import { QuestionService } from "../../service/QuestionService";
 import { ResponseService } from "../../service/ResponseService";
+import { ToastContainer, toast } from 'react-toastify';
 
 //Css
 import "./Quiz.css";
@@ -81,8 +82,10 @@ const Quiz = () => {
     if (isCorrect) {
       event.currentTarget.classList.add("correct-answer");
       setScore(score + 1);
+      toast.success("Parabens, você acertou!", { autoClose: 1500 });
     } else {
       event.currentTarget.classList.add("wrong-answer");
+      toast.error("Que pena, você errou!", { autoClose: 1500 });
     }
 
     setTimeout(() => {
@@ -126,6 +129,18 @@ const Quiz = () => {
 
   return (
     <div className="container-quiz-external">
+      <ToastContainer
+        position="top-center"
+        autoClose={1000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
       <div className="container-quiz">
         <div className="timer">
           <p>{time}s</p>
