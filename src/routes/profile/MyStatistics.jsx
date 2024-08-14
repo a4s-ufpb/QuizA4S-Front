@@ -4,10 +4,12 @@ import Loading from "../../components/loading/Loading";
 import NotFoundComponent from "../../components/notFound/NotFoundComponent";
 import { ThemeService } from "../../service/ThemeService";
 import { ResponseService } from "./../../service/ResponseService";
+import { UserService } from "../../service/UserService";
 
 function MyStatistics() {
   const themeService = new ThemeService();
   const responseService = new ResponseService();
+  const userService = new UserService();
 
   const [loading, setLoading] = useState(false);
 
@@ -15,19 +17,25 @@ function MyStatistics() {
 
   const [statistics, setStatistics] = useState([]);
 
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      const response = await themeService.findThemesByCreator("", 0);
+  const { uuid: userId } = JSON.parse(localStorage.getItem("user"));
+
+  async function fetchData() {
+    setLoading(true);
+    const validateUser = await userService.validateIfUserIsAdmin(userId);
+
+    if (validateUser.data.isAdmin) {
+      const pageOfAllThemes = await themeService.findAllThemes("", 0);
+      setThemeNamesList(pageOfAllThemes.data.content);
       setLoading(false);
-
-      if (!response.success) {
-        return;
-      }
-
-      setThemeNamesList(response.data.content);
+      return;
     }
 
+    const pageOfThemesByCreator = await themeService.findThemesByCreator("", 0);
+    setThemeNamesList(pageOfThemesByCreator.data.content);
+    setLoading(false);
+  }
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -38,7 +46,7 @@ function MyStatistics() {
     }
 
     setLoading(true);
-    const response = await responseService.findResponsesStatistics(nameOfTheme);
+    const response = await responseService.findResponsesStatistics(nameOfTheme, userId);
     setLoading(false);
 
     if (!response.success) {

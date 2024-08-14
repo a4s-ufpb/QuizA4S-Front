@@ -31,6 +31,10 @@ export class UserService {
     return this.handleRequest("get", `/user/find/${userId}`);
   }
 
+  findAllUsers(userId) {
+    return this.handleRequest("get", `/user/all/${userId}`);
+  }
+
   async removeUser(userId) {
     const response = await this.handleRequest("delete", `/user/${userId}`);
     if (response.success) {

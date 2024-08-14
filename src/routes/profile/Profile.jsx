@@ -10,7 +10,7 @@ import { UserService } from "./../../service/UserService";
 
 import "./Profile.css";
 import { useNavigate } from "react-router-dom";
-import Admin from "./Admin";
+import Users from "./Users";
 
 const Profile = () => {
   
@@ -43,14 +43,14 @@ const Profile = () => {
     <MyTheme />, 
     <MyResponse />, 
     <MyStatistics />,
-    isAdmin && <Admin />
+    isAdmin && <Users />
   ];
 
   const buttons = [
     { id: "btn-quiz", label: "Meus Temas", index: 0 },
     { id: "btn-response", label: "Painel de Respostas", index: 1 },
     { id: "btn-statistic", label: "Estatísticas", index: 2 },
-    ...(isAdmin ? [{ id: "btn-admin", label: "Admin", index: 3 }] : []),
+    ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 3 }] : []),
   ];
 
   useEffect(() => {

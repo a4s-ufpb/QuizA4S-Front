@@ -5,11 +5,13 @@ import Loading from "../../components/loading/Loading";
 import SearchComponent from "../../components/searchComponent/SearchComponent";
 import NotFoundComponent from "../../components/notFound/NotFoundComponent";
 import { ThemeService } from "../../service/ThemeService";
+import { UserService } from "../../service/UserService";
 
 import "./MyTheme.css";
 
 const MyTheme = () => {
   const themeService = new ThemeService();
+  const userService = new UserService();
 
   const [loading, setLoading] = useState(false);
 
@@ -24,24 +26,33 @@ const MyTheme = () => {
     setThemeName(propsThemeName);
   }
 
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      const response = await themeService.findThemesByCreator(
+  const { uuid: userId } = JSON.parse(localStorage.getItem("user"));
+
+  async function fetchData() {
+    setLoading(true);
+    const validateUser = await userService.validateIfUserIsAdmin(userId);
+
+    if (validateUser.data.isAdmin) {
+      const pageOfAllThemes = await themeService.findAllThemes(
         themeName,
         currentPage
       );
-
+      setTotalPages(pageOfAllThemes.data.totalPages);
+      setThemes(pageOfAllThemes.data.content);
       setLoading(false);
-
-      if (!response.success) {
-        return;
-      }
-
-      setTotalPages(response.data.totalPages);
-      setThemes(response.data.content);
+      return;
     }
 
+    const pageOfThemesByCreator = await themeService.findThemesByCreator(
+      themeName,
+      currentPage
+    );
+    setTotalPages(pageOfThemesByCreator.totalPages);
+    setThemes(pageOfThemesByCreator.content);
+    setLoading(false);
+  }
+
+  useEffect(() => {
     fetchData();
   }, [currentPage, callBack]);
 

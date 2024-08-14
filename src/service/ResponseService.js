@@ -43,8 +43,8 @@ export class ResponseService {
     return this.handleRequest("get", `/response/question/date?currentDate=${currentDate}&finalDate=${finalDate}&page=${currentPage}`);
   }
 
-  findResponsesStatistics(themeName) {
-    return this.handleRequest("get", `/response/statistic/${themeName}`);
+  findResponsesStatistics(themeName, userId) {
+    return this.handleRequest("get", `/response/statistic/${themeName}/${userId}`);
   }
 
   removeResponse(responseId) {

@@ -8,10 +8,13 @@ import { DEFAULT_IMG } from "../../vite-env";
 
 //Css
 import "./ThemeTemplate.css";
-import { ApiFetch } from "../../util/ApiFetch";
+import { UserService } from "../../service/UserService";
+import { ThemeService } from "../../service/ThemeService";
 
 const ThemeTemplate = ({ path, onClickFunction }) => {
-  const apiFetch = new ApiFetch();
+
+  const userService = new UserService();
+  const themeService = new ThemeService();
 
   const [themes, setThemes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,26 +28,34 @@ const ThemeTemplate = ({ path, onClickFunction }) => {
     setThemeName(propsThemeName);
   }
 
-  useLayoutEffect(() => {
-      setLoading(true);
+  const { uuid: userId } = JSON.parse(localStorage.getItem("user"));
 
-      const promisse = apiFetch.getPages(
-        `${path}?page=${currentPage}&name=${themeName}`,
-        "Tema não encontrado"
+  async function fetchData() {
+    setLoading(true);
+    const validateUser = await userService.validateIfUserIsAdmin(userId);
+
+    if (validateUser.data.isAdmin) {
+      const pageOfAllThemes = await themeService.findAllThemes(
+        themeName,
+        currentPage
       );
+      setTotalPages(pageOfAllThemes.data.totalPages);
+      setThemes(pageOfAllThemes.data.content);
+      setLoading(false);
+      return;
+    }
 
-      promisse.then((response) => {
-        if (!response.success) {
-          setLoading(false);
-          setTotalPages(0);
-          setThemes([]);
-          return;
-        }
+    const pageOfThemesByCreator = await themeService.findThemesByCreator(
+      themeName,
+      currentPage
+    );
+    setTotalPages(pageOfThemesByCreator.totalPages);
+    setThemes(pageOfThemesByCreator.content);
+    setLoading(false);
+  }
 
-        setLoading(false);
-        setTotalPages(response.totalPages);
-        setThemes(response.data);
-      });
+  useLayoutEffect(() => {
+    fetchData();
   }, [currentPage, path, themeName]);
 
   return (
