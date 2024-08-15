@@ -17,6 +17,8 @@ function Users() {
 
   const [loading, setLoading] = useState(false);
 
+  const [userName, setUserName] = useState("")
+
   const { uuid: userId } = JSON.parse(localStorage.getItem("user"));
 
   async function fetchData() {
@@ -40,6 +42,10 @@ function Users() {
     }
   }
 
+  function changeName(propsChangeName) {
+    setUserName(propsChangeName);
+  }
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -52,8 +58,8 @@ function Users() {
         setCurrentPage={setCurrentPage}
         setTotalPages={setTotalPages}
         setData={setUsers}
-        onSearch=""
-        url=""
+        onSearch={changeName}
+        url={`/user/all/${userId}?name=`}
       />
 
       <div className="container-users">
