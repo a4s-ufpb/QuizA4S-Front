@@ -35,7 +35,11 @@ export class UserService {
     return this.handleRequest("get", `/user/all/${userId}`);
   }
 
-  async removeUser(userId) {
+  async removeUser(userId, isAdmin = false) {
+    if(isAdmin) {
+      return this.handleRequest("delete", `/user/${userId}`);
+    }
+
     const response = await this.handleRequest("delete", `/user/${userId}`);
     if (response.success) {
       localStorage.removeItem("token");

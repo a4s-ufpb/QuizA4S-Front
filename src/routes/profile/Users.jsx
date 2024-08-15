@@ -7,6 +7,7 @@ import SearchComponent from "../../components/searchComponent/SearchComponent";
 
 import "./Users.css";
 import NotFoundComponent from "../../components/notFound/NotFoundComponent";
+import UserTemplate from "../../components/userTemplate/UserTemplate";
 
 function Users() {
   const userService = new UserService();
@@ -14,10 +15,11 @@ function Users() {
 
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [callBack, setCallBack] = useState({});
 
   const [loading, setLoading] = useState(false);
 
-  const [userName, setUserName] = useState("")
+  const [userName, setUserName] = useState("");
 
   const { uuid: userId } = JSON.parse(localStorage.getItem("user"));
 
@@ -48,7 +50,7 @@ function Users() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage, callBack]);
 
   return (
     <div className="container-external-users">
@@ -62,15 +64,12 @@ function Users() {
         url={`/user/all/${userId}?name=`}
       />
 
-      <div className="container-users">
-        {users &&
-          users.map((user) => (
-            <div key={user.uuid} className="user-data">
-              <p>{user.name}</p>
-              <p>{user.email}</p>
-            </div>
-          ))}
-      </div>
+      <UserTemplate
+        users={users}
+        setUsers={setUsers}
+        setCurrentPage={setCurrentPage}
+        setCallBack={setCallBack}
+      />
 
       <Pagination
         currentPage={currentPage}
