@@ -73,11 +73,13 @@
 
 .select-user-item{
     display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 1.5em;
 }
 
 .select-user-btn{
-    width: 200px;
+    width: 23%;
     height: 35px;
     border-radius: 4px;
     background-color: rgb(1, 80, 130);
@@ -118,13 +120,19 @@
     }
 }
 
-@media(max-width: 550px){
+@media(max-width: 800px){
     .select-user-item{
-        justify-content: space-between;
+        flex-wrap: wrap;
     }
 
     .select-user-btn{
         font-size: .9em;
-        width: 50%;
+        width: 46%;
+    }
+}
+
+@media(max-width: 550px){
+    .select-user-btn{
+        font-size: .8em;
     }
 }
