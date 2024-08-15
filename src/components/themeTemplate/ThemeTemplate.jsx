@@ -1,20 +1,16 @@
-// Components
 import { useLayoutEffect, useState } from "react";
 import Loading from "../loading/Loading";
 import SearchComponent from "../searchComponent/SearchComponent";
 import NotFoundComponent from "../notFound/NotFoundComponent";
 import Pagination from "../pagination/Pagination";
 import { DEFAULT_IMG } from "../../vite-env";
+import { ApiFetch } from "../../util/ApiFetch";
 
 //Css
 import "./ThemeTemplate.css";
-import { UserService } from "../../service/UserService";
-import { ThemeService } from "../../service/ThemeService";
 
 const ThemeTemplate = ({ path, onClickFunction }) => {
-
-  const userService = new UserService();
-  const themeService = new ThemeService();
+  const apiFetch = new ApiFetch();
 
   const [themes, setThemes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -28,34 +24,26 @@ const ThemeTemplate = ({ path, onClickFunction }) => {
     setThemeName(propsThemeName);
   }
 
-  const { uuid: userId } = JSON.parse(localStorage.getItem("user"));
-
-  async function fetchData() {
-    setLoading(true);
-    const validateUser = await userService.validateIfUserIsAdmin(userId);
-
-    if (validateUser.data.isAdmin) {
-      const pageOfAllThemes = await themeService.findAllThemes(
-        themeName,
-        currentPage
-      );
-      setTotalPages(pageOfAllThemes.data.totalPages);
-      setThemes(pageOfAllThemes.data.content);
-      setLoading(false);
-      return;
-    }
-
-    const pageOfThemesByCreator = await themeService.findThemesByCreator(
-      themeName,
-      currentPage
-    );
-    setTotalPages(pageOfThemesByCreator.totalPages);
-    setThemes(pageOfThemesByCreator.content);
-    setLoading(false);
-  }
-
   useLayoutEffect(() => {
-    fetchData();
+      setLoading(true);
+
+      const promisse = apiFetch.getPages(
+        `${path}?page=${currentPage}&name=${themeName}`,
+        "Tema não encontrado"
+      );
+
+      promisse.then((response) => {
+        if (!response.success) {
+          setLoading(false);
+          setTotalPages(0);
+          setThemes([]);
+          return;
+        }
+
+        setLoading(false);
+        setTotalPages(response.totalPages);
+        setThemes(response.data);
+      });
   }, [currentPage, path, themeName]);
 
   return (
