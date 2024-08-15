@@ -9,6 +9,8 @@ import NotFoundComponent from "../../components/notFound/NotFoundComponent";
 import MyAlternative from "./MyAlternative";
 import { DEFAULT_IMG } from "../../vite-env";
 import { QuestionService } from "./../../service/QuestionService";
+import { FcPlus } from "react-icons/fc";
+import { useNavigate } from "react-router-dom";
 
 import "./MyQuestion.css";
 
@@ -170,6 +172,14 @@ const MyQuestion = () => {
     setShowAlternatives(true);
   }
 
+  const navigate = useNavigate();
+  const themeJson = localStorage.getItem("theme");
+  const themeObject = JSON.parse(themeJson);
+
+  function navigateForRegisterQuestions() {
+    navigate(`/create/quiz/${themeObject.id}/question`);
+  }
+
   return (
     <div className="container-my-question outlet">
       <div className="my-question">
@@ -253,6 +263,13 @@ const MyQuestion = () => {
             setCurrentPage={setCurrentPage}
             totalPages={totalPages}
           />
+        </div>
+
+        <div className="container-btn-register-question">
+          <div className="btn-register-question" onClick={navigateForRegisterQuestions}>
+            <FcPlus className="icon-register-question" />
+            <span className="tooltiptext">Cadastrar questão</span>
+          </div>
         </div>
       </div>
 
