@@ -106,7 +106,7 @@ const Quiz = () => {
       }
 
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }, 1500);
+    }, 2000);
 
     if (token) {
       postResponse(user.uuid, questionId, alternativeId);

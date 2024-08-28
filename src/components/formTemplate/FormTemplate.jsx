@@ -28,6 +28,8 @@ const FormTemplate = ({
   const handleSubmit = async (formData) => {
     if (isInvalidPassword(formData)) return;
 
+    setLoading(true);
+
     let response;
     if (isRegister) {
       response = await userService.registerUser(formData);

@@ -11,6 +11,7 @@
   background-size: cover;
   margin-top: -2em;
   padding: 30px 0px;
+  position: relative;
 }
 
 .container-create-questions-header{
@@ -83,7 +84,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4em;
+  gap: 3em;
 }
 
 .container-question {
@@ -184,10 +185,9 @@
   cursor: pointer;
 }
 
-.btn-create-question {
+.create-question-btn {
   width: 450px;
   height: 50px;
-  margin-bottom: 1em;
   border-radius: 50px;
   border: 2px solid #3498db;
   font-size: 1.6em;
@@ -198,7 +198,7 @@
   transition: 0.2s ease-in-out;
 }
 
-.btn-create-question:hover {
+.create-question-btn:hover {
   background-color: #fff;
   color: #3498db;
 }
@@ -256,8 +256,9 @@
     font-size: 1.7em;
   }
 
-  .btn-create-question {
+  .create-question-btn {
     width: 300px;
     height: 45px;
+    font-size: 1.1em;
   }
 }

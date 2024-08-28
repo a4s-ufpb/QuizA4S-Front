@@ -47,7 +47,7 @@ export class QuestionService {
     return this.handleRequest("get", `/question/creator/quiz/${themeId}`);
   }
 
-  findAllQuestionsByTheme(themeId, currentPage) {
-    return this.handleRequest("get", `/question/all/theme/${themeId}?page=${currentPage}`);
+  findAllQuestionsByTheme(themeId) {
+    return this.handleRequest("get", `/question/all/theme/${themeId}`);
   }
 }

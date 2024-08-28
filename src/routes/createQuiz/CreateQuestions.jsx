@@ -1,20 +1,28 @@
-import { useState } from "react";
-import { URL_BASE } from "../../vite-env";
+import { useEffect, useState } from "react";
 import { DEFAULT_IMG } from "../../vite-env";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
+import { QuestionService } from "../../service/QuestionService";
+import { AlternativeService } from "./../../service/AlternativeService";
+import SearchImage from "../../components/searchImageComponent/SearchImage";
 
 import "./CreateQuestions.css";
-
-const urlQuestion = `${URL_BASE}/question`;
-const urlAlternative = `${URL_BASE}/alternative/all`;
+import QuestionListComponent from "../../components/questionListComponent/QuestionListComponent";
 
 const CreateQuestions = () => {
+  const questionService = new QuestionService();
+  const alternativeService = new AlternativeService();
+
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
+  const [callback, setCallback] = useState({});
+
+  const [questions, setQuestions] = useState([]);
+
+  const [showSearchImage, setSearchImage] = useState(false);
 
   const [informationBoxData, setInformationBoxData] = useState({
-    text: "Dados inválidos",
+    text: "",
     color: "red",
     icon: "exclamation",
   });
@@ -33,54 +41,78 @@ const CreateQuestions = () => {
     { text: "", correct: false },
   ]);
 
+  async function fetchData() {
+    try {
+      setLoading(true);
+      const questionResponse = await questionService.findAllQuestionsByTheme(
+        idTheme
+      );
+
+      if (!questionResponse.success) {
+        setInformationBoxData((prevData) => {
+          return {
+            ...prevData,
+            color: "red",
+            text: questionResponse.message,
+            icon: "exclamation",
+          };
+        });
+        setInformationBox(true);
+        return;
+      }
+
+      setQuestions(questionResponse.data);
+    } catch (error) {
+      setQuestions([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, [callback]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
-
-    if (!token) return;
-
-    postQuestion(token);
+    postQuestion();
   };
 
-  async function postQuestion(token) {
+  async function postQuestion() {
     setLoading(true);
-    const questionResponse = await fetch(`${urlQuestion}/${idTheme}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(question),
-    });
+    const questionResponse = await questionService.insertQuestion(
+      question,
+      idTheme
+    );
     setLoading(false);
 
-    if (!questionResponse.ok) {
+    if (!questionResponse.success) {
+      setInformationBoxData((prevData) => {
+        return { ...prevData, text: questionResponse.message };
+      });
       setInformationBox(true);
       setLoading(false);
       return;
     }
 
-    const questionJson = await questionResponse.json();
-
-    postAllAltervatives(questionJson.id, token);
+    postAllAltervatives(questionResponse.data.id);
   }
 
-  async function postAllAltervatives(idQuestion, token) {
+  async function postAllAltervatives(idQuestion) {
     setLoading(true);
-    const alternativeResponse = await fetch(`${urlAlternative}/${idQuestion}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(alternatives),
-    });
+    const alternativeResponse = await alternativeService.insertAllAlternatives(
+      idQuestion,
+      alternatives
+    );
     setLoading(false);
 
-    if (!alternativeResponse.ok) {
+    if (!alternativeResponse.success) {
+      setInformationBoxData((prevData) => {
+        return { ...prevData, text: alternativeResponse.message };
+      });
       setInformationBox(true);
-      removeQuestion(idQuestion, token);
+      removeQuestion(idQuestion);
       setLoading(false);
       return;
     }
@@ -95,20 +127,19 @@ const CreateQuestions = () => {
     });
     setInformationBox(true);
     clearForm();
+    setCallback({});
   }
 
-  async function removeQuestion(idQuestion, token) {
+  async function removeQuestion(idQuestion) {
     setLoading(true);
-    const questionResponse = await fetch(`${urlQuestion}/${idQuestion}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const questionResponse = await questionService.removeQuestion(idQuestion);
     setLoading(false);
 
-    if (!questionResponse.ok) {
-      alert("Erro do servidor");
+    if (!questionResponse.success) {
+      setInformationBoxData((prevData) => {
+        return { ...prevData, text: questionResponse.message };
+      });
+      setInformationBox(true);
       setLoading(false);
     }
   }
@@ -142,8 +173,14 @@ const CreateQuestions = () => {
     localStorage.getItem("theme")
   );
 
+  function getUrlOfImage(urlOfImage) {
+    changeQuestion("imageUrl", urlOfImage);
+    setSearchImage(false);
+  }
+
   return (
     <div className="container-create-questions">
+      <QuestionListComponent questions={questions} setCallback={setCallback}/>
       <div className="container-create-questions-header">
         <div className="container-create-theme-info">
           <img
@@ -180,12 +217,20 @@ const CreateQuestions = () => {
             <input
               type="text"
               name="imageUrl"
-              placeholder="Insira a url da imagem"
+              placeholder="Pesquise a imagem na WEB ou insira a URL"
               value={question.imageUrl}
               onChange={(e) => changeQuestion("imageUrl", e.target.value)}
               maxLength={255}
             />
           </label>
+
+          <button
+            type="button"
+            className="create-question-btn"
+            onClick={() => setSearchImage(true)}
+          >
+            Pesquisar Imagem na WEB
+          </button>
         </div>
 
         <div className="container-alternatives">
@@ -220,8 +265,8 @@ const CreateQuestions = () => {
           ))}
         </div>
 
-        <button type="submit" className="btn-create-question">
-          Criar
+        <button type="submit" className="create-question-btn">
+          Criar Questão
         </button>
       </form>
 
@@ -232,6 +277,12 @@ const CreateQuestions = () => {
           color={informationBoxData.color}
           text={informationBoxData.text}
           icon={informationBoxData.icon}
+        />
+      )}
+      {showSearchImage && (
+        <SearchImage
+          setSearchImage={setSearchImage}
+          getUrlOfImage={getUrlOfImage}
         />
       )}
     </div>

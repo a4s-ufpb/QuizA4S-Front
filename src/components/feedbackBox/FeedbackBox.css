@@ -1,4 +1,5 @@
 .feedback-box {
+  width: 250px;
   position: fixed;
   top: 0;
   left: 50%;
@@ -9,6 +10,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   opacity: 0;
   animation: slideDown 2s ease-in-out forwards;
+  text-align: center;
 }
 
 @keyframes slideDown {
@@ -41,5 +43,5 @@
 }
 
 .feedback-box p {
-    font-size: 1.1em;
+  font-size: 1.1em;
 }
