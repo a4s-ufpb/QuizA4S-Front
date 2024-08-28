@@ -13,7 +13,7 @@ export class UserService {
       response.data = asyncResponse.data;
       response.success = true;
     } catch (error) {
-      response.message = error.response?.data.message || "Erro interno do servidor";
+      response.message = error.response?.data.message || "Erro interno do Servidor!";
     }
 
     return response;
