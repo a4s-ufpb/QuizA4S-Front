@@ -11,8 +11,8 @@
 }
 
 .update-box {
-  width: 400px;
-  height: 400px;
+  width: 500px;
+  height: 500px;
   background: linear-gradient(145deg, #0099ff, #0055cc);
   display: flex;
   align-items: center;
@@ -40,19 +40,21 @@
 }
 
 .update-box-input p {
+  text-align: left;
   font-size: 1.1em;
   color: #fff;
 }
 
-.update-box-input input {
-  height: 30px;
+.update-box-input textarea {
+  height: 60px;
   border: 2px solid #0099ff;
   border-radius: 5px;
   padding: 5px;
   outline: none;
+  resize: none;
 }
 
-.update-box-input input:focus{
+.update-box-input textarea:focus{
     border: 2px solid blue;
 }
 
@@ -93,7 +95,7 @@
   background-color: rgba(255, 0, 0, 0.7); 
 }
 
-@media (max-width: 450px) {
+@media (max-width: 550px) {
   .update-box {
     width: 90%;
   }

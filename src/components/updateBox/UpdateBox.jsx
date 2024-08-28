@@ -22,14 +22,14 @@ const UpdateBox = ({ title, inputs, onChange, onClickSave, onClickCancel }) => {
           inputs.map((input) => (
             <label className="update-box-input" key={input.label}>
               <p>{input.label}</p>
-              <input
+              <textarea
                 type={input.type}
                 placeholder={input.placeholder}
                 value={input.value}
                 onChange={(e) => onChange(e.target.value, input.label)}
                 maxLength={input.maxLength}
                 minLength={input.minLength}
-              />
+              ></textarea>
             </label>
           ))}
 

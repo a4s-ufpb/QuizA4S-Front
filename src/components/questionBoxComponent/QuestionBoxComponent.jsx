@@ -250,7 +250,7 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
 
       {isConfirmBox && (
         <ConfirmBox
-          title="Deseja Remover essa Questão"
+          title="Deseja Remover essa Questão?"
           textBtn1="Sim"
           textBtn2="Não"
           onClickBtn1={removeQuestion}
