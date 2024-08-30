@@ -3,10 +3,9 @@ import ConfirmBox from "../confirmBox/ConfirmBox";
 import UpdateBox from "../updateBox/UpdateBox";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
-import { DEFAULT_IMG } from "../../vite-env";
 import { UserService } from "../../service/UserService";
 
-import "./UserTemplate.css"
+import "./UserTemplate.css";
 
 function UserTemplate({ users, setUsers, setCurrentPage, setCallBack }) {
   const userService = new UserService();
@@ -26,10 +25,12 @@ function UserTemplate({ users, setUsers, setCurrentPage, setCallBack }) {
   const [userId, setUserId] = useState(0);
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
   const inputs = [
     {
-      label: "Novo nome",
+      label: "Novo nome:",
       type: "text",
       placeholder: "Digite seu novo nome",
       value: newName,
@@ -37,12 +38,28 @@ function UserTemplate({ users, setUsers, setCurrentPage, setCallBack }) {
       minLength: 3,
     },
     {
-      label: "Email",
+      label: "Email:",
       type: "text",
       placeholder: "Digite seu novo email",
       value: newEmail,
       maxLength: 100,
       minLength: 0,
+    },
+    {
+      label: "Nova senha:",
+      type: "password",
+      placeholder: "Digite sua nova senha",
+      value: newPassword,
+      maxLength: 20,
+      minLength: 8,
+    },
+    {
+      label: "Confirmar senha:",
+      type: "password",
+      placeholder: "Digite novamente sua nova senha",
+      value: confirmNewPassword,
+      maxLength: 20,
+      minLength: 8,
     },
   ];
 
@@ -70,7 +87,7 @@ function UserTemplate({ users, setUsers, setCurrentPage, setCallBack }) {
       return;
     }
 
-    setUsers(users.filter((user) => userId !== user.uuid))
+    setUsers(users.filter((user) => userId !== user.uuid));
     setCurrentPage(0);
     activeInformationBox(false, "Usuário removido com sucesso!");
     setConfirmBox(false);
@@ -81,25 +98,82 @@ function UserTemplate({ users, setUsers, setCurrentPage, setCallBack }) {
     imageUrl: newEmail,
   };
 
+  const userPassword = {
+    newPassword: newPassword,
+    confirmNewPassword: confirmNewPassword,
+  };
+
   async function updateUser() {
     setLoading(true);
-    const response = await userService.updateUser(userId, newUser);
-    setLoading(false);
+    try {
+      const responseUserUpdate = await userService.updateUser(userId, newUser);
+      
+      if (!responseUserUpdate.success) {
+        activeInformationBox(true, responseUserUpdate.message);
+        return;
+      }
+  
+      let responseUserPassword = { success: true };
+  
+      if (newPassword && confirmNewPassword) {
+        const validatePasswordResponse = validatePassword(newPassword, confirmNewPassword);
 
-    if (!response.success) {
-      activeInformationBox(true, response.message);
-      return;
+        if(!validatePasswordResponse.valid) {
+          activeInformationBox(true, validatePasswordResponse.message);
+          return;
+        }
+
+        responseUserPassword = await userService.updatePassword(userId, userPassword);
+        
+        if (!responseUserPassword.success) {
+          activeInformationBox(true, responseUserPassword.message);
+          return;
+        }
+      }
+  
+      activeInformationBox(false, "Usuário atualizado com sucesso");
+      setCallBack({});
+      setUpdateBox(false);
+      
+    } catch (error) {
+      activeInformationBox(true, "Erro ao atualizar usuário. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
-
-    activeInformationBox(false, "Usuário atualizado com sucesso");
-    setCallBack({});
-    setUpdateBox(false);
   }
 
+  function validatePassword(newPassword, confirmNewPassword) {
+    let validAndMessage = {
+      valid: true,
+      message: "",
+    };
+
+    if (newPassword != confirmNewPassword) {
+      validAndMessage.valid = false;
+      validAndMessage.message = "Senhas diferentes";
+    } else if (newPassword.length < 8 || newPassword.length > 20) {
+      validAndMessage.valid = false;
+      validAndMessage.message = "A senha deve conter de 8 a 20 caracteres";
+    } else if (
+      confirmNewPassword.length < 8 ||
+      confirmNewPassword.length > 20
+    ) {
+      validAndMessage.valid = false;
+      validAndMessage.message = "A senha deve conter de 8 a 20 caracteres";
+    }
+
+    return validAndMessage;
+  }
+  
   function activeInformationBox(isFail, message) {
     if (isFail) {
       setInformationData((prevData) => {
-        return { ...prevData, text: message, color: "red", icon: "exclamation"  };
+        return {
+          ...prevData,
+          text: message,
+          color: "red",
+          icon: "exclamation",
+        };
       });
       setInformationBox(true);
     } else {
@@ -112,12 +186,18 @@ function UserTemplate({ users, setUsers, setCurrentPage, setCallBack }) {
 
   function changeValue(value, label) {
     switch (label) {
-      case "Novo nome":
+      case "Novo nome:":
         setNewName(value);
         return;
-      case "Novo email":
+      case "Novo email:":
         setNewEmail(value);
         return;
+      case "Nova senha:":
+        setNewPassword(value);
+        break;
+      case "Confirmar senha:":
+        setConfirmNewPassword(value);
+        break;
       default:
         return "";
     }
@@ -136,15 +216,11 @@ function UserTemplate({ users, setUsers, setCurrentPage, setCallBack }) {
             <div className="user-action">
               <i
                 className="bi bi-trash-fill"
-                onClick={() =>
-                  showConfirmBox(user.uuid, user.name, user.email)
-                }
+                onClick={() => showConfirmBox(user.uuid, user.name, user.email)}
               ></i>
               <i
                 className="bi bi-pencil-square"
-                onClick={() =>
-                  showUpdateBox(user.uuid, user.name, user.email)
-                }
+                onClick={() => showUpdateBox(user.uuid, user.name, user.email)}
               ></i>
             </div>
           </div>

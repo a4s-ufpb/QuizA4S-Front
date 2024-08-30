@@ -12,7 +12,7 @@
 
 .update-box {
   width: 500px;
-  height: 500px;
+  height: 80%;
   background: linear-gradient(145deg, #0099ff, #0055cc);
   display: flex;
   align-items: center;
@@ -45,13 +45,21 @@
   color: #fff;
 }
 
-.update-box-input textarea {
-  height: 60px;
+.update-box-input textarea,
+.update-box-input input {
   border: 2px solid #0099ff;
   border-radius: 5px;
   padding: 5px;
   outline: none;
   resize: none;
+}
+
+.update-box-input textarea {
+  height: 60px;
+}
+
+.update-box-input input {
+  height: 30px;
 }
 
 .update-box-input textarea:focus{
