@@ -15,21 +15,16 @@ const Question = ({
   const [isImageValid, setImageValid] = useState(false);
 
   useEffect(() => {
-    async function getImage() {
-      const questionImgUrl = String(questionImg).trim();
-      if (
-        questionImgUrl == "" ||
-        questionImgUrl == null ||
-        questionImgUrl == undefined
-      ) {
-        setImageValid(false);
-        return;
-      }
-
-      setImageValid(true);
+    if (
+      questionImg == "" ||
+      questionImg == null ||
+      questionImg == undefined
+    ) {
+      setImageValid(false);
+      return;
     }
 
-    getImage();
+    setImageValid(true);
   }, [questionImg]);
 
   return (
