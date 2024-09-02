@@ -56,15 +56,7 @@ const CreateQuestions = () => {
       );
 
       if (!questionResponse.success) {
-        setInformationBoxData((prevData) => {
-          return {
-            ...prevData,
-            color: "red",
-            text: questionResponse.message,
-            icon: "exclamation",
-          };
-        });
-        setInformationBox(true);
+        activeInformationBox(true, questionResponse.message);
         return;
       }
 
@@ -95,10 +87,7 @@ const CreateQuestions = () => {
     setLoading(false);
 
     if (!questionResponse.success) {
-      setInformationBoxData((prevData) => {
-        return { ...prevData, text: questionResponse.message };
-      });
-      setInformationBox(true);
+      activeInformationBox(true, questionResponse.message);
       setLoading(false);
       return;
     }
@@ -115,24 +104,13 @@ const CreateQuestions = () => {
     setLoading(false);
 
     if (!alternativeResponse.success) {
-      setInformationBoxData((prevData) => {
-        return { ...prevData, text: alternativeResponse.message };
-      });
-      setInformationBox(true);
+      activeInformationBox(true, alternativeResponse.message);
       removeQuestion(idQuestion);
       setLoading(false);
       return;
     }
 
-    setInformationBoxData((prevData) => {
-      return {
-        ...prevData,
-        color: "green",
-        text: "Questão criada com sucesso",
-        icon: "check",
-      };
-    });
-    setInformationBox(true);
+    activeInformationBox(false, "Questão criada com sucesso!");
     clearForm();
     setCallback({});
   }
@@ -143,10 +121,7 @@ const CreateQuestions = () => {
     setLoading(false);
 
     if (!questionResponse.success) {
-      setInformationBoxData((prevData) => {
-        return { ...prevData, text: questionResponse.message };
-      });
-      setInformationBox(true);
+      activeInformationBox(true, questionResponse.message);
       setLoading(false);
     }
   }
@@ -186,17 +161,35 @@ const CreateQuestions = () => {
   }
 
   async function generateQuestion() {
-    setLoading(true);
-    
-    const questionResponse = await geminiService.generateQuestion(themeName);
+    try {
+      setLoading(true);
 
-    setLoading(false);
+      const questionResponse = await geminiService.generateQuestion(themeName);
 
-    question.title = questionResponse.title
+      question.title = questionResponse.title;
 
-    setAlternatives(questionResponse.alternatives)
+      setAlternatives(questionResponse.alternatives);
+      
+    } catch (error) {
+      activeInformationBox(true, "Tente novamente mais tarde!");
+    } finally {
+      setLoading(false);
+      setConfirmBox(false);
+    }
+  }
 
-    setConfirmBox(false)
+  function activeInformationBox(isFail, message) {
+    if (isFail) {
+      setInformationBoxData((prevData) => {
+        return { ...prevData, text: message, color: "red", icon: "exclamation"};
+      });
+      setInformationBox(true);
+    } else {
+      setInformationBoxData((prevData) => {
+        return { ...prevData, text: message, color: "green", icon: "check" };
+      });
+      setInformationBox(true);
+    }
   }
 
   return (
