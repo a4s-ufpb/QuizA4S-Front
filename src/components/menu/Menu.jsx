@@ -20,10 +20,6 @@ const Menu = ({ setMenu, isAuth }) => {
     navigate("/login");
   }
 
-  function createQuiz() {
-    navigate("/create/quiz");
-  }
-
   return (
     <div className="menu">
       <div className="container-btn-fechar">
@@ -40,8 +36,11 @@ const Menu = ({ setMenu, isAuth }) => {
           <button type="button" onClick={() => handleButtonClick(() => navigate("/profile"))}>
             Meu Perfil
           </button>
-          <button type="button" onClick={() => handleButtonClick(createQuiz)}>
+          <button type="button" onClick={() => handleButtonClick(() => navigate("/create/quiz"))}>
             Criar Quiz
+          </button>
+          <button type="button" onClick={() => handleButtonClick(() => navigate("/ranking"))}>
+            Ranking
           </button>
           <button type="button" onClick={() => handleButtonClick(logout)}>
             Sair

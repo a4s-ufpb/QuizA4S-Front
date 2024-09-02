@@ -37,7 +37,7 @@ const ThemeMenu = ({ setThemeMenu }) => {
 
     if (!token) return;
 
-    themeRequest.imageUrl = inputImageUrl.value
+    themeRequest.imageUrl = inputImageUrl.value;
     postTheme(token, themeRequest);
   }
 
@@ -104,7 +104,7 @@ const ThemeMenu = ({ setThemeMenu }) => {
     register,
     handleSubmit: onSubmit,
     formState: { errors },
-  } = useForm({resolver: yupResolver(schema)});
+  } = useForm({ resolver: yupResolver(schema) });
 
   return (
     <div className="theme-menu">
@@ -136,14 +136,24 @@ const ThemeMenu = ({ setThemeMenu }) => {
             placeholder="Digite ou Pesquise a URL da imagem"
             {...register("imageUrl")}
           />
-          <span className="span-error-message">{errors?.imageUrl?.message}</span>
+          <span className="span-error-message">
+            {errors?.imageUrl?.message}
+          </span>
         </label>
 
-        <button type="button" className="theme-menu-btn" onClick={() => setSearchImage(true)}>
+        <button
+          type="button"
+          className="theme-menu-btn"
+          onClick={() => setSearchImage(true)}
+        >
           Pesquisar Imagem na Web
         </button>
 
-        <button type="button" className="theme-menu-btn" onClick={onSubmit(handleSubmit)}>
+        <button
+          type="button"
+          className="theme-menu-btn"
+          onClick={onSubmit(handleSubmit)}
+        >
           Criar
         </button>
 
@@ -156,7 +166,12 @@ const ThemeMenu = ({ setThemeMenu }) => {
           />
         )}
         {loadin && <Loading />}
-        {searchImage && <SearchImage setSearchImage={setSearchImage} getUrlOfImage={getUrlOfImage}/>}
+        {searchImage && (
+          <SearchImage
+            setSearchImage={setSearchImage}
+            getUrlOfImage={getUrlOfImage}
+          />
+        )}
       </form>
     </div>
   );

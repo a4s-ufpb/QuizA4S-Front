@@ -100,7 +100,7 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
         </div>
       </div>
 
-      {activeRanking && <Ranking />}
+      {activeRanking && <Ranking navigatePath={"/theme"} setShowRanking={setActiveRanking}/>}
 
       {loading && <Loading />}
 

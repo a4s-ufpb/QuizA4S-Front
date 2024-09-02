@@ -15,7 +15,7 @@ const SelectTheme = () => {
   return (
     <div className="container-select-theme">
 
-      <ThemeTemplate path={path} onClickFunction={showCreateQuestion} />
+      <ThemeTemplate path={path} onClickFunction={showCreateQuestion} title="Escolha o Tema de suas Questões"/>
 
     </div>
   );

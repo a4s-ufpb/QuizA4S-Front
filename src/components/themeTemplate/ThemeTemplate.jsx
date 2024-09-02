@@ -9,7 +9,7 @@ import { ApiFetch } from "../../util/ApiFetch";
 //Css
 import "./ThemeTemplate.css";
 
-const ThemeTemplate = ({ path, onClickFunction }) => {
+const ThemeTemplate = ({ path, onClickFunction, title }) => {
   const apiFetch = new ApiFetch();
 
   const [themes, setThemes] = useState([]);
@@ -49,7 +49,7 @@ const ThemeTemplate = ({ path, onClickFunction }) => {
   return (
     <div className="container-theme outlet">
       <SearchComponent
-        title="Escolha o tema do seu Quiz"
+        title={title}
         url={`${path}?page=${currentPage}&name=`}
         placeholder="Digite o nome de um tema"
         onSearch={changeName}
