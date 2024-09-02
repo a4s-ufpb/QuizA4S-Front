@@ -1,3 +1,4 @@
+/* Estilos gerais da tabela de ranking */
 .container-ranking {
   position: fixed;
   width: 100%;
@@ -14,8 +15,8 @@
 .ranking {
   width: 500px;
   height: 600px;
-  background: linear-gradient(145deg, #0099ff, #0055cc);
-  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, #0066ab, #0048ac);
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
   border-radius: 15px;
   padding: 20px;
   display: flex;
@@ -25,7 +26,7 @@
   gap: 2em;
 }
 
-.ranking-header{
+.ranking-header {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,12 +35,12 @@
   gap: 1.2em;
 }
 
-.ranking-header h2{
+.ranking-header h2 {
   font-size: 2.2em;
   color: #fff;
 }
 
-.ranking-header p{
+.ranking-header p {
   color: #fff;
   background-color: #0055cc;
   padding: 2px 10px;
@@ -59,48 +60,96 @@
   color: #001635;
 }
 
-.table-ranking td{
+.table-ranking td {
   font-size: 1.1em;
 }
 
-.table-ranking th:first-child{
+.table-ranking th:first-child {
   width: 80%;
   text-align: left;
 }
 
-.table-ranking th:last-child{
+.table-ranking th:last-child {
   width: 20%;
   border: none;
 }
 
-.table-ranking td:first-child{
+.table-ranking td:first-child {
   text-align: left;
 }
 
-.table-ranking td:last-child{
+.table-ranking td:last-child {
   text-align: center;
   border: none;
 }
 
 .table-ranking th,
 .table-ranking td {
-  border-right: 1px solid #001635;
+  border-right: 1px solid #fff;
   padding: 10px;
+  color: #fff;
 }
 
 .table-ranking th {
-  background-color: #fff;
+  background-color: #0099ff;
+  
 }
 
 .table-ranking tr:nth-child(even) {
-  background-color: #eee;
+  background-color: #0099ff;
 }
 
 .table-ranking tr:nth-child(odd) {
-  background-color: #dbdbdb;
+  background-color: #006aff;
 }
 
-.ranking button{
+.rank-icon {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  border-radius: 50%;
+  font-weight: bold;
+  color: #fff;
+  margin-right: 10px;
+}
+
+.rank-1 {
+  background-color: #ffd700;
+}
+
+.rank-2 {
+  background-color: #c0c0c0;
+}
+
+.rank-3 {
+  background-color: #cd7f32;
+}
+
+.ranking-not-found {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.ranking-not-found h2 {
+  max-width: 90%;
+  text-align: center;
+  background-color: #fff;
+  padding: 5px;
+  border-radius: 5px;
+  color: #0055cc;
+}
+
+.ranking-not-found img {
+  width: 150px;
+  height: 150px;
+  border-radius: 5px;
+}
+
+.ranking button {
   width: 120px;
   height: 40px;
   border-radius: 5px;
@@ -113,16 +162,17 @@
   transition: 0.3s ease-in-out;
 }
 
-.ranking button:hover{
+.ranking button:hover {
   background-color: #f0f0f0de;
 }
 
-@media(max-width: 550px){
+/* Estilos responsivos */
+@media (max-width: 550px) {
   .ranking {
     width: 95%;
   }
 
-  .table-ranking td{
+  .table-ranking td {
     font-size: 1em;
   }
 }

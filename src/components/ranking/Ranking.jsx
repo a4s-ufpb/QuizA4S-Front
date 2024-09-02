@@ -2,11 +2,11 @@ import { useNavigate } from "react-router-dom";
 import Loading from "../loading/Loading";
 import { useEffect, useState } from "react";
 import { ScoreService } from "./../../service/ScoreService";
+import ImageNotFound from "../../assets/data-not-found.webp";
 
 import "./Ranking.css";
-import NotFoundComponent from "../notFound/NotFoundComponent";
 
-const Ranking = ( {navigatePath, setShowRanking} ) => {
+const Ranking = ({ navigatePath, setShowRanking }) => {
   const scoreService = new ScoreService();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -52,16 +52,23 @@ const Ranking = ( {navigatePath, setShowRanking} ) => {
         <div className="table-ranking">
           <table>
             <thead>
-              <tr>
-                <th>Usuário</th>
-                <th>Pontuação</th>
-              </tr>
+              {ranking && ranking.length > 0 && (
+                <tr>
+                  <th>Usuário</th>
+                  <th>Pontuação</th>
+                </tr>
+              )}
             </thead>
             <tbody>
               {ranking &&
-                ranking.map((score) => (
+                ranking.map((score, index) => (
                   <tr key={score.id}>
-                    <td>{score.user.name}</td>
+                    <td>
+                      <span className={`rank-icon rank-${index + 1}`}>
+                        {index + 1}
+                      </span>
+                      {score.user.name}
+                    </td>
                     <td>{score.result}</td>
                   </tr>
                 ))}
@@ -69,7 +76,17 @@ const Ranking = ( {navigatePath, setShowRanking} ) => {
           </table>
         </div>
 
-        {isNotFound && <h2>Nenhuma pontuação cadastrada</h2>}
+        {isNotFound && (
+          <div className="ranking-not-found">
+            <h2>Nenhuma pontuação cadastrada!</h2>
+            <img
+              src={ImageNotFound}
+              alt="image-not-found"
+              width={150}
+              height={150}
+            />
+          </div>
+        )}
 
         <button type="button" onClick={closeRanking}>
           Voltar
