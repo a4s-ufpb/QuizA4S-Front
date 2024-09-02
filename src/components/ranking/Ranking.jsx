@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { ScoreService } from "./../../service/ScoreService";
 
 import "./Ranking.css";
+import NotFoundComponent from "../notFound/NotFoundComponent";
 
-const Ranking = () => {
+const Ranking = ( {navigatePath, setShowRanking} ) => {
   const scoreService = new ScoreService();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -33,6 +34,11 @@ const Ranking = () => {
     }
     fetchData();
   }, []);
+
+  function closeRanking() {
+    setShowRanking(false); // muda o estado do ranking
+    navigate(navigatePath);
+  }
 
   return (
     <div className="container-ranking">
@@ -65,7 +71,7 @@ const Ranking = () => {
 
         {isNotFound && <h2>Nenhuma pontuação cadastrada</h2>}
 
-        <button type="button" onClick={() => navigate("/theme")}>
+        <button type="button" onClick={closeRanking}>
           Voltar
         </button>
       </div>
