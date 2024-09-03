@@ -6,6 +6,7 @@ import "./QuizFinished.css";
 import { ScoreService } from './../../service/ScoreService';
 import { useNavigate } from "react-router-dom";
 import InformationBox from "../informationBox/InformationBox"
+import { HIT_VALUE, REDUCE_VALUE } from "../../vite-env";
 
 const QuizFinished = ({ percentage, restart, score, time }) => {
 
@@ -21,8 +22,8 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
   const navigate = useNavigate();
 
   function calculateResult() {
-    const hitValue = 97.45;
-    const reduceValue = 1.26;
+    const hitValue = HIT_VALUE;
+    const reduceValue = REDUCE_VALUE;
     const result = (score * hitValue) - (time * reduceValue);
     if (result < 0) return 0.0;
     return result.toFixed(2);
