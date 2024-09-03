@@ -4,6 +4,8 @@ import Ranking from "../ranking/Ranking";
 import ConfirmBox from "../confirmBox/ConfirmBox";
 import "./QuizFinished.css";
 import { ScoreService } from './../../service/ScoreService';
+import { useNavigate } from "react-router-dom";
+import InformationBox from "../informationBox/InformationBox"
 
 const QuizFinished = ({ percentage, restart, score, time }) => {
 
@@ -11,15 +13,18 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
 
   const [loading, setLoading] = useState(false);
   const [confirmBox, setConfirmBox] = useState(false);
+  const [informationBox, setInformationBox] = useState(false);
   const isAuth = localStorage.getItem("token");
 
   const [activeRanking, setActiveRanking] = useState(false);
+
+  const navigate = useNavigate();
 
   function calculateResult() {
     const hitValue = 97.45;
     const reduceValue = 1.26;
     const result = (score * hitValue) - (time * reduceValue);
-    if(result < 0) return 0.0;
+    if (result < 0) return 0.0;
     return result.toFixed(2);
   }
 
@@ -28,16 +33,27 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
     totalTime: time,
   };
 
-  function saveResult() {
+  async function saveResult() {
     const { uuid: userId } = JSON.parse(localStorage.getItem("user"));
     const { id: themeId } = JSON.parse(localStorage.getItem("theme"));
 
     setConfirmBox(false);
 
     setLoading(true);
-    scoreService.insertScore(scoreRequest, userId, themeId);
+    const scoreResponse = await scoreService.insertScore(scoreRequest, userId, themeId);
     setLoading(false);
-    setActiveRanking(true);
+
+    if(scoreResponse.success) {
+      setActiveRanking(true);
+      return;
+    }
+    
+    setInformationBox(true);
+  }
+
+  function closeBox() {
+    setConfirmBox(false);
+    navigate("/theme");
   }
 
   return (
@@ -100,7 +116,7 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
         </div>
       </div>
 
-      {activeRanking && <Ranking navigatePath={"/theme"} setShowRanking={setActiveRanking}/>}
+      {activeRanking && <Ranking navigatePath={"/theme"} setShowRanking={setActiveRanking} />}
 
       {loading && <Loading />}
 
@@ -110,11 +126,17 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
           textBtn1="Sim"
           textBtn2="Não"
           onClickBtn1={saveResult}
-          onClickBtn2={() => {
-            setConfirmBox(false);
-            setActiveRanking(true);
-          }}
+          onClickBtn2={closeBox}
         />
+      )}
+
+      {informationBox && (
+        <InformationBox
+        text="Tente novamente mais tarde!"
+        closeBox={setInformationBox}
+        color="red"
+        icon="exclamation"
+      />
       )}
     </div>
   );
