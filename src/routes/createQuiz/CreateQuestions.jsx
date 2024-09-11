@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { DEFAULT_IMG } from "../../vite-env";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
@@ -19,12 +19,9 @@ const CreateQuestions = () => {
 
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
-  const [callback, setCallback] = useState({});
 
   const [showMessageRobot, setMessageRobot] = useState(false);
   const [confirmBox, setConfirmBox] = useState(false);
-
-  const [questions, setQuestions] = useState([]);
 
   const [showSearchImage, setSearchImage] = useState(false);
 
@@ -47,30 +44,6 @@ const CreateQuestions = () => {
     { text: "", correct: false },
     { text: "", correct: false },
   ]);
-
-  async function fetchData() {
-    try {
-      setLoading(true);
-      const questionResponse = await questionService.findAllQuestionsByTheme(
-        idTheme
-      );
-
-      if (!questionResponse.success) {
-        activeInformationBox(true, questionResponse.message);
-        return;
-      }
-
-      setQuestions(questionResponse.data);
-    } catch (error) {
-      setQuestions([]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchData();
-  }, [callback]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -112,7 +85,6 @@ const CreateQuestions = () => {
 
     activeInformationBox(false, "Questão criada com sucesso!");
     clearForm();
-    setCallback({});
   }
 
   async function removeQuestion(idQuestion) {
@@ -194,7 +166,7 @@ const CreateQuestions = () => {
 
   return (
     <div className="container-create-questions">
-      <QuestionListComponent questions={questions} setCallback={setCallback} />
+      <QuestionListComponent />
 
       <div className="container-create-questions-header">
         <div

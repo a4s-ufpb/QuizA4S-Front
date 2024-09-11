@@ -2,11 +2,16 @@ import { useState } from "react";
 import UpdateBox from "../../components/updateBox/UpdateBox";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
-import { AlternativeService } from './../../service/AlternativeService';
+import { AlternativeService } from "./../../service/AlternativeService";
 
 import "./MyAlternative.css";
 
-const MyAlternative = ({ alternatives, setShowAlternatives, setCallBack }) => {
+const MyAlternative = ({
+  alternatives,
+  setShowAlternatives,
+  setCallBack,
+  setAlternatives,
+}) => {
   const alternativeService = new AlternativeService();
 
   const alternativeList = ["A", "B", "C", "D"];
@@ -68,13 +73,21 @@ const MyAlternative = ({ alternatives, setShowAlternatives, setCallBack }) => {
 
   async function updateAlternative() {
     setLoading(true);
-    const response = await alternativeService.updateAlternative(alternativeId, {text: newResponse})
+    const response = await alternativeService.updateAlternative(alternativeId, {
+      text: newResponse,
+    });
     setLoading(false);
 
     if (!response.success) {
       activeInformationBox(true, response.message);
       return;
     }
+
+    setAlternatives((prevAlternatives) => {
+      return prevAlternatives.map((alt) =>
+        alt.id === alternativeId ? { ...alt, text: response.data.text } : alt
+      );
+    });
 
     setCallBack({});
     activeInformationBox(false, "Alternativa atualizada com sucesso!");

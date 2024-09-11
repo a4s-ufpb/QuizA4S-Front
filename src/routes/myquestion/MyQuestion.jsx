@@ -276,6 +276,7 @@ const MyQuestion = () => {
       {isShowAlternatives && (
         <MyAlternative
           alternatives={alternatives}
+          setAlternatives={setAlternatives}
           setShowAlternatives={setShowAlternatives}
           setCallBack={setCallBack}
         />

@@ -9,7 +9,7 @@ import { BsPencilSquare } from "react-icons/bs";
 import ConfirmBox from "../confirmBox/ConfirmBox";
 import { DEFAULT_IMG } from "../../vite-env";
 
-function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
+function QuestionBoxComponent({ setQuestionBox, question, setCallback, setQuestion }) {
   const alternativeService = new AlternativeService();
   const questionService = new QuestionService();
   const alternativesList = ["A", "B", "C", "D"];
@@ -35,6 +35,7 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
   ];
 
   const [newQuestion, setNewQuestion] = useState({
+    id: 0,
     title: "",
     imageUrl: "",
   });
@@ -136,6 +137,16 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
       return;
     }
 
+    setQuestion((prevQuestion) => {
+      return {
+        ...prevQuestion,
+        alternatives: prevQuestion.alternatives.map((alt) => 
+          alt.id === alternativeId 
+            ? { ...alt, text: response.data.text } // Atualiza o texto da alternativa
+            : alt // Mantém as outras alternativas inalteradas
+        ),
+      };
+    });
     setCallback({});
     activeInformationBox(false, "Alternativa atualizada com sucesso!");
     setUpdateBoxAlternative(false);
@@ -144,7 +155,7 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
 
   async function updateQuestion() {
     setLoading(true);
-    const response = await questionService.updateQuestion(question.id , newQuestion);
+    const response = await questionService.updateQuestion(newQuestion.id , newQuestion);
 
     if (!response.success) {
       activeInformationBox(true, response.message);
@@ -152,9 +163,11 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
       return;
     }
 
+    console.log(response.data)
     setCallback({});
+    setQuestion(response.data);
     activeInformationBox(false, "Questão atualizada com sucesso!");
-    setUpdateBoxAlternative(false);
+    setUpdateBoxQuestion(false);
     setLoading(false);
   }
 
