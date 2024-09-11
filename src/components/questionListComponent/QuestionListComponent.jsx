@@ -2,6 +2,7 @@ import { BsCaretRightSquareFill } from "react-icons/bs";
 import QuestionBoxComponent from "../questionBoxComponent/QuestionBoxComponent";
 import "./QuestionListComponent.css";
 import { useState, useEffect } from "react";
+import { DEFAULT_IMG } from "../../vite-env";
 
 function QuestionListComponent({ questions, setCallback }) {
   const [showQuestionBox, setQuestionBox] = useState(false);
@@ -55,7 +56,7 @@ function QuestionListComponent({ questions, setCallback }) {
                   <img src={question.imageUrl} width={55} height={55} />
                 )}
 
-                {!question.imageUrl && <div className="default-image"></div>}
+                {!question.imageUrl && <img src={DEFAULT_IMG} width={55} height={55}/>}
 
                 <div className="container-question-list-alternatives">
                   {question.alternatives &&

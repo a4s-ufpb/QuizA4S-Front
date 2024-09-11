@@ -5,8 +5,9 @@ import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
 import { AlternativeService } from "./../../service/AlternativeService";
 import { QuestionService } from "./../../service/QuestionService";
-import { BsTrash } from "react-icons/bs";
+import { BsPencilSquare } from "react-icons/bs";
 import ConfirmBox from "../confirmBox/ConfirmBox";
+import { DEFAULT_IMG } from "../../vite-env";
 
 function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
   const alternativeService = new AlternativeService();
@@ -24,7 +25,7 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
 
   const alternativeInputs = [
     {
-      label: "Nova resposta",
+      label: "Nova resposta:",
       type: "text",
       placeholder: "Digite sua resposta",
       value: newResponse,
@@ -34,14 +35,13 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
   ];
 
   const [newQuestion, setNewQuestion] = useState({
-    id: 0,
     title: "",
     imageUrl: "",
   });
 
   const questionInputs = [
     {
-      label: "Novo título",
+      label: "Novo título:",
       type: "text",
       placeholder: "Digite o título da questão",
       value: newQuestion.title,
@@ -49,7 +49,7 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
       minLength: 4,
     },
     {
-      label: "URL da Imagem",
+      label: "URL da Imagem:",
       type: "text",
       placeholder: "Digite a url da imagem",
       value: newQuestion.imageUrl,
@@ -80,9 +80,19 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
 
   function changeValue(value, label) {
     switch (label) {
-      case "Nova resposta":
+      case "Nova resposta:":
         setResponse(value);
-        return;
+        break;
+      case "Novo título:":
+        setNewQuestion((prevQuestion) => {
+          return { ...prevQuestion, title: value };
+        });
+        break;
+      case "URL da Imagem:":
+        setNewQuestion((prevQuestion) => {
+          return { ...prevQuestion, imageUrl: value };
+        });
+        break;
       default:
         return "";
     }
@@ -134,9 +144,7 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
 
   async function updateQuestion() {
     setLoading(true);
-    const response = await alternativeService.updateAlternative(alternativeId, {
-      text: newResponse,
-    });
+    const response = await questionService.updateQuestion(question.id , newQuestion);
 
     if (!response.success) {
       activeInformationBox(true, response.message);
@@ -176,32 +184,38 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback }) {
           X
         </span>
 
-        <div className="question-box-options">
-          <i
-            className="bi bi-pencil-square"
-            onClick={() =>
-              showUpdateQuestioneBox(
-                question.id,
-                question.title,
-                question.imageUrl
-              )
-            }
-          ></i>
-          <BsTrash
-            onClick={() =>
-              showConfirmBox(question.id, question.title, question.imageUrl)
-            }
-          />
-        </div>
-
         <div className="question-box-header">
-          <h2>{question?.title}</h2>
-          <img src={question.imageUrl} alt="" width={300} height={250} />
+          <div>
+            <h2>{question?.title}</h2>
+          </div>
+          <div className="question-box-header-img">
+            {question.imageUrl && (
+              <img src={question.imageUrl} alt="" width={300} height={250} />
+            )}
+            {!question.imageUrl && (
+              <img src={DEFAULT_IMG} alt="" width={300} height={250} />
+            )}
+            <BsPencilSquare
+              className="question-box-header-icon"
+              onClick={() =>
+                showUpdateQuestioneBox(
+                  question.id,
+                  question.title,
+                  question.imageUrl
+                )
+              }
+            />
+          </div>
         </div>
         <div className="question-box-body">
           {question.alternatives &&
             question.alternatives.map((alternative, index) => (
-              <div key={alternative.id} className="question-box-data">
+              <div
+                key={alternative.id}
+                className={`question-box-data ${
+                  alternative.correct ? "correct" : ""
+                }`}
+              >
                 <span className="alternative-letter">
                   {alternativesList[index]}
                 </span>
