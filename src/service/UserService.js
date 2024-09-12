@@ -31,8 +31,8 @@ export class UserService {
     return this.handleRequest("get", `/user/find/${userId}`);
   }
 
-  findAllUsers(userId) {
-    return this.handleRequest("get", `/user/all/${userId}`);
+  findAllUsers(userId, currentPage, name) {
+    return this.handleRequest("get", `/user/all/${userId}?page=${currentPage}&name=${name}`);
   }
 
   async removeUser(userId, isAdmin = false) {

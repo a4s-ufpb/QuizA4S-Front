@@ -29,7 +29,7 @@ const FilterComponent = ({
 
   async function filterResponses() {
     if (onData) {
-      onData(data);
+      onData(data); // Invoca a função no componente pai que altera o estado dos parâmetros
     }
 
     setLoading(true);
