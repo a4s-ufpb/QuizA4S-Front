@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Loading from "../loading/Loading";
 import Ranking from "../ranking/Ranking";
 import ConfirmBox from "../confirmBox/ConfirmBox";
@@ -7,10 +7,12 @@ import { ScoreService } from './../../service/ScoreService';
 import { useNavigate } from "react-router-dom";
 import InformationBox from "../informationBox/InformationBox"
 import { HIT_VALUE, REDUCE_VALUE } from "../../vite-env";
+import { StatisticService } from "../../service/StatisticService";
 
 const QuizFinished = ({ percentage, restart, score, time }) => {
 
   const scoreService = new ScoreService();
+  const statisticService = new StatisticService();
 
   const [loading, setLoading] = useState(false);
   const [confirmBox, setConfirmBox] = useState(false);
@@ -20,6 +22,40 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
   const [activeRanking, setActiveRanking] = useState(false);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let user;
+    let theme;
+
+    if(isLoggedUser()) {
+      user  = JSON.parse(localStorage.getItem("user"));
+      theme  = JSON.parse(localStorage.getItem("theme"));
+    }
+    
+    const statistic = {
+      studentName: user.name,
+      themeName: theme.name,
+      percentagemOfHits: percentage
+    }
+
+    saveStatistic(statistic);
+
+  }, []);
+
+  function saveStatistic(statistic) {
+    try {
+      setLoading(true);
+
+      statisticService.insertStatistic(statistic);
+
+    } catch (error) {
+      console.error(error);
+      setInformationBox(true);
+      return;
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function calculateResult() {
     const hitValue = HIT_VALUE;
@@ -35,9 +71,14 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
   };
 
   async function saveResult() {
-    const { uuid: userId } = JSON.parse(localStorage.getItem("user"));
-    const { id: themeId } = JSON.parse(localStorage.getItem("theme"));
+    let userId;
+    let themeId;
 
+    if(isLoggedUser()) {
+      userId  = JSON.parse(localStorage.getItem("user")).uuid;
+      themeId  = JSON.parse(localStorage.getItem("theme")).id;
+    }
+    
     setConfirmBox(false);
 
     setLoading(true);
@@ -50,6 +91,10 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
     }
     
     setInformationBox(true);
+  }
+
+  function isLoggedUser() {
+    return localStorage.getItem("user") && localStorage.getItem("theme");
   }
 
   function closeBox() {
