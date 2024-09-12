@@ -5,7 +5,7 @@ export class ResponseService {
     const response = {
       data: {},
       message: "",
-      success: false
+      success: false,
     };
 
     try {
@@ -13,14 +13,18 @@ export class ResponseService {
       response.data = asyncResponse.data;
       response.success = true;
     } catch (error) {
-      response.message = error.response?.data.message || "Erro interno do Servidor!";
+      response.message =
+        error.response?.data.message || "Erro interno do Servidor!";
     }
 
     return response;
   }
 
   insertResponse(idUser, idQuestion, idAlternative) {
-    return this.handleRequest("post", `/response/${idUser}/${idQuestion}/${idAlternative}`);
+    return this.handleRequest(
+      "post",
+      `/response/${idUser}/${idQuestion}/${idAlternative}`
+    );
   }
 
   findResponsesByUser(currentPage) {
@@ -28,23 +32,29 @@ export class ResponseService {
   }
 
   findResponsesByQuestionCreator(currentPage) {
-    return this.handleRequest("get", `/response/question/creator?page=${currentPage}`);
+    return this.handleRequest(
+      "get",
+      `/response/question/creator?page=${currentPage}`
+    );
   }
 
-  findResponsesByQuestionCreatorId(questionId, currentPage) {
-    return this.handleRequest("get", `/response/question/creator/id?questionId=${questionId}&page=${currentPage}`);
-  }
-
-  findResponsesByUserName(name, currentPage) {
-    return this.handleRequest("get", `/response/question/creator?name=${name}&page=${currentPage}`);
-  }
-
-  findResponsesByDate(currentDate, finalDate, currentPage) {
-    return this.handleRequest("get", `/response/question/date?currentDate=${currentDate}&finalDate=${finalDate}&page=${currentPage}`);
+  findResponsesByQuestionCreatorAndUsernameAndDate(
+    currentPage,
+    username,
+    currentDate,
+    finalDate
+  ) {
+    return this.handleRequest(
+      "get",
+      `/response/username/date?page=${currentPage}&username=${username}&currentDate=${currentDate}&finalDate=${finalDate}`
+    );
   }
 
   findResponsesStatistics(themeName, userId) {
-    return this.handleRequest("get", `/response/statistic/${themeName}/${userId}`);
+    return this.handleRequest(
+      "get",
+      `/response/statistic/${themeName}/${userId}`
+    );
   }
 
   removeResponse(responseId) {

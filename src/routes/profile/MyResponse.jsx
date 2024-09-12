@@ -15,15 +15,17 @@ const MyResponse = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [date, setDate] = useState("");
-  const [questionId, setQuestionId] = useState("");
+
+  const [currentDate, setCurrentDate] = useState("");
+  const [finalDate, setFinalDate] = useState("");
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
 
-      const response = await responseService.findResponsesByQuestionCreator(
-        currentPage
+      const response = await responseService.findResponsesByQuestionCreatorAndUsernameAndDate(
+        currentPage, username, currentDate, finalDate
       );
 
       setLoading(false);
@@ -42,8 +44,9 @@ const MyResponse = () => {
   }, [currentPage]);
 
   function changeData(propsData) {
-    setDate(propsData.date);
-    setQuestionId(propsData.questionId);
+    setUsername(propsData.username);
+    setCurrentDate(propsData.currentDate);
+    setFinalDate(propsData.finalDate);
   }
 
   return (
@@ -51,6 +54,7 @@ const MyResponse = () => {
       <FilterComponent
         onData={changeData}
         setResponses={setResponses}
+        currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         setTotalPages={setTotalPages}
       />
