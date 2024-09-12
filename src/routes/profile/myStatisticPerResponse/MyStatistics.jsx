@@ -64,6 +64,7 @@ function MyStatistics() {
     setLoading(false);
 
     if (!response.success) {
+      alert("Tente novamente mais tarde!")
       return;
     }
 
@@ -90,10 +91,9 @@ function MyStatistics() {
       </div>
 
       <div className="container-table-statistics">
-        <table className="table-statistics">
+        <table className="table table-statistic-response">
           <thead>
             <tr>
-              <th>ID da Questão</th>
               <th>Título da Questão</th>
               <th>Total de Respostas</th>
               <th>Respostas Certas</th>
@@ -107,7 +107,6 @@ function MyStatistics() {
             {statistics &&
               statistics.map((statistic) => (
                 <tr key={statistic.questionId}>
-                  <td>{statistic.questionId}</td>
                   <td>{statistic.questionTitle}</td>
                   <td>{statistic.totalOfAnswers}</td>
                   <td>{statistic.totalOfCorrectAnswers}</td>

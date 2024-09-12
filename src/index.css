@@ -20,3 +20,34 @@ body{
   color: rgb(194, 0, 0);
   font-weight: bold;
 }
+
+.table {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  padding: 8px;
+  text-align: center;
+  border-right: 1px solid #005982;
+}
+
+.table th {
+  background-color: #187ba7;
+  color: #fff;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #187ba7;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: #309dcb;
+}
+
+.table td {
+  color: #fff;
+  font-size: 1.05em;
+  line-height: 35px;
+}

@@ -24,9 +24,13 @@ const MyResponse = () => {
     async function fetchData() {
       setLoading(true);
 
-      const response = await responseService.findResponsesByQuestionCreatorAndUsernameAndDate(
-        currentPage, username, currentDate, finalDate
-      );
+      const response =
+        await responseService.findResponsesByQuestionCreatorAndUsernameAndDate(
+          currentPage,
+          username,
+          currentDate,
+          finalDate
+        );
 
       setLoading(false);
       if (!response.success) {
@@ -60,23 +64,21 @@ const MyResponse = () => {
         setTotalPages={setTotalPages}
       />
       <div className="container-table">
-        <table className="response-table">
-          <thead className="table-head">
+        <table className="table table-response">
+          <thead>
             <tr>
-              <th>ID da Questão</th>
-              <th>Questão</th>
               <th>Usuário</th>
+              <th>Questão</th>
               <th>Respondeu</th>
               <th>Acertou</th>
             </tr>
           </thead>
-          <tbody className="table-body">
+          <tbody>
             {responses &&
               responses.map((response) => (
                 <tr key={response.id}>
-                  <td>{response.question.id}</td>
-                  <td>{response.question.title}</td>
                   <td>{response.user.name}</td>
+                  <td>{response.question.title}</td>
                   <td>{response.alternative.text}</td>
                   <td>
                     {response.alternative.correct ? (
