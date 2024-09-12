@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
-import MyTheme from "./MyTheme";
-import MyResponse from "./MyResponse";
+import MyTheme from "./myTheme/MyTheme";
+import MyResponse from "./myResponse/MyResponse";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
 import ConfirmBox from "../../components/confirmBox/ConfirmBox";
 import UpdateBox from "../../components/updateBox/UpdateBox";
-import MyStatistics from "./MyStatistics";
+import MyStatistics from "./myStatisticPerResponse/MyStatistics";
 import { UserService } from "./../../service/UserService";
+import { useNavigate } from "react-router-dom";
+import Users from "./users/Users";
+import MyStatisticConclusion from "./myStatisticPerConclusion/MyStatisticConclusion";
 
 import "./Profile.css";
-import { useNavigate } from "react-router-dom";
-import Users from "./Users";
 
 const Profile = () => {
   
@@ -43,14 +44,16 @@ const Profile = () => {
     <MyTheme />, 
     <MyResponse />, 
     <MyStatistics />,
+    <MyStatisticConclusion />,
     isAdmin && <Users />
   ];
 
   const buttons = [
     { id: "btn-quiz", label: "Meus Temas", index: 0 },
     { id: "btn-response", label: "Painel de Respostas", index: 1 },
-    { id: "btn-statistic", label: "Estatísticas", index: 2 },
-    ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 3 }] : []),
+    { id: "btn-statistic-response", label: "Estatísticas por Resposta", index: 2 },
+    { id: "btn-statistic-conclusion", label: "Estatísticas por Conclusão", index: 3 },
+    ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 4 }] : []),
   ];
 
   useEffect(() => {
