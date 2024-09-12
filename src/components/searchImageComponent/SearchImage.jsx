@@ -30,7 +30,6 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
 
     if (response.success) {
       const { data } = response;
-      setCurrentPage(data.page);
       setTotalPages(data.total_results);
       setImages(data.photos);
     } else {
