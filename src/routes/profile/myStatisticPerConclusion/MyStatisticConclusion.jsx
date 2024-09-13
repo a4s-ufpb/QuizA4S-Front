@@ -16,10 +16,12 @@ function MyStatisticConclusion() {
 
   const [studentName, setStudentName] = useState("");
   const [themeName, setThemeName] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, studentName, themeName]);
+  }, [currentPage, studentName, themeName, startDate, endDate]);
 
   async function fetchData() {
     const { uuid: creatorId } = JSON.parse(localStorage.getItem("user"));
@@ -30,7 +32,9 @@ function MyStatisticConclusion() {
           currentPage,
           creatorId,
           studentName,
-          themeName
+          themeName,
+          startDate,
+          endDate
         );
 
       if (!statisticResponse.success) {
@@ -51,9 +55,11 @@ function MyStatisticConclusion() {
   }
 
   // Função chamada pelo FilterStatistic para atualizar os filtros
-  const handleFilter = ({ studentName, themeName }) => {
+  const handleFilter = ({ studentName, themeName, startDate, endDate }) => {
     setStudentName(studentName);
     setThemeName(themeName);
+    setStartDate(startDate);
+    setEndDate(endDate);
     setCurrentPage(0); // Reseta a página ao aplicar novos filtros
   };
 

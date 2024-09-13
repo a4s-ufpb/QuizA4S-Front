@@ -23,7 +23,7 @@ export class StatisticService {
     return this.handleRequest("post", "/statistic", statistic);
   }
 
-  findAllStatisticByCreator(currentPage, creatorId, studentName, themeName) {
-    return this.handleRequest("get", `/statistic/${creatorId}?page=${currentPage}&studentName=${studentName}&themeName=${themeName}`);
+  findAllStatisticByCreator(currentPage, creatorId, studentName, themeName, startDate, endDate) {
+    return this.handleRequest("get", `/statistic/${creatorId}?page=${currentPage}&studentName=${studentName}&themeName=${themeName}&startDate=${startDate}&endDate=${endDate}`);
   }
 }
