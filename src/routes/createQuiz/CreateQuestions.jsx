@@ -5,12 +5,12 @@ import InformationBox from "../../components/informationBox/InformationBox";
 import { QuestionService } from "../../service/QuestionService";
 import { AlternativeService } from "./../../service/AlternativeService";
 import SearchImage from "../../components/searchImageComponent/SearchImage";
-
-import "./CreateQuestions.css";
 import QuestionListComponent from "../../components/questionListComponent/QuestionListComponent";
 import { BsRobot } from "react-icons/bs";
 import ConfirmBox from "../../components/confirmBox/ConfirmBox";
 import { GeminiService } from "../../service/GeminiService";
+
+import "./CreateQuestions.css";
 
 const CreateQuestions = () => {
   const questionService = new QuestionService();

@@ -8,12 +8,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 4;
+  z-index: 9;
 }
 
 .question-box {
   width: 80%;
-  height: 680px;
+  height: 85%;
   background: linear-gradient(145deg, #1979ff, #003d93);
   border-radius: 10px;
   padding: 30px;

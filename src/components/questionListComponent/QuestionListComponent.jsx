@@ -1,11 +1,12 @@
 import { BsCaretRightSquareFill } from "react-icons/bs";
 import QuestionBoxComponent from "../questionBoxComponent/QuestionBoxComponent";
-import "./QuestionListComponent.css";
 import { useState, useEffect } from "react";
 import { DEFAULT_IMG } from "../../vite-env";
 import { QuestionService } from "../../service/QuestionService";
 import InformationBox from "../informationBox/InformationBox";
 import Loading from "../loading/Loading";
+
+import "./QuestionListComponent.css";
 
 function QuestionListComponent() {
   const [showQuestionBox, setQuestionBox] = useState(false);
@@ -39,9 +40,7 @@ function QuestionListComponent() {
   async function fetchData() {
     try {
       setLoading(true);
-      const questionResponse = await questionService.findAllQuestionsByTheme(
-        idTheme
-      );
+      const questionResponse = await questionService.findAllQuestionsByTheme(idTheme);
 
       if (!questionResponse.success) {
         activeInformationBox(true, questionResponse.message);
@@ -96,7 +95,7 @@ function QuestionListComponent() {
   return (
     <>
       {isSmallScreen && (
-        <div className="question-list-icon" onClick={toggleVisibility}>
+        <div className={`question-list-icon ${isVisible ? "move-right" : ""}`} onClick={toggleVisibility}>
           <BsCaretRightSquareFill />
         </div>
       )}
