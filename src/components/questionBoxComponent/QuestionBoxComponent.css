@@ -51,6 +51,7 @@
   background-color: #fff;
   padding: 10px;
   border-radius: 5px;
+  text-align: justify;
 }
 
 .question-box-header img {

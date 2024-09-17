@@ -21,6 +21,7 @@
 
 .question-list-icon.move-right {
   transform: translateX(220px);
+  z-index: inherit;
 }
 
 .container-question-list {

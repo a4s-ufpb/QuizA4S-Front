@@ -9,7 +9,12 @@ import { BsPencilSquare } from "react-icons/bs";
 import ConfirmBox from "../confirmBox/ConfirmBox";
 import { DEFAULT_IMG } from "../../vite-env";
 
-function QuestionBoxComponent({ setQuestionBox, question, setCallback, setQuestion }) {
+function QuestionBoxComponent({
+  setQuestionBox,
+  question,
+  setCallback,
+  setQuestion,
+}) {
   const alternativeService = new AlternativeService();
   const questionService = new QuestionService();
   const alternativesList = ["A", "B", "C", "D"];
@@ -140,10 +145,11 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback, setQuesti
     setQuestion((prevQuestion) => {
       return {
         ...prevQuestion,
-        alternatives: prevQuestion.alternatives.map((alt) => 
-          alt.id === alternativeId 
-            ? { ...alt, text: response.data.text } // Atualiza o texto da alternativa
-            : alt // Mantém as outras alternativas inalteradas
+        alternatives: prevQuestion.alternatives.map(
+          (alt) =>
+            alt.id === alternativeId
+              ? { ...alt, text: response.data.text } // Atualiza o texto da alternativa
+              : alt // Mantém as outras alternativas inalteradas
         ),
       };
     });
@@ -155,7 +161,10 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback, setQuesti
 
   async function updateQuestion() {
     setLoading(true);
-    const response = await questionService.updateQuestion(newQuestion.id , newQuestion);
+    const response = await questionService.updateQuestion(
+      newQuestion.id,
+      newQuestion
+    );
 
     if (!response.success) {
       activeInformationBox(true, response.message);
@@ -163,7 +172,7 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback, setQuesti
       return;
     }
 
-    console.log(response.data)
+    console.log(response.data);
     setCallback({});
     setQuestion(response.data);
     activeInformationBox(false, "Questão atualizada com sucesso!");
@@ -198,9 +207,8 @@ function QuestionBoxComponent({ setQuestionBox, question, setCallback, setQuesti
         </span>
 
         <div className="question-box-header">
-          <div>
-            <h2>{question?.title}</h2>
-          </div>
+          <h2>{question?.title}</h2>
+
           <div className="question-box-header-img">
             {question.imageUrl && (
               <img src={question.imageUrl} alt="" width={300} height={250} />
