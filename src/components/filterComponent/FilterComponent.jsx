@@ -1,85 +1,29 @@
 import { useState } from "react";
 import "./FilterComponent.css";
-import Loading from "../loading/Loading";
 import { BsFillTrash3Fill, BsSearch } from "react-icons/bs";
-import { ResponseService } from "./../../service/ResponseService";
 
 const FilterComponent = ({
-  onData,
-  currentPage,
-  setResponses,
-  setCurrentPage,
-  setTotalPages,
+  onData
 }) => {
-  const [loading, setLoading] = useState(false);
 
-  const responseService = new ResponseService();
+  const [currentDate, setCurrentDate] = useState("");
+  const [finalDate, setFinalDate] = useState("");
+  const [username, setUsername] = useState("");
 
-  const [data, setData] = useState({
-    username: "",
-    currentDate: "",
-    finalDate: "",
-  });
-
-  function changeData(name, value) {
-    setData((prevData) => {
-      return { ...prevData, [name]: value };
+  const handleFilter = () => {
+    onData({
+      currentDate,
+      finalDate,
+      username
     });
-  }
+  };
 
-  async function filterResponses() {
-    if (onData) {
-      onData(data); // Invoca a função no componente pai que altera o estado dos parâmetros
-    }
-
-    setLoading(true);
-    const response =
-      await responseService.findResponsesByQuestionCreatorAndUsernameAndDate(
-        currentPage,
-        data.username,
-        data.currentDate,
-        data.finalDate
-      );
-    setLoading(false);
-
-    if (!response.success) {
-      setResponses([]);
-      setTotalPages(0);
-      setCurrentPage(0);
-      return;
-    }
-
-    setCurrentPage(0);
-    setResponses(response.data.content);
-    setTotalPages(response.data.totalPages);
-  }
-
-  async function clearInputs() {
-    setData({
-      username: "",
-      currentDate: "",
-      finalDate: "",
-    });
-
-    setLoading(true);
-    const response =
-      await responseService.findResponsesByQuestionCreatorAndUsernameAndDate(
-        0,
-        "",
-        "",
-        ""
-      );
-    setLoading(false);
-
-    if (response.success) {
-      setResponses(response.data.content);
-      setCurrentPage(0);
-      setTotalPages(response.data.totalPages);
-      return;
-    }
-
-    setResponses([]);
-  }
+  const clearInputs = () => {
+    setCurrentDate("");
+    setFinalDate("");
+    setUsername("");
+    onData({ currentDate: "", finalDate: "", username: "" });
+  };
 
   return (
     <div className="filter-container">
@@ -90,8 +34,8 @@ const FilterComponent = ({
             <input
               type="text"
               placeholder="Digite o nome do usuário"
-              value={data.username}
-              onChange={(e) => changeData("username", e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </label>
 
@@ -99,21 +43,21 @@ const FilterComponent = ({
             <span>Data Inicial</span>
             <input
               type="date"
-              value={data.currentDate}
-              onChange={(e) => changeData("currentDate", e.target.value)}
+              value={currentDate}
+              onChange={(e) => setCurrentDate(e.target.value)}
             />
           </label>
           <label className="filter-input">
             <span>Data Final</span>
             <input
               type="date"
-              value={data.finalDate}
-              onChange={(e) => changeData("finalDate", e.target.value)}
+              value={finalDate}
+              onChange={(e) => setFinalDate(e.target.value)}
             />
           </label>
         </div>
 
-        <button type="button" onClick={filterResponses}>
+        <button type="button" onClick={handleFilter}>
           Filtrar
         </button>
 
@@ -121,11 +65,10 @@ const FilterComponent = ({
           Limpar
         </button>
 
-        <BsSearch className="icon" onClick={filterResponses} />
+        <BsSearch className="icon" onClick={handleFilter} />
 
         <BsFillTrash3Fill className="icon" id="trash" onClick={clearInputs} />
       </div>
-      {loading && <Loading />}
     </div>
   );
 };

@@ -45,10 +45,11 @@ const MyResponse = () => {
     }
 
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, currentDate, finalDate, username]);
 
   // Altera o estados dos parâmetros para realizar a pesquisa
   function changeData(propsData) {
+    setCurrentPage(0); // volta para a página inicial
     setUsername(propsData.username);
     setCurrentDate(propsData.currentDate);
     setFinalDate(propsData.finalDate);
@@ -56,13 +57,7 @@ const MyResponse = () => {
 
   return (
     <div className="container-my-response">
-      <FilterComponent
-        onData={changeData}
-        setResponses={setResponses}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        setTotalPages={setTotalPages}
-      />
+      <FilterComponent onData={changeData} />
       <div className="container-table">
         <table className="table table-response">
           <thead>
