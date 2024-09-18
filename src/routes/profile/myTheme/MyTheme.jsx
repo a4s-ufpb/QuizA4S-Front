@@ -3,7 +3,6 @@ import Pagination from "../../../components/pagination/Pagination";
 import Theme from "../../../components/theme/Theme";
 import Loading from "../../../components/loading/Loading";
 import SearchComponent from "../../../components/searchComponent/SearchComponent";
-import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
 import { ThemeService } from "../../../service/ThemeService";
 import { UserService } from "../../../service/UserService";
 
@@ -81,10 +80,6 @@ const MyTheme = () => {
         setCurrentPage={setCurrentPage}
         setCallBack={setCallBack}
       />
-
-      {!loading && themes.length == 0 && (
-        <NotFoundComponent title="Tema não encontrado" />
-      )}
 
       <Pagination
         totalPages={totalPages}

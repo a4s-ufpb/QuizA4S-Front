@@ -122,7 +122,7 @@ function MyStatistics() {
       {loading && <Loading />}
 
       {!loading && themeNamesList.length === 0 && (
-        <NotFoundComponent title="Nenhuma Estatística" />
+        <NotFoundComponent title="Nenhuma estatística encontrada" />
       )}
     </div>
   );

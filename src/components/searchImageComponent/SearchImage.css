@@ -1,9 +1,9 @@
 .container-external-search-image {
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0,0,0,0.7);
   position: fixed;
-  top: 0%;
+  top: 0;
   left: 0;
   display: flex;
   align-items: center;
@@ -12,42 +12,51 @@
 }
 
 .container-search-image {
-  position: absolute;
-  width: 80%;
-  height: 680px;
-  background: linear-gradient(145deg, #ffffff, #0149ad);
-  border-radius: 10px;
-  padding: 30px;
+  position: relative;
+  width: 85%;
+  max-width: 900px;
+  height: auto;
+  max-height: 85vh;
+  background: #e4e4e4;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  padding: 20px;
   display: flex;
-  align-items: start;
+  align-items: center;
   justify-content: center;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .search-image {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   flex-direction: column;
-  gap: 2em;
-  position: relative;
-  margin-top: 1em;
-  margin-bottom: 1em;
+  gap: 1em;
+  margin: 1em 0;
 }
 
 .search-image-button-close {
-  position: absolute;
-  top: -10px;
-  right: 0;
+  width: 100%;
+  text-align: right;
+}
+
+.search-image-button-close span {
   font-size: 1.5em;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.3s ease;
+  background-color: #ff5a5a;
+  padding: 5px 10px;
+  border-radius: 50%;
+  color: white;
 }
 
-.search-image-button-close:hover {
-  color: rgb(204, 16, 16);
+.search-image-button-close span:hover {
+  background-color: #ff3333;
+  transform: scale(1.1);
 }
 
 .search-image label {
@@ -59,78 +68,95 @@
 }
 
 .search-image label input {
-  width: 300px;
-  height: 30px;
+  width: 80%;
+  max-width: 400px;
+  height: 40px;
   border-radius: 10px;
-  padding: 8px;
-  font-size: 0.9em;
-  border: none;
+  padding: 8px 12px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   outline: none;
+  transition: all 0.3s ease;
+}
+
+.search-image label input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
 }
 
 .search-image-button {
-  margin-left: -25px;
-  background-color: #000;
-  height: 30px;
-  width: 35px;
+  margin-left: -35px;
+  background-color: #007bff;
+  height: 40px;
+  width: 45px;
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
   color: #fff;
-  padding: 5px;
+  padding: 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.search-image-button:hover {
+  background-color: #0056b3;
 }
 
 .search-image-data {
   width: 100%;
-  height: 500px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.5em;
-  overflow-y: scroll;
+  gap: 1em;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .image-data {
   width: 140px;
   height: 200px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .image-data img {
-  width: 140px;
-  height: 200px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   cursor: pointer;
-  border-radius: 5px;
-  transition: all .3s ease-in-out;
 }
 
-.image-data img:hover {
-    transform: scale(1.1);
+.image-data:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 1000px) {
+  .container-search-image {
+    width: 95%;
+  }
 }
 
 @media (max-width: 650px) {
-  .container-search-image {
-    padding: 30px 10px;
-  }
 
-  .search-image-button-close {
-    top: 2px;
-    right: 5px;
-  }
-
-  .search-image label {
-    margin-top: 3.5em;
-  }
-}
-
-@media (max-width: 450px) {
   .search-image label input {
     width: 90%;
   }
 
-  .image-data,
-  .image-data img {
+  .search-image-button {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 450px) {
+  .image-data {
     width: 120px;
     height: 180px;
   }

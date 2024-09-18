@@ -4,28 +4,34 @@
   justify-content: center;
   flex-direction: column;
   gap: 1.5em;
-  margin-bottom: 100px;
+  margin: 30px 0px;
 }
 
 .title-not-found {
   text-align: center;
   word-wrap: break-word;
-  font-size: 2em;
+  font-size: 1.5em;
   color: #0055cc;
   background-color: #fff;
   padding: 5px 15px;
   border-radius: 10px;
-  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
 }
 
 .img-not-found {
-  width: 300px;
+  width: 250px;
+  height: 250px;
   border-radius: 10px;
-  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
 }
 
-@media (max-width: 500px) {
+@media (max-width: 550px) {
+  .title-not-found {
+    font-size: 1.3em;
+  }
+
   .img-not-found {
-    width: 80%; 
+    width: 200px;
+    height: 200px;
   }
 }

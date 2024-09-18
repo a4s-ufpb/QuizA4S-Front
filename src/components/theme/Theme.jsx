@@ -8,9 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { ThemeService } from "../../service/ThemeService";
 
 import "./Theme.css";
+import NotFoundComponent from "../notFound/NotFoundComponent";
 
 const Theme = ({ themes, setThemes, setCurrentPage, setCallBack }) => {
-
   const themeService = new ThemeService();
 
   const navigate = useNavigate();
@@ -74,7 +74,7 @@ const Theme = ({ themes, setThemes, setCurrentPage, setCallBack }) => {
       return;
     }
 
-    setThemes(themes.filter((theme) => themeId !== theme.id))
+    setThemes(themes.filter((theme) => themeId !== theme.id));
     setCurrentPage(0);
     activeInformationBox(false, "Tema removido com sucesso!");
     setConfirmBox(false);
@@ -103,7 +103,12 @@ const Theme = ({ themes, setThemes, setCurrentPage, setCallBack }) => {
   function activeInformationBox(isFail, message) {
     if (isFail) {
       setInformationData((prevData) => {
-        return { ...prevData, text: message, color: "red", icon: "exclamation"  };
+        return {
+          ...prevData,
+          text: message,
+          color: "red",
+          icon: "exclamation",
+        };
       });
       setInformationBox(true);
     } else {
@@ -127,14 +132,14 @@ const Theme = ({ themes, setThemes, setCurrentPage, setCallBack }) => {
     }
   }
 
-  function showQuestions(id, name, imageUrl){
+  function showQuestions(id, name, imageUrl) {
     const theme = {
       id,
       name,
       imageUrl,
-    }
+    };
     localStorage.setItem("theme", JSON.stringify(theme));
-    navigate(`/profile/theme/${id}/question`)
+    navigate(`/profile/theme/${id}/question`);
   }
 
   return (
@@ -143,13 +148,24 @@ const Theme = ({ themes, setThemes, setCurrentPage, setCallBack }) => {
         themes.map((theme) => (
           <div key={theme.id} className="theme-data">
             <img
-              src={theme.imageUrl == null || theme.imageUrl == "" ? DEFAULT_IMG : theme.imageUrl}
+              src={
+                theme.imageUrl == null || theme.imageUrl == ""
+                  ? DEFAULT_IMG
+                  : theme.imageUrl
+              }
               alt="image"
               loading="lazy"
             />
             <div className="theme-questions">
               <p>{theme.name}</p>
-              <button type="button" onClick={() => showQuestions(theme.id, theme.name, theme.imageUrl)}>Questões</button>
+              <button
+                type="button"
+                onClick={() =>
+                  showQuestions(theme.id, theme.name, theme.imageUrl)
+                }
+              >
+                Questões
+              </button>
             </div>
             <div className="theme-action">
               <i
@@ -167,6 +183,10 @@ const Theme = ({ themes, setThemes, setCurrentPage, setCallBack }) => {
             </div>
           </div>
         ))}
+
+      {!loading && themes.length == 0 && (
+        <NotFoundComponent title="Nenhum tema encontrado" />
+      )}
 
       {isConfirmBox && (
         <ConfirmBox

@@ -1,7 +1,13 @@
 .container-profile{
     width: 100%;
     display: flex;
+    align-items: start;
+    justify-content: center;
     gap: 1em;
+    background: linear-gradient(145deg, #0099ff, #0055cc);
+    margin-top: -2em;
+    margin-bottom: -2em;
+    padding: 2em 0;
 }
 
 .user-profile{
@@ -34,12 +40,12 @@
 
 .user-profile button{
     margin-top: .8em;
-    width: 75%;
-    height: 30px;
+    width: 80%;
+    height: 35px;
     font-size: 1em;
     color: #fff;
     border: none;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.7);
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
     cursor: pointer;
     font-weight: bold;
     border-radius: 50px;
@@ -80,7 +86,11 @@
 
 .select-user-btn{
     width: 23%;
-    height: 35px;
+    height: 45px;
+    padding: 10px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 4px;
     background-color: rgb(1, 80, 130);
     font-size: 1em;

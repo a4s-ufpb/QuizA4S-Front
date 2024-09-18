@@ -5,6 +5,7 @@ import InformationBox from "../informationBox/InformationBox";
 import Pagination from "../pagination/Pagination";
 import { SearchImageService } from "../../service/SearchImageService";
 import "./SearchImage.css";
+import NotFoundComponent from "./../notFound/NotFoundComponent";
 
 function SearchImage({ setSearchImage, getUrlOfImage }) {
   const imageService = new SearchImageService();
@@ -49,12 +50,10 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
     <div className="container-external-search-image">
       <div className="container-search-image">
         <div className="search-image">
-          <span
-            className="search-image-button-close"
-            onClick={() => setSearchImage(false)}
-          >
-            X
-          </span>
+          <div className="search-image-button-close">
+            <span onClick={() => setSearchImage(false)}>X</span>
+          </div>
+
           <label>
             <input
               type="text"
@@ -87,7 +86,7 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
               ))}
 
             {images && images.length === 0 && (
-              <h2 style={{ textAlign: "center" }}>Nenhuma imagem encontrada</h2>
+              <NotFoundComponent title="Nenhuma imagem encontrada" />
             )}
           </div>
         </div>
