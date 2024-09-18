@@ -8,7 +8,7 @@ import Loading from "../loading/Loading";
 
 import "./QuestionListComponent.css";
 
-function QuestionListComponent() {
+function QuestionListComponent( {callbackQuestions} ) {
   const [showQuestionBox, setQuestionBox] = useState(false);
   const [questionData, setQuestionData] = useState({});
   const [isVisible, setIsVisible] = useState(true);
@@ -35,7 +35,7 @@ function QuestionListComponent() {
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [callback]);
+  }, [callback, callbackQuestions]);
 
   async function fetchData() {
     try {

@@ -45,6 +45,8 @@ const CreateQuestions = () => {
     { text: "", correct: false },
   ]);
 
+  const [callbackQuestions, setCallbackQuestions] = useState({});
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -84,6 +86,7 @@ const CreateQuestions = () => {
     }
 
     activeInformationBox(false, "Questão criada com sucesso!");
+    setCallbackQuestions({}); // Atualiza a lista de alternativas em tempo real
     clearForm();
   }
 
@@ -166,7 +169,7 @@ const CreateQuestions = () => {
 
   return (
     <div className="container-create-questions">
-      <QuestionListComponent />
+      <QuestionListComponent callbackQuestions={callbackQuestions}/>
 
       <div className="container-create-questions-header">
         <div

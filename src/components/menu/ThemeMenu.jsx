@@ -1,95 +1,34 @@
 import { useState } from "react";
-import { URL_BASE } from "../../vite-env";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { object, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-
-import "./ThemeMenu.css";
+import { ThemeService } from "../../service/ThemeService";
 import SearchImage from "../searchImageComponent/SearchImage";
 
-const url = `${URL_BASE}/theme`;
+import "./ThemeMenu.css";
 
 const ThemeMenu = ({ setThemeMenu }) => {
-  const [loadin, setLoading] = useState(false);
+
+  const themeService = new ThemeService();
+
+  const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
   const [searchImage, setSearchImage] = useState(false);
-
-  const navigate = useNavigate();
-
-  const [informationData, setData] = useState({
+  const [informationData, setInformationData] = useState({
     text: "",
     color: "",
     icon: "",
   });
 
+  const navigate = useNavigate();
   const inputImageUrl = document.getElementById("input-image-url");
 
   function getUrlOfImage(imageUrl) {
     inputImageUrl.value = imageUrl;
     setSearchImage(false);
-  }
-
-  function handleSubmit(themeRequest) {
-    const token = localStorage.getItem("token");
-
-    if (!token) return;
-
-    themeRequest.imageUrl = inputImageUrl.value;
-    postTheme(token, themeRequest);
-  }
-
-  async function postTheme(token, themeRequest) {
-    setLoading(true);
-    fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(themeRequest),
-    })
-      .then((res) => {
-        if (res.status === 201) {
-          activeInformationBox(false, "Tema criado com sucesso");
-          return res.json().then((data) => navigateCreateQuestion(data));
-        } else if (res.status === 400) {
-          return res.json().then((data) => {
-            activeInformationBox(true, data.message);
-          });
-        }
-      })
-      .catch((erro) => console.error(erro));
-
-    setTimeout(() => {
-      setLoading(false);
-    }, 150);
-  }
-
-  function activeInformationBox(isFail, message) {
-    if (isFail) {
-      setData((prevData) => {
-        return {
-          ...prevData,
-          text: message,
-          color: "red",
-          icon: "exclamation",
-        };
-      });
-      setInformationBox(true);
-    } else {
-      setData((prevData) => {
-        return { ...prevData, text: message, color: "green", icon: "check" };
-      });
-      setInformationBox(true);
-    }
-  }
-
-  function navigateCreateQuestion(theme) {
-    localStorage.setItem("theme", JSON.stringify(theme));
-    navigate(`/create/quiz/${theme.id}/question`);
   }
 
   const schema = object().shape({
@@ -105,6 +44,35 @@ const ThemeMenu = ({ setThemeMenu }) => {
     handleSubmit: onSubmit,
     formState: { errors },
   } = useForm({ resolver: yupResolver(schema) });
+
+  async function handleSubmit(themeRequest) {
+    themeRequest.imageUrl = inputImageUrl.value;
+    setLoading(true);
+
+    const response = await themeService.insertTheme(themeRequest);
+    if (response.success) {
+      activateInformationBox(false, "Tema criado com sucesso");
+      navigateCreateQuestion(response.data);
+    } else {
+      activateInformationBox(true, response.message);
+    }
+
+    setLoading(false);
+  }
+
+  function activateInformationBox(isError, message) {
+    setInformationData({
+      text: message,
+      color: isError ? "red" : "green",
+      icon: isError ? "exclamation" : "check",
+    });
+    setInformationBox(true);
+  }
+
+  function navigateCreateQuestion(theme) {
+    localStorage.setItem("theme", JSON.stringify(theme));
+    navigate(`/create/quiz/${theme.id}/question`);
+  }
 
   return (
     <div className="theme-menu">
@@ -165,7 +133,8 @@ const ThemeMenu = ({ setThemeMenu }) => {
             closeBox={() => setInformationBox(false)}
           />
         )}
-        {loadin && <Loading />}
+
+        {loading && <Loading />}
         {searchImage && (
           <SearchImage
             setSearchImage={setSearchImage}
