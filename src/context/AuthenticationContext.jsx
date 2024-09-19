@@ -1,5 +1,4 @@
 import { createContext, useState, useEffect } from "react";
-import { URL_BASE } from "../vite-env";
 import {UserService} from "../service/UserService"
 
 export const AuthenticationContext = createContext();

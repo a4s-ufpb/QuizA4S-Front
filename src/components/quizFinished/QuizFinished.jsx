@@ -30,16 +30,15 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
     if(isLoggedUser()) {
       user  = JSON.parse(localStorage.getItem("user"));
       theme  = JSON.parse(localStorage.getItem("theme"));
-    }
-    
-    const statistic = {
-      studentName: user.name,
-      themeName: theme.name,
-      percentagemOfHits: percentage
-    }
 
-    saveStatistic(statistic);
-
+      const statistic = {
+        studentName: user.name,
+        themeName: theme.name,
+        percentagemOfHits: percentage
+      }
+  
+      saveStatistic(statistic);
+    }
   }, []);
 
   function saveStatistic(statistic) {
@@ -94,7 +93,9 @@ const QuizFinished = ({ percentage, restart, score, time }) => {
   }
 
   function isLoggedUser() {
-    return localStorage.getItem("user") && localStorage.getItem("theme");
+    const user  = JSON.parse(localStorage.getItem("user"));
+    const theme  = JSON.parse(localStorage.getItem("theme"));
+    if (user && theme) return true;
   }
 
   function closeBox() {
