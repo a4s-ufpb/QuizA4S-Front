@@ -6,7 +6,10 @@ export const useFooter = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (location.pathname.includes("/quiz")) {
+    if (
+      location.pathname.includes("/quiz") ||
+      location.pathname.includes("/room")
+    ) {
       setShowFooter(false);
     } else {
       setShowFooter(true);

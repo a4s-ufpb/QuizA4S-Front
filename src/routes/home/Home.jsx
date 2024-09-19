@@ -1,12 +1,13 @@
-import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import qrCode from "../../assets/qr-code.png";
+import { useState } from "react";
+import GameModeBox from "../../components/gameModeBox/GameModeBox";
 
 const Home = () => {
-  const navigate = useNavigate();
+  const [gameModeBox, setGameModeBox] = useState(false);
 
   function handleNavigate() {
-    navigate("/theme");
+    setGameModeBox(true);
   }
 
   return (
@@ -25,6 +26,8 @@ const Home = () => {
           <img src={qrCode} alt="qr-code" width={120} height={120} />
         </div>
       </div>
+
+      {gameModeBox && <GameModeBox setGameModeBox={setGameModeBox}/>}
     </div>
   );
 };
