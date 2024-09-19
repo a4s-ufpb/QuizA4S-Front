@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import Loading from "../loading/Loading";
 import { useEffect, useState } from "react";
 import { ScoreService } from "./../../service/ScoreService";
-import ImageNotFound from "../../assets/data-not-found.webp";
+import NotFoundComponent from "../notFound/NotFoundComponent"
 
 import "./Ranking.css";
 
@@ -77,15 +77,7 @@ const Ranking = ({ navigatePath, setShowRanking }) => {
         </div>
 
         {isNotFound && (
-          <div className="ranking-not-found">
-            <h2>Nenhuma pontuação cadastrada!</h2>
-            <img
-              src={ImageNotFound}
-              alt="image-not-found"
-              width={150}
-              height={150}
-            />
-          </div>
+          <NotFoundComponent title="Nenhuma pontuação cadastrada"/>
         )}
 
         <button type="button" onClick={closeRanking}>

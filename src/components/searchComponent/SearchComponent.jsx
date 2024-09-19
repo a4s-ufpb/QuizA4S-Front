@@ -17,34 +17,32 @@ const SearchComponent = ({
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function searchDataName(value) {
+  async function searchDataName(value) {
     const inputName = value;
 
-    if(onSearch){
+    if (onSearch) {
       onSearch(inputName);
-    } 
+    }
 
     setName(inputName);
 
     setLoading(true);
-    const promisse = apiFetch.getPages(
+    const response = await apiFetch.getPages(
       `${url}${inputName}`,
       "Nenhum tema encontrado!"
     );
 
-    promisse.then((response) => {
-      if (!response.success) {
-        setLoading(false);
-        setData([])
-        setTotalPages(0);
-        setCurrentPage(0);
-        return;
-      }
-
+    if (!response.success) {
       setLoading(false);
-      setTotalPages(response.totalPages);
-      setData(response.data);
-    });
+      setData([]);
+      setTotalPages(0);
+      setCurrentPage(0);
+      return;
+    }
+
+    setLoading(false);
+    setTotalPages(response.totalPages);
+    setData(response.data);
   }
 
   return (

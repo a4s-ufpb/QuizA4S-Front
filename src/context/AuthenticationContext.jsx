@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import { URL_BASE } from "../vite-env";
+import {UserService} from "../service/UserService"
 
 export const AuthenticationContext = createContext();
 
@@ -7,19 +8,16 @@ export const AuthenticationProvider = ({ children }) => {
   const [isAuthenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const userService = new UserService();
+
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     async function checkToken() {
       setLoading(true);
-      const response = await fetch(`${URL_BASE}/user/find`, {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const response = await userService.findUser();
 
-      if (!response.ok) {
+      if (!response.success) {
         localStorage.clear();
         setAuthenticated(false);
         setLoading(false);
@@ -27,7 +25,7 @@ export const AuthenticationProvider = ({ children }) => {
       }
 
       setLoading(false);
-      const userDetails = await response.json()
+      const userDetails = response.data
       localStorage.setItem("user", JSON.stringify(userDetails))
 
       setAuthenticated(true);

@@ -27,8 +27,8 @@ export class UserService {
     return this.handleRequest("post", "/user/login", userLogin);
   }
 
-  findUser(userId) {
-    return this.handleRequest("get", `/user/find/${userId}`);
+  findUser() {
+    return this.handleRequest("get", `/user/find`);
   }
 
   findAllUsers(userId, currentPage, name) {
