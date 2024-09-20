@@ -50,7 +50,7 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
     <div className="container-external-search-image">
       <div className="container-search-image">
         <div className="search-image">
-          <div className="search-image-button-close">
+          <div className="button-close">
             <span onClick={() => setSearchImage(false)}>X</span>
           </div>
 

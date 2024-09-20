@@ -38,27 +38,6 @@
   margin: 1em 0;
 }
 
-.search-image-button-close {
-  width: 100%;
-  text-align: right;
-}
-
-.search-image-button-close span {
-  font-size: 1.5em;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s ease;
-  background-color: #ff5a5a;
-  padding: 5px 10px;
-  border-radius: 50%;
-  color: white;
-}
-
-.search-image-button-close span:hover {
-  background-color: #ff3333;
-  transform: scale(1.1);
-}
-
 .search-image label {
   width: 100%;
   display: flex;
