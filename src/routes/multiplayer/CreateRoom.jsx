@@ -1,16 +1,19 @@
 import { useState } from "react";
-import ThemeMenu from "../../components/menu/ThemeMenu";
 import ImgCreateRoom from "../../assets/img-create-room.webp"
 import ImgJoinRoom from "../../assets/img-join-room.webp"
-
-//Css
-import "./CreateRoom.css";
 import { useNavigate } from "react-router-dom";
+import JoinRoomBox from "../../components/joinRoomBox/JoinRoomBox";
+
+import "./CreateRoom.css";
 
 const CreateRoom = () => {
 
-  const [activeThemeMenu, setThemeMenu] = useState(false);
   const navigate = useNavigate();
+  const [showJoinRoomBox, setJoinRoomBox] = useState(false);
+
+  function createRoom() {
+
+  }
 
   return (
     <div className="container-create-room">
@@ -20,19 +23,19 @@ const CreateRoom = () => {
         </div>
 
         <div className="container-room-buttons">
-          <div className="room-btn" onClick={() => setThemeMenu(true)}>
+          <div className="room-btn" onClick={createRoom}>
             <h2>Criar Sala</h2>
             <img src={ImgCreateRoom} alt="img-room-quiz" width="300" height="300"></img>
           </div>
 
-          <div className="room-btn" onClick={() => navigate("/create/quiz/theme")}>
+          <div className="room-btn" onClick={() => setJoinRoomBox(true)}>
             <h2>Entrar na Sala</h2>
             <img src={ImgJoinRoom} alt="img-select-quiz" width="300" height="300"></img>
           </div>
         </div>
       </div>
 
-      {activeThemeMenu && <ThemeMenu setThemeMenu={setThemeMenu}/>}
+      {showJoinRoomBox && <JoinRoomBox setJoinRoomBox={setJoinRoomBox}/>}
     </div>
   );
 };
