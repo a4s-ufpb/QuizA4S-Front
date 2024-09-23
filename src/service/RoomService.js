@@ -14,7 +14,7 @@ export class RoomService {
       response.success = true;
     } catch (error) {
       response.message =
-        error.response?.data.message || "Erro interno do Servidor!";
+        error.response?.data.message || "Tente novamente mais tarde!";
     }
 
     return response;
@@ -24,8 +24,8 @@ export class RoomService {
     return this.handleRequest("post", `/room`, roomRequest);
   }
 
-  joinRoom(roomId) {
-    return this.handleRequest("get", `/room/${roomId}`);
+  joinRoom(roomId, playerId) {
+    return this.handleRequest("patch", `/room/${roomId}/${playerId}`);
   }
 
   selectQuiz(roomId, quizId) {
@@ -34,5 +34,17 @@ export class RoomService {
 
   startQuiz(roomId) {
     return this.handleRequest("patch", `/room/start-quiz/${roomId}`);
+  }
+
+  quitRoom(roomId, playerId) {
+    return this.handleRequest("patch", `/room/quit/${roomId}/${playerId}`);
+  }
+
+  deleteRoom(roomId) {
+    return this.handleRequest("delete", `/room/${roomId}`);
+  }
+
+  findRoomById(roomId) {
+    return this.handleRequest("get", `/room/${roomId}`);
   }
 }

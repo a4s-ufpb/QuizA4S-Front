@@ -15,7 +15,7 @@ export class SearchImageService {
         },
       });
       if (!response.ok) {
-        throw new Error("Erro na requisição da API");
+        throw new Error("Tente novamente mais tarde!");
       }
       const data = await response.json();
       return {
@@ -26,7 +26,7 @@ export class SearchImageService {
       console.error(error);
       return {
         success: false,
-        message: error.message,
+        message: "Tente novamente mais tarde!",
       };
     }
   }

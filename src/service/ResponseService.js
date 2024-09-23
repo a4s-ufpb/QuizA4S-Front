@@ -14,7 +14,7 @@ export class ResponseService {
       response.success = true;
     } catch (error) {
       response.message =
-        error.response?.data.message || "Erro interno do Servidor!";
+        error.response?.data.message || "Tente novamente mais tarde!";
     }
 
     return response;

@@ -13,7 +13,7 @@ export class QuestionService {
       response.data = asyncResponse.data;
       response.success = true;
     } catch (error) {
-      response.message = error.response?.data.message || "Erro interno do Servidor!";
+      response.message = error.response?.data.message || "Tente novamente mais tarde!";
     }
 
     return response;
