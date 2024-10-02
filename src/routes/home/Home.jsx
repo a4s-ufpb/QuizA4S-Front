@@ -1,14 +1,8 @@
 import "./Home.css";
-import qrCode from "../../assets/qr-code.png";
-import { useState } from "react";
-import GameModeBox from "../../components/gameModeBox/GameModeBox";
+import qrCode from "../../assets/qr-code.webp";
 
 const Home = () => {
-  const [gameModeBox, setGameModeBox] = useState(false);
 
-  function handleNavigate() {
-    setGameModeBox(true);
-  }
 
   return (
     <div className="container-home">
@@ -17,7 +11,7 @@ const Home = () => {
         <p className="home-description">
           Clique no botão abaixo e inicie um Quiz agora!
         </p>
-        <button className="home-button" type="button" onClick={handleNavigate}>
+        <button className="home-button" type="button">
           Jogar
         </button>
         
@@ -26,8 +20,6 @@ const Home = () => {
           <img src={qrCode} alt="qr-code" width={120} height={120} />
         </div>
       </div>
-
-      {gameModeBox && <GameModeBox setGameModeBox={setGameModeBox}/>}
     </div>
   );
 };

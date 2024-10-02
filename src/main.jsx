@@ -21,7 +21,6 @@ import PrivateRoute from "./components/privateRoute/PrivateRoute.jsx";
 import CreateQuestion from "./routes/createQuiz/CreateQuestions.jsx"
 import SelectTheme from "./routes/createQuiz/SelectTheme.jsx";
 import RankingPage from "./routes/rankingPage/RankingPage.jsx";
-import CreateRoom from "./routes/multiplayer/CreateRoom.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -40,7 +39,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>}/>
             <Route path="/profile/theme/:id/question" element={<PrivateRoute><MyQuestion /></PrivateRoute>}/>
             <Route path="/ranking" element={<PrivateRoute><RankingPage /></PrivateRoute>}/>
-            <Route path="/room" element={<PrivateRoute><CreateRoom /></PrivateRoute>}/>
             <Route path="*" element={<ErrorPage />} />
           </Route>
         </Routes>

@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_URL } from "../vite-env";
 
 export const apiAxios = axios.create({
-    baseURL: "https://quizapp.a4s.dev.br/api/v1",
+    baseURL: API_URL,
     headers: {
         "Content-Type": "application/json"
     }
