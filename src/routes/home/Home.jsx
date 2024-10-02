@@ -1,8 +1,14 @@
 import "./Home.css";
 import qrCode from "../../assets/qr-code.webp";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
 
+  const navigate = useNavigate();
+
+  function handleNavigate() {
+    navigate("/theme")
+  }
 
   return (
     <div className="container-home">
@@ -11,7 +17,7 @@ const Home = () => {
         <p className="home-description">
           Clique no botão abaixo e inicie um Quiz agora!
         </p>
-        <button className="home-button" type="button">
+        <button className="home-button" type="button" onClick={handleNavigate}>
           Jogar
         </button>
         

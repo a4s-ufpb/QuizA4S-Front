@@ -26,4 +26,12 @@ export class StatisticService {
   findAllStatisticByCreator(currentPage, creatorId, studentName, themeName, startDate, endDate) {
     return this.handleRequest("get", `/statistic/${creatorId}?page=${currentPage}&studentName=${studentName}&themeName=${themeName}&startDate=${startDate}&endDate=${endDate}`);
   }
+
+  findDistinctThemeNameByCreatorId(creatorId) {
+    return this.handleRequest("get", `/statistic/theme/${creatorId}`)
+  }
+
+  findDistinctStudentNameByCreatorId(creatorId) {
+    return this.handleRequest("get", `/statistic/student/${creatorId}`)
+  }
 }

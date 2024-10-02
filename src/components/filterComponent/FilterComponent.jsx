@@ -1,20 +1,22 @@
 import { useState } from "react";
 import "./FilterComponent.css";
 import { BsFillTrash3Fill, BsSearch } from "react-icons/bs";
+import { ResponseService } from "../../service/ResponseService";
 
-const FilterComponent = ({
-  onData
-}) => {
-
+const FilterComponent = ({ onData }) => {
   const [currentDate, setCurrentDate] = useState("");
   const [finalDate, setFinalDate] = useState("");
   const [username, setUsername] = useState("");
+  const [usernames, setUsernames] = useState([]);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const responseService = new ResponseService();
 
   const handleFilter = () => {
     onData({
       currentDate,
       finalDate,
-      username
+      username,
     });
   };
 
@@ -23,6 +25,18 @@ const FilterComponent = ({
     setFinalDate("");
     setUsername("");
     onData({ currentDate: "", finalDate: "", username: "" });
+  };
+
+  const fetchUsernames = async () => {
+    const user = localStorage.getItem("user");
+    const { uuid: creatorId } = JSON.parse(user);
+
+    const response = await responseService.findUsernamesByCreator(creatorId);
+    if (response.success) {
+      setUsernames(response.data || []);
+    } else {
+      console.error(response.message);
+    }
   };
 
   return (
@@ -36,7 +50,25 @@ const FilterComponent = ({
               placeholder="Digite o nome do usuário"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              onFocus={() => {
+                setIsFocused(true);
+                fetchUsernames();
+              }}
+              onBlur={() => setTimeout(() => setIsFocused(false), 100)}
             />
+            {isFocused && usernames.length > 0 && (
+              <div className="dropdown-options">
+                {usernames.map((data, index) => (
+                  <div
+                    key={index}
+                    className="dropdown-option"
+                    onMouseDown={() => setUsername(data.username)}
+                  >
+                    {data.username}
+                  </div>
+                ))}
+              </div>
+            )}
           </label>
 
           <label className="filter-input">

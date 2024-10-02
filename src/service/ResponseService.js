@@ -60,4 +60,9 @@ export class ResponseService {
   removeResponse(responseId) {
     return this.handleRequest("delete", `/response/${responseId}`);
   }
+
+  findUsernamesByCreator(creatorId) {
+    return this.handleRequest("get", `/response/usernames/${creatorId}`);
+  }
+
 }
