@@ -1,6 +1,5 @@
 import { useState } from "react";
 import "./FilterComponent.css";
-import { BsFillTrash3Fill, BsSearch } from "react-icons/bs";
 import { ResponseService } from "../../service/ResponseService";
 
 const FilterComponent = ({ onData }) => {
@@ -89,17 +88,15 @@ const FilterComponent = ({ onData }) => {
           </label>
         </div>
 
-        <button type="button" onClick={handleFilter}>
-          Filtrar
-        </button>
+        <div className="filter-buttons">
+          <button type="button" onClick={handleFilter}>
+            Filtrar
+          </button>
 
-        <button type="button" onClick={clearInputs}>
-          Limpar
-        </button>
-
-        <BsSearch className="icon" onClick={handleFilter} />
-
-        <BsFillTrash3Fill className="icon" id="trash" onClick={clearInputs} />
+          <button type="button" onClick={clearInputs}>
+            Limpar
+          </button>
+        </div>
       </div>
     </div>
   );
