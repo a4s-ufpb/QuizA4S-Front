@@ -31,7 +31,6 @@ const MyResponse = () => {
           currentDate,
           finalDate
         );
-
       setLoading(false);
       if (!response.success) {
         setResponses([]);
@@ -63,6 +62,7 @@ const MyResponse = () => {
           <thead>
             <tr>
               <th>Usuário</th>
+              <th>Tema</th>
               <th>Questão</th>
               <th>Respondeu</th>
               <th>Acertou</th>
@@ -73,6 +73,7 @@ const MyResponse = () => {
               responses.map((response) => (
                 <tr key={response.id}>
                   <td>{response.user.name}</td>
+                  <td>{response.question.theme.name}</td>
                   <td>{response.question.title}</td>
                   <td>{response.alternative.text}</td>
                   <td>

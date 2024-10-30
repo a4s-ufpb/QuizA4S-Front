@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import Loading from "../loading/Loading";
 import { useEffect, useState } from "react";
 import { ScoreService } from "./../../service/ScoreService";
-import NotFoundComponent from "../notFound/NotFoundComponent"
+import NotFoundComponent from "../notFound/NotFoundComponent";
 
 import "./Ranking.css";
 
@@ -77,12 +77,14 @@ const Ranking = ({ navigatePath, setShowRanking }) => {
         </div>
 
         {isNotFound && (
-          <NotFoundComponent title="Nenhuma pontuação cadastrada"/>
+          <NotFoundComponent title="Nenhuma pontuação cadastrada" />
         )}
 
-        <button type="button" onClick={closeRanking}>
-          Voltar
-        </button>
+        <div>
+          <button type="button" onClick={closeRanking}>
+            Voltar
+          </button>
+        </div>
       </div>
       {loading && <Loading />}
     </div>

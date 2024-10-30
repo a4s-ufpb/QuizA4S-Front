@@ -51,7 +51,7 @@ const Profile = () => {
   const buttons = [
     { id: "btn-quiz", label: "Meus Temas", index: 0 },
     { id: "btn-response", label: "Painel de Respostas", index: 1 },
-    { id: "btn-statistic-response", label: "Estatísticas por Resposta", index: 2 },
+    { id: "btn-statistic-response", label: "Estatísticas por Questão", index: 2 },
     { id: "btn-statistic-conclusion", label: "Estatísticas por Conclusão", index: 3 },
     ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 4 }] : []),
   ];

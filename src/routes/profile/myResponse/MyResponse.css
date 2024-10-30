@@ -6,7 +6,12 @@
 
 .table-response tbody td:first-child,
 .table-response thead th:first-child {
-  width: 10%;
+  width: 8%;
+}
+
+.table-response tbody td:nth-child(2),
+.table-response thead th:nth-child(2) {
+  width: 8%;
 }
 
 .table-response tbody td:last-child,
@@ -15,8 +20,8 @@
   border: none;
 }
 
-.table-response tbody td:nth-child(2),
-.table-response thead th:nth-child(2) {
+.table-response tbody td:nth-child(3),
+.table-response thead th:nth-child(3) {
   width: 50%;
 }
 
