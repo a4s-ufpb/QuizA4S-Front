@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./FilterStatistic.css";
 import { StatisticService } from "../../service/StatisticService";
+import { BsCalendar } from "react-icons/bs";
 
 const FilterStatistic = ({ onFilter }) => {
   const [studentName, setStudentName] = useState("");
@@ -10,6 +11,7 @@ const FilterStatistic = ({ onFilter }) => {
   const [studentAndThemes, setStudentAndThemes] = useState([]);
   const [showStudentOptions, setShowStudentOptions] = useState(false);
   const [showThemeOptions, setShowThemeOptions] = useState(false);
+  const [showFilterPerDate, setFilterPerDate] = useState(false);
 
   const statisticService = new StatisticService();
 
@@ -34,7 +36,9 @@ const FilterStatistic = ({ onFilter }) => {
     const user = localStorage.getItem("user");
     const { uuid: creatorId } = JSON.parse(user);
 
-    const response = await statisticService.findDistinctThemeNameByCreatorId(creatorId);
+    const response = await statisticService.findDistinctThemeNameByCreatorId(
+      creatorId
+    );
     if (response.success) {
       setStudentAndThemes(response.data || []);
     } else {
@@ -46,7 +50,9 @@ const FilterStatistic = ({ onFilter }) => {
     const user = localStorage.getItem("user");
     const { uuid: creatorId } = JSON.parse(user);
 
-    const response = await statisticService.findDistinctStudentNameByCreatorId(creatorId);
+    const response = await statisticService.findDistinctStudentNameByCreatorId(
+      creatorId
+    );
     if (response.success) {
       setStudentAndThemes(response.data || []);
     } else {
@@ -95,7 +101,7 @@ const FilterStatistic = ({ onFilter }) => {
               setShowThemeOptions(true);
               fetchDistinctThemeNames();
             }}
-            onBlur={() => setTimeout(() => setShowThemeOptions(false), 200)}  // timeout to prevent immediate hide
+            onBlur={() => setTimeout(() => setShowThemeOptions(false), 200)} // timeout to prevent immediate hide
           />
           {showThemeOptions && (
             <div className="dropdown-options">
@@ -111,22 +117,33 @@ const FilterStatistic = ({ onFilter }) => {
             </div>
           )}
         </label>
-        <label className="label-filter-statistics">
-          <span>Data Início:</span>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-        </label>
-        <label className="label-filter-statistics">
-          <span>Data Fim:</span>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </label>
+        <div className="filter-date-container">
+          <div className="set-filter-date" onClick={() => setFilterPerDate(!showFilterPerDate)}>
+            <p>Filtrar por período</p>
+            <BsCalendar />
+          </div>
+
+          {showFilterPerDate && (
+            <div className="filter-date">
+              <label className="label-filter-statistics">
+                <span>Data Início:</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </label>
+              <label className="label-filter-statistics">
+                <span>Data Fim:</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </label>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="filter-statistic-buttons">

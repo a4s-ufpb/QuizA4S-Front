@@ -71,6 +71,42 @@
   background-color: #f0f0f0;
 }
 
+.filter-date-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+}
+
+.set-filter-date {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .5em;
+  margin: .6em;
+}
+
+.set-filter-date p {
+  font-size: 1.3em;
+}
+
+.set-filter-date svg {
+  font-size: 1.5em;
+  color: #0c61c2;
+}
+
+.filter-date {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+}
+
 .filter-statistic-buttons {
   display: flex;
   align-items: center;
@@ -104,5 +140,9 @@
 @media(max-width: 550px) {
   .label-filter-statistics {
     width: 100%;
+  }
+
+  .filter-date {
+    flex-direction: column;
   }
 }
