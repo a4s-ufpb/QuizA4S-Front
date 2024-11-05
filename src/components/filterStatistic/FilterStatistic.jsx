@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./FilterStatistic.css";
 import { StatisticService } from "../../service/StatisticService";
 import { BsCalendar } from "react-icons/bs";
@@ -8,7 +8,10 @@ const FilterStatistic = ({ onFilter }) => {
   const [themeName, setThemeName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [studentAndThemes, setStudentAndThemes] = useState([]);
+  const [studentNameList, setStudentNameList] = useState([]);
+  const [themeNameList, setThemeNameList] = useState([]);
+  const [filteredStudents, setFilteredStudents] = useState([]);
+  const [filteredThemes, setFilteredThemes] = useState([]);
   const [showStudentOptions, setShowStudentOptions] = useState(false);
   const [showThemeOptions, setShowThemeOptions] = useState(false);
   const [showFilterPerDate, setFilterPerDate] = useState(false);
@@ -32,20 +35,6 @@ const FilterStatistic = ({ onFilter }) => {
     onFilter({ studentName: "", themeName: "", startDate: "", endDate: "" });
   };
 
-  const fetchDistinctThemeNames = async () => {
-    const user = localStorage.getItem("user");
-    const { uuid: creatorId } = JSON.parse(user);
-
-    const response = await statisticService.findDistinctThemeNameByCreatorId(
-      creatorId
-    );
-    if (response.success) {
-      setStudentAndThemes(response.data || []);
-    } else {
-      console.error(response.message);
-    }
-  };
-
   const fetchDistinctStudentNames = async () => {
     const user = localStorage.getItem("user");
     const { uuid: creatorId } = JSON.parse(user);
@@ -54,11 +43,43 @@ const FilterStatistic = ({ onFilter }) => {
       creatorId
     );
     if (response.success) {
-      setStudentAndThemes(response.data || []);
+      setStudentNameList(response.data || []);
+      setFilteredStudents(response.data || []);
     } else {
       console.error(response.message);
     }
   };
+
+  const fetchDistinctThemeNames = async () => {
+    const user = localStorage.getItem("user");
+    const { uuid: creatorId } = JSON.parse(user);
+
+    const response = await statisticService.findDistinctThemeNameByCreatorId(
+      creatorId
+    );
+    if (response.success) {
+      setThemeNameList(response.data || []);
+      setFilteredThemes(response.data || []);
+    } else {
+      console.error(response.message);
+    }
+  };
+
+  useEffect(() => {
+    setFilteredStudents(
+      studentNameList.filter((data) =>
+        data.studentName.toLowerCase().includes(studentName.toLowerCase())
+      )
+    );
+  }, [studentName, studentNameList]);
+
+  useEffect(() => {
+    setFilteredThemes(
+      themeNameList.filter((data) =>
+        data.themeName.toLowerCase().includes(themeName.toLowerCase())
+      )
+    );
+  }, [themeName, themeNameList]);
 
   return (
     <div className="filter-container-statistic">
@@ -76,9 +97,9 @@ const FilterStatistic = ({ onFilter }) => {
             }}
             onBlur={() => setTimeout(() => setShowStudentOptions(false), 100)}
           />
-          {showStudentOptions && studentAndThemes.length > 0 && (
+          {showStudentOptions && filteredStudents.length > 0 && (
             <div className="dropdown-options">
-              {studentAndThemes.map((data, index) => (
+              {filteredStudents.map((data, index) => (
                 <div
                   key={index}
                   className="dropdown-option"
@@ -101,11 +122,11 @@ const FilterStatistic = ({ onFilter }) => {
               setShowThemeOptions(true);
               fetchDistinctThemeNames();
             }}
-            onBlur={() => setTimeout(() => setShowThemeOptions(false), 200)} // timeout to prevent immediate hide
+            onBlur={() => setTimeout(() => setShowThemeOptions(false), 200)}
           />
-          {showThemeOptions && (
+          {showThemeOptions && filteredThemes.length > 0 && (
             <div className="dropdown-options">
-              {studentAndThemes.map((data, index) => (
+              {filteredThemes.map((data, index) => (
                 <div
                   key={index}
                   className="dropdown-option"

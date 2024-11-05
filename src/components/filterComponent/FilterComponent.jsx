@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./FilterComponent.css";
 import { ResponseService } from "../../service/ResponseService";
 import { BsCalendar } from "react-icons/bs";
@@ -9,7 +9,9 @@ const FilterComponent = ({ onData }) => {
   const [username, setUsername] = useState("");
   const [themeName, setThemeName] = useState("");
   const [usernamesList, setUsernameList] = useState([]);
+  const [filteredUsernames, setFilteredUsernames] = useState([]);
   const [themesList, setThemesList] = useState([]);
+  const [filteredThemes, setFilteredThemes] = useState([]);
   const [showUsernameDropDown, setUsernameDropDown] = useState(false);
   const [showThemeNameDropDown, setThemeNameDropDown] = useState(false);
   const [showFilterPerDate, setFilterPerDate] = useState(false);
@@ -21,7 +23,7 @@ const FilterComponent = ({ onData }) => {
       currentDate,
       finalDate,
       username,
-      themeName
+      themeName,
     });
   };
 
@@ -40,6 +42,7 @@ const FilterComponent = ({ onData }) => {
     const response = await responseService.findUsernamesByCreator(creatorId);
     if (response.success) {
       setUsernameList(response.data || []);
+      setFilteredUsernames(response.data || []);
     } else {
       console.error(response.message);
     }
@@ -52,10 +55,27 @@ const FilterComponent = ({ onData }) => {
     const response = await responseService.findThemeNamesByCreator(creatorId);
     if (response.success) {
       setThemesList(response.data || []);
+      setFilteredThemes(response.data || []);
     } else {
       console.error(response.message);
     }
   };
+
+  useEffect(() => {
+    setFilteredUsernames(
+      usernamesList.filter((data) =>
+        data.username.toLowerCase().includes(username.toLowerCase())
+      )
+    );
+  }, [username, usernamesList]);
+
+  useEffect(() => {
+    setFilteredThemes(
+      themesList.filter((data) =>
+        data.themeName.toLowerCase().includes(themeName.toLowerCase())
+      )
+    );
+  }, [themeName, themesList]);
 
   return (
     <div className="filter-container">
@@ -74,9 +94,9 @@ const FilterComponent = ({ onData }) => {
               }}
               onBlur={() => setTimeout(() => setUsernameDropDown(false), 100)}
             />
-            {showUsernameDropDown && usernamesList.length > 0 && (
+            {showUsernameDropDown && filteredUsernames.length > 0 && (
               <div className="dropdown-options">
-                {usernamesList.map((data, index) => (
+                {filteredUsernames.map((data, index) => (
                   <div
                     key={index}
                     className="dropdown-option"
@@ -102,9 +122,9 @@ const FilterComponent = ({ onData }) => {
               }}
               onBlur={() => setTimeout(() => setThemeNameDropDown(false), 100)}
             />
-            {showThemeNameDropDown && themesList.length > 0 && (
+            {showThemeNameDropDown && filteredThemes.length > 0 && (
               <div className="dropdown-options">
-                {themesList.map((data, index) => (
+                {filteredThemes.map((data, index) => (
                   <div
                     key={index}
                     className="dropdown-option"
