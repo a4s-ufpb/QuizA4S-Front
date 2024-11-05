@@ -10,4 +10,7 @@ export default defineConfig({
    strictPort: true,
    host: true,
   },
+  define: {
+    global: 'window',
+  },
  });
