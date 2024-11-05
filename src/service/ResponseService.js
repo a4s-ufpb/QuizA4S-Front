@@ -38,15 +38,16 @@ export class ResponseService {
     );
   }
 
-  findResponsesByQuestionCreatorAndUsernameAndDate(
+  findResponsesByQuestionCreatorAndUsernameAndDateAndThemeName(
     currentPage,
     username,
+    themeName,
     currentDate,
     finalDate
   ) {
     return this.handleRequest(
       "get",
-      `/response/username/date?page=${currentPage}&username=${username}&currentDate=${currentDate}&finalDate=${finalDate}`
+      `/response/query?page=${currentPage}&username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}`
     );
   }
 
@@ -63,6 +64,10 @@ export class ResponseService {
 
   findUsernamesByCreator(creatorId) {
     return this.handleRequest("get", `/response/usernames/${creatorId}`);
+  }
+
+  findThemeNamesByCreator(creatorId) {
+    return this.handleRequest("get", `/response/themes/${creatorId}`);
   }
 
 }

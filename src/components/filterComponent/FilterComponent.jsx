@@ -1,13 +1,18 @@
 import { useState } from "react";
 import "./FilterComponent.css";
 import { ResponseService } from "../../service/ResponseService";
+import { BsCalendar } from "react-icons/bs";
 
 const FilterComponent = ({ onData }) => {
   const [currentDate, setCurrentDate] = useState("");
   const [finalDate, setFinalDate] = useState("");
   const [username, setUsername] = useState("");
-  const [usernames, setUsernames] = useState([]);
-  const [isFocused, setIsFocused] = useState(false);
+  const [themeName, setThemeName] = useState("");
+  const [usernamesList, setUsernameList] = useState([]);
+  const [themesList, setThemesList] = useState([]);
+  const [showUsernameDropDown, setUsernameDropDown] = useState(false);
+  const [showThemeNameDropDown, setThemeNameDropDown] = useState(false);
+  const [showFilterPerDate, setFilterPerDate] = useState(false);
 
   const responseService = new ResponseService();
 
@@ -16,6 +21,7 @@ const FilterComponent = ({ onData }) => {
       currentDate,
       finalDate,
       username,
+      themeName
     });
   };
 
@@ -23,7 +29,8 @@ const FilterComponent = ({ onData }) => {
     setCurrentDate("");
     setFinalDate("");
     setUsername("");
-    onData({ currentDate: "", finalDate: "", username: "" });
+    setThemeName("");
+    onData({ currentDate: "", finalDate: "", username: "", themeName: "" });
   };
 
   const fetchUsernames = async () => {
@@ -32,7 +39,19 @@ const FilterComponent = ({ onData }) => {
 
     const response = await responseService.findUsernamesByCreator(creatorId);
     if (response.success) {
-      setUsernames(response.data || []);
+      setUsernameList(response.data || []);
+    } else {
+      console.error(response.message);
+    }
+  };
+
+  const fetchThemeNames = async () => {
+    const user = localStorage.getItem("user");
+    const { uuid: creatorId } = JSON.parse(user);
+
+    const response = await responseService.findThemeNamesByCreator(creatorId);
+    if (response.success) {
+      setThemesList(response.data || []);
     } else {
       console.error(response.message);
     }
@@ -43,21 +62,21 @@ const FilterComponent = ({ onData }) => {
       <div className="filter-body">
         <div className="container-filter-input">
           <label className="filter-input">
-            <span>Nome do Usuário</span>
+            <span>Usuário:</span>
             <input
               type="text"
               placeholder="Digite o nome do usuário"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               onFocus={() => {
-                setIsFocused(true);
+                setUsernameDropDown(true);
                 fetchUsernames();
               }}
-              onBlur={() => setTimeout(() => setIsFocused(false), 100)}
+              onBlur={() => setTimeout(() => setUsernameDropDown(false), 100)}
             />
-            {isFocused && usernames.length > 0 && (
+            {showUsernameDropDown && usernamesList.length > 0 && (
               <div className="dropdown-options">
-                {usernames.map((data, index) => (
+                {usernamesList.map((data, index) => (
                   <div
                     key={index}
                     className="dropdown-option"
@@ -71,21 +90,60 @@ const FilterComponent = ({ onData }) => {
           </label>
 
           <label className="filter-input">
-            <span>Data Inicial</span>
+            <span>Tema:</span>
             <input
-              type="date"
-              value={currentDate}
-              onChange={(e) => setCurrentDate(e.target.value)}
+              type="text"
+              placeholder="Digite o nome do tema"
+              value={themeName}
+              onChange={(e) => setThemeName(e.target.value)}
+              onFocus={() => {
+                setThemeNameDropDown(true);
+                fetchThemeNames();
+              }}
+              onBlur={() => setTimeout(() => setThemeNameDropDown(false), 100)}
             />
+            {showThemeNameDropDown && themesList.length > 0 && (
+              <div className="dropdown-options">
+                {themesList.map((data, index) => (
+                  <div
+                    key={index}
+                    className="dropdown-option"
+                    onMouseDown={() => setThemeName(data.themeName)}
+                  >
+                    {data.themeName}
+                  </div>
+                ))}
+              </div>
+            )}
           </label>
-          <label className="filter-input">
-            <span>Data Final</span>
-            <input
-              type="date"
-              value={finalDate}
-              onChange={(e) => setFinalDate(e.target.value)}
-            />
-          </label>
+
+          <div className="filter-date-container">
+            <div className="set-filter-date" onClick={() => setFilterPerDate(!showFilterPerDate)}>
+              <p>Filtrar por período</p>
+              <BsCalendar />
+            </div>
+
+            {showFilterPerDate && (
+              <div className="filter-date">
+                <label className="filter-input">
+                  <span>Data Inicial</span>
+                  <input
+                    type="date"
+                    value={currentDate}
+                    onChange={(e) => setCurrentDate(e.target.value)}
+                  />
+                </label>
+                <label className="filter-input">
+                  <span>Data Final</span>
+                  <input
+                    type="date"
+                    value={finalDate}
+                    onChange={(e) => setFinalDate(e.target.value)}
+                  />
+                </label>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="filter-buttons">

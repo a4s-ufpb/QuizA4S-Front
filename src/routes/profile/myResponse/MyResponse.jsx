@@ -19,15 +19,17 @@ const MyResponse = () => {
   const [currentDate, setCurrentDate] = useState("");
   const [finalDate, setFinalDate] = useState("");
   const [username, setUsername] = useState("");
+  const [themeName, setThemeName] = useState("");
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
 
       const response =
-        await responseService.findResponsesByQuestionCreatorAndUsernameAndDate(
+        await responseService.findResponsesByQuestionCreatorAndUsernameAndDateAndThemeName(
           currentPage,
           username,
+          themeName,
           currentDate,
           finalDate
         );
@@ -44,7 +46,7 @@ const MyResponse = () => {
     }
 
     fetchData();
-  }, [currentPage, currentDate, finalDate, username]);
+  }, [currentPage, currentDate, finalDate, username, themeName]);
 
   // Altera o estados dos parâmetros para realizar a pesquisa
   function changeData(propsData) {
@@ -52,6 +54,7 @@ const MyResponse = () => {
     setUsername(propsData.username);
     setCurrentDate(propsData.currentDate);
     setFinalDate(propsData.finalDate);
+    setThemeName(propsData.themeName)
   }
 
   return (
