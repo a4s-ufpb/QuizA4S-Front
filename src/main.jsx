@@ -21,6 +21,8 @@ import PrivateRoute from "./components/privateRoute/PrivateRoute.jsx";
 import CreateQuestion from "./routes/createQuiz/CreateQuestions.jsx"
 import SelectTheme from "./routes/createQuiz/SelectTheme.jsx";
 import RankingPage from "./routes/rankingPage/RankingPage.jsx";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

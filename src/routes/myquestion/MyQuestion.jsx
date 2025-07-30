@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Container, Row, Col, Card, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { PlusCircleFill } from "react-bootstrap-icons";
 import Pagination from "../../components/pagination/Pagination";
 import SearchComponent from "../../components/searchComponent/SearchComponent";
 import Loading from "../../components/loading/Loading";
@@ -9,14 +11,11 @@ import NotFoundComponent from "../../components/notFound/NotFoundComponent";
 import MyAlternative from "./MyAlternative";
 import { DEFAULT_IMG } from "../../vite-env";
 import { QuestionService } from "./../../service/QuestionService";
-import { FcPlus } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
-
-import "./MyQuestion.css";
 
 const MyQuestion = () => {
   const questionService = new QuestionService();
-
+  const navigate = useNavigate();
   const {
     id: themeId,
     name: themeName,
@@ -26,21 +25,43 @@ const MyQuestion = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [questions, setQuestions] = useState([]);
-
   const [loading, setLoading] = useState(false);
   const [isConfirmBox, setConfirmBox] = useState(false);
   const [isUpdateBox, setUpdateBox] = useState(false);
   const [isInformationBox, setInformationBox] = useState(false);
-
   const [callBack, setCallBack] = useState({});
-
   const [informationData, setInformationData] = useState({
     text: "",
     icon: "exclamation",
     color: "red",
   });
-
   const [questionTitle, setQuestionTitle] = useState("");
+  const [questionId, setQuestionId] = useState(0);
+  const [newQuestion, setNewQuestion] = useState({
+    title: "",
+    imageUrl: "",
+  });
+  const [alternatives, setAlternatives] = useState([]);
+  const [isShowAlternatives, setShowAlternatives] = useState(false);
+
+  const inputs = [
+    {
+      label: "Novo título",
+      type: "text",
+      placeholder: "Digite o título da questão",
+      value: newQuestion.title,
+      maxLength: 170,
+      minLength: 4,
+    },
+    {
+      label: "URL da Imagem",
+      type: "text",
+      placeholder: "Digite a url da imagem",
+      value: newQuestion.imageUrl,
+      maxLength: 255,
+      minLength: 0,
+    },
+  ];
 
   function changeName(propsQuestionTitle) {
     setQuestionTitle(propsQuestionTitle);
@@ -65,31 +86,7 @@ const MyQuestion = () => {
     }
 
     fetchData();
-  }, [currentPage, callBack]);
-
-  const [newQuestion, setNewQuestion] = useState({
-    title: "",
-    imageUrl: "",
-  });
-
-  const inputs = [
-    {
-      label: "Novo título",
-      type: "text",
-      placeholder: "Digite o título da questão",
-      value: newQuestion.title,
-      maxLength: 170,
-      minLength: 4,
-    },
-    {
-      label: "URL da Imagem",
-      type: "text",
-      placeholder: "Digite a url da imagem",
-      value: newQuestion.imageUrl,
-      maxLength: 255,
-      minLength: 0,
-    },
-  ];
+  }, [currentPage, callBack, questionTitle]);
 
   function changeValue(value, label) {
     switch (label) {
@@ -103,8 +100,6 @@ const MyQuestion = () => {
         return "";
     }
   }
-
-  const [questionId, setQuestionId] = useState(0);
 
   function showConfirmBox(id, title, imageUrl) {
     setQuestionId(id);
@@ -152,126 +147,163 @@ const MyQuestion = () => {
 
   function activeInformationBox(isFail, message) {
     if (isFail) {
-      setInformationData((prevData) => {
-        return { ...prevData, text: message };
-      });
+      setInformationData((prevData) => ({
+        ...prevData,
+        text: message,
+      }));
       setInformationBox(true);
     } else {
-      setInformationData((prevData) => {
-        return { ...prevData, text: message, color: "green", icon: "check" };
-      });
+      setInformationData((prevData) => ({
+        ...prevData,
+        text: message,
+        color: "green",
+        icon: "check",
+      }));
       setInformationBox(true);
     }
   }
-
-  const [alternatives, setAlternatives] = useState([]);
-  const [isShowAlternatives, setShowAlternatives] = useState(false);
 
   function showAlternatives(alternatives) {
     setAlternatives(alternatives);
     setShowAlternatives(true);
   }
 
-  const navigate = useNavigate();
-  const themeJson = localStorage.getItem("theme");
-  const themeObject = JSON.parse(themeJson);
-
   function navigateForRegisterQuestions() {
-    navigate(`/create/quiz/${themeObject.id}/question`);
+    navigate(`/create/quiz/${themeId}/question`);
   }
 
   return (
-    <div className="container-my-question outlet">
-      <div className="my-question">
-        <div className="my-question-header">
-          <div className="theme-info">
-            <img
-              src={themeUrl == null || themeUrl == "" ? DEFAULT_IMG : themeUrl}
-              alt="image-theme"
-              loading="lazy"
-            />
-            <span>{themeName}</span>
-          </div>
+    <Container fluid className="py-4 min-vh-100">
+      <Row className="mb-4">
+        <Col>
+          <Card className="shadow-sm border-0">
+            <Card.Body className="d-flex align-items-center gap-3">
+              <img
+                src={themeUrl == null || themeUrl === "" ? DEFAULT_IMG : themeUrl}
+                alt="image-theme"
+                loading="lazy"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  objectFit: "cover",
+                  borderRadius: "10px",
+                }}
+              />
+              <div>
+                <h5 className="mb-0">{themeName}</h5>
+                <h2 className="mt-2">Minhas questões</h2>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
-          <h1>Minhas questões</h1>
-        </div>
+      <SearchComponent
+        placeholder="Digite o título de uma questão"
+        setData={setQuestions}
+        url={`/question/creator/theme/${themeId}?page=${currentPage}&title=`}
+        setCurrentPage={setCurrentPage}
+        setTotalPages={setTotalPages}
+        onSearch={changeName}
+      />
 
-        <div className="my-question-body">
-          <SearchComponent
-            placeholder="Digite o título de uma questão"
-            setData={setQuestions}
-            url={`/question/creator/theme/${themeId}?page=${currentPage}&title=`}
-            setCurrentPage={setCurrentPage}
-            setTotalPages={setTotalPages}
-            onSearch={changeName}
-          />
-
-          <div className="my-question-data">
-            {questions &&
-              questions.map((question) => (
-                <div key={question.id} className="question-data">
-                  <img
-                    src={
-                      question.imageUrl == null || question.imageUrl == ""
-                        ? DEFAULT_IMG
-                        : question.imageUrl
-                    }
-                    alt="image-question"
-                  />
-                  <div className="question-info">
-                    <p>{question.title}</p>
-                    <button
-                      type="button"
+      <Row xs={1} sm={2} md={3} lg={4} className="g-4 mt-3">
+        {questions &&
+          questions.map((question) => (
+            <Col key={question.id}>
+              <Card className="shadow-sm border-0 h-100">
+                <Card.Img
+                  variant="top"
+                  src={
+                    question.imageUrl == null || question.imageUrl === ""
+                      ? DEFAULT_IMG
+                      : question.imageUrl
+                  }
+                  alt="image-question"
+                  style={{
+                    height: "150px",
+                    objectFit: "cover",
+                    borderRadius: "10px 10px 0 0",
+                  }}
+                />
+                <Card.Body className="d-flex flex-column">
+                  <Card.Text className="flex-grow-1">{question.title}</Card.Text>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
                       onClick={() => showAlternatives(question.alternatives)}
                     >
                       Alternativas
-                    </button>
+                    </Button>
+                    <div className="d-flex gap-2">
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={<Tooltip>Editar</Tooltip>}
+                      >
+                        <Button
+                          variant="outline-warning"
+                          size="sm"
+                          onClick={() =>
+                            showUpdateBox(
+                              question.id,
+                              question.title,
+                              question.imageUrl
+                            )
+                          }
+                        >
+                          <i className="bi bi-pencil-square"></i>
+                        </Button>
+                      </OverlayTrigger>
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={<Tooltip>Excluir</Tooltip>}
+                      >
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() =>
+                            showConfirmBox(
+                              question.id,
+                              question.title,
+                              question.imageUrl
+                            )
+                          }
+                        >
+                          <i className="bi bi-trash-fill"></i>
+                        </Button>
+                      </OverlayTrigger>
+                    </div>
                   </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+      </Row>
 
-                  <div className="question-action">
-                    <i
-                      className="bi bi-trash-fill"
-                      onClick={() =>
-                        showConfirmBox(
-                          question.id,
-                          question.title,
-                          question.imageUrl
-                        )
-                      }
-                    ></i>
-                    <i
-                      className="bi bi-pencil-square"
-                      onClick={() =>
-                        showUpdateBox(
-                          question.id,
-                          question.title,
-                          question.imageUrl
-                        )
-                      }
-                    ></i>
-                  </div>
-                </div>
-              ))}
+      {!loading && questions.length === 0 && (
+        <NotFoundComponent title="Questão não encontrada" />
+      )}
 
-            {!loading && questions.length == 0 && (
-              <NotFoundComponent title="Questão não encontrada" />
-            )}
-          </div>
+      <Pagination
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
+      />
 
-          <Pagination
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            totalPages={totalPages}
-          />
-        </div>
-
-        <div className="container-btn-register-question">
-          <div className="btn-register-question" onClick={navigateForRegisterQuestions}>
-            <FcPlus className="icon-register-question" />
-            <span className="tooltiptext">Cadastrar questão</span>
-          </div>
-        </div>
-      </div>
+      <OverlayTrigger
+        placement="top"
+        overlay={<Tooltip>Cadastrar questão</Tooltip>}
+      >
+        <Button
+          variant="primary"
+          className="rounded-circle position-fixed bottom-0 end-0 m-4"
+          style={{ width: "60px", height: "60px" }}
+          onClick={navigateForRegisterQuestions}
+        >
+          <PlusCircleFill size={24} />
+        </Button>
+      </OverlayTrigger>
 
       {isShowAlternatives && (
         <MyAlternative
@@ -310,7 +342,7 @@ const MyQuestion = () => {
       )}
 
       {loading && <Loading />}
-    </div>
+    </Container>
   );
 };
 

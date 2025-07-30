@@ -1,5 +1,5 @@
-import "./Pagination.css";
 import { useEffect, useState } from "react";
+import { Button, Container } from "react-bootstrap";
 
 const Pagination = ({ totalPages, currentPage, setCurrentPage }) => {
   const [isFirstPage, setIsFirstPage] = useState(true);
@@ -19,22 +19,26 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }) => {
   }
 
   return (
-    <div className="container-pagination">
-      <button
-        type="button"
+    <Container className="d-flex justify-content-center align-items-center my-4">
+      <Button
+        variant="outline-dark"
+        className="me-2"
         onClick={() => alterPage("prev")}
         disabled={isFirstPage}
       >
         Anterior
-      </button>
-      <button
-        type="button"
+      </Button>
+      <span className="mx-3 align-self-center">
+        Página {currentPage + 1} de {totalPages}
+      </span>
+      <Button
+        variant="outline-dark"
         onClick={() => alterPage("next")}
         disabled={isLastPage || totalPages === 0}
       >
         Próximo
-      </button>
-    </div>
+      </Button>
+    </Container>
   );
 };
 

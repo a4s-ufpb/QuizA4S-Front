@@ -1,14 +1,12 @@
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import InformationBox from "../informationBox/InformationBox";
+import { Form, Button, Card, Container, Alert } from "react-bootstrap";
 import Loading from "../loading/Loading";
 import { AuthenticationContext } from "../../context/AuthenticationContext";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { object, string } from "yup";
 import { UserService } from "../../service/UserService.js";
-
-import "./FormTemplate.css";
 
 const FormTemplate = ({
   title,
@@ -79,7 +77,6 @@ const FormTemplate = ({
     }
   };
 
-
   const requiredFieldMessage = "Campo obrigatório";
   const regexValidatedEmail =
     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -112,43 +109,53 @@ const FormTemplate = ({
   } = useForm({ resolver: yupResolver(resolverSchema) });
 
   return (
-    <div className="container">
-      <form onSubmit={onSubmit(handleSubmit)} className="form">
-        <h1>{title}</h1>
+    <Container className="d-flex justify-content-center align-items-center min-vh-100">
+      <Card className="shadow-sm w-100" style={{ maxWidth: "400px" }}>
+        <Card.Body className="p-4">
+          <h1 className="text-center mb-4">{title}</h1>
+          
+          <Form onSubmit={onSubmit(handleSubmit)}>
+            {fields.map((field) => (
+              <Form.Group key={field.name} className="mb-3">
+                <Form.Label>{field.label}</Form.Label>
+                <Form.Control
+                  type={field.type}
+                  placeholder={field.placeholder}
+                  {...register(field.name)}
+                  isInvalid={!!errors[field.name]}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors[field.name]?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            ))}
 
-        {fields.map((field) => (
-          <label key={field.name} className="container-input">
-            <span className="container-input-label">{field.label}:</span>
-            <input
-              type={field.type}
-              placeholder={field.placeholder}
-              {...register(field.name)}
-            />
-            <span className="span-error-message">
-              {errors?.[field.name]?.message}
-            </span>
-          </label>
-        ))}
+            {loading && <Loading />}
 
-        {loading && <Loading />}
+            {activeInformationBox && (
+              <Alert variant="danger" onClose={closeInformationBox} dismissible>
+                {error}
+              </Alert>
+            )}
 
-        {activeInformationBox && (
-          <InformationBox
-            text={error}
-            closeBox={closeInformationBox}
-            icon="exclamation"
-            color="red"
-          />
-        )}
+            <Button
+              variant="primary"
+              type="submit"
+              className="w-100 mb-3"
+              disabled={loading}
+            >
+              {buttonText}
+            </Button>
 
-        <button type="submit" className="btn">
-          {buttonText}
-        </button>
-        <Link to={redirectLink} className="anchor">
-          <p>{redirectText}</p>
-        </Link>
-      </form>
-    </div>
+            <div className="text-center">
+              <Link to={redirectLink} className="text-decoration-none">
+                {redirectText}
+              </Link>
+            </div>
+          </Form>
+        </Card.Body>
+      </Card>
+    </Container>
   );
 };
 

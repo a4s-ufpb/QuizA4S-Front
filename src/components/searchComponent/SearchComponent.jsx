@@ -1,8 +1,8 @@
 import { useState } from "react";
+import { Container, Form, InputGroup } from "react-bootstrap";
+import { Search } from "react-bootstrap-icons";
 import { ApiFetch } from "../../util/ApiFetch";
 import Loading from "../loading/Loading";
-
-import "./SearchComponent.css";
 
 const SearchComponent = ({
   title,
@@ -46,17 +46,22 @@ const SearchComponent = ({
   }
 
   return (
-    <div className="container-search">
-      <h2 className="search-title">{title}</h2>
-      <input
-        type="text"
-        placeholder={placeholder}
-        value={name}
-        onChange={(e) => searchDataName(e.target.value)}
-        className="search-input"
-      />
+    <Container className="mb-4">
+      <h2 className="text-center mb-3">{title}</h2>
+      <InputGroup className="shadow-sm">
+        <InputGroup.Text>
+          <Search />
+        </InputGroup.Text>
+        <Form.Control
+          type="text"
+          placeholder={placeholder}
+          value={name}
+          onChange={(e) => searchDataName(e.target.value)}
+          className="border-start-0"
+        />
+      </InputGroup>
       {loading && <Loading />}
-    </div>
+    </Container>
   );
 };
 

@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
-import { BsSearch } from "react-icons/bs";
+import { Modal, Form, InputGroup, Button, Row, Col, Card } from "react-bootstrap";
+import { Search } from "react-bootstrap-icons";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
 import Pagination from "../pagination/Pagination";
+import NotFoundComponent from "../notFound/NotFoundComponent";
 import { SearchImageService } from "../../service/SearchImageService";
-import "./SearchImage.css";
-import NotFoundComponent from "./../notFound/NotFoundComponent";
 
 function SearchImage({ setSearchImage, getUrlOfImage }) {
   const imageService = new SearchImageService();
   const [imageName, setImageName] = useState("");
   const [images, setImages] = useState([]);
-
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
-
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
@@ -47,67 +45,78 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
   }
 
   return (
-    <div className="container-external-search-image">
-      <div className="container-search-image">
-        <div className="search-image">
-          <div className="button-close">
-            <span onClick={() => setSearchImage(false)}>X</span>
-          </div>
-
-          <label>
-            <input
+    <Modal show={true} onHide={() => setSearchImage(false)} centered size="lg">
+      <Modal.Header closeButton>
+        <Modal.Title>Pesquisar Imagem</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form.Group className="mb-3">
+          <InputGroup>
+            <Form.Control
               type="text"
               placeholder="Digite o nome da imagem"
               value={imageName}
               onChange={(e) => setImageName(e.target.value)}
               onKeyDown={handleKeyDown}
             />
-            <BsSearch
+            <Button
+              variant="primary"
               onClick={() => {
                 setCurrentPage(0);
                 searchImage();
               }}
-              className="search-image-button"
-            />
-          </label>
+            >
+              <Search />
+            </Button>
+          </InputGroup>
+        </Form.Group>
 
-          <div className="search-image-data">
-            {images &&
-              images.map((img) => (
-                <div key={img.id} className="image-data">
-                  <img
+        <Row xs={2} sm={3} md={4} lg={5} className="g-3">
+          {images &&
+            images.map((img) => (
+              <Col key={img.id}>
+                <Card
+                  className="shadow-sm border-0 h-100"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => getUrlOfImage(img.src.medium)}
+                >
+                  <Card.Img
+                    variant="top"
                     src={img.src.medium}
                     alt={img.alt}
-                    width={140}
-                    height={200}
-                    onClick={() => getUrlOfImage(img.src.medium)}
+                    style={{
+                      height: "150px",
+                      objectFit: "cover",
+                      borderRadius: "10px 10px 0 0",
+                    }}
                   />
-                </div>
-              ))}
+                </Card>
+              </Col>
+            ))}
+        </Row>
 
-            {images && images.length === 0 && (
-              <NotFoundComponent title="Nenhuma imagem encontrada" />
-            )}
-          </div>
-        </div>
-
+        {images && images.length === 0 && (
+          <NotFoundComponent title="Nenhuma imagem encontrada" />
+        )}
+      </Modal.Body>
+      <Modal.Footer className="d-flex justify-content-between">
         <Pagination
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           totalPages={totalPages}
         />
+      </Modal.Footer>
 
-        {loading && <Loading />}
-        {informationBox && (
-          <InformationBox
-            color="red"
-            text="Imagens não encontradas"
-            icon="exclamation"
-            closeBox={() => setInformationBox(false)}
-          />
-        )}
-      </div>
-    </div>
+      {loading && <Loading />}
+      {informationBox && (
+        <InformationBox
+          color="red"
+          text="Imagens não encontradas"
+          icon="exclamation"
+          closeBox={() => setInformationBox(false)}
+        />
+      )}
+    </Modal>
   );
 }
 

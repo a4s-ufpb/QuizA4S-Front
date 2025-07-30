@@ -9,7 +9,6 @@
 }
 
 .theme-data{
-    background-color: #ffffffe4;
     width: 48%;
     min-width: 340px;
     padding: 15px;
@@ -17,6 +16,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.692);
 }
 
 .theme-data img{
