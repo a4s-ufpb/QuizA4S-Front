@@ -6,22 +6,15 @@ import { QuestionService } from "../../service/QuestionService";
 import { AlternativeService } from "./../../service/AlternativeService";
 import SearchImage from "../../components/searchImageComponent/SearchImage";
 import QuestionListComponent from "../../components/questionListComponent/QuestionListComponent";
-import { BsRobot } from "react-icons/bs";
-import ConfirmBox from "../../components/confirmBox/ConfirmBox";
-import { GeminiService } from "../../service/GeminiService";
 
 import "./CreateQuestions.css";
 
 const CreateQuestions = () => {
   const questionService = new QuestionService();
   const alternativeService = new AlternativeService();
-  const geminiService = new GeminiService();
 
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
-
-  const [showMessageRobot, setMessageRobot] = useState(false);
-  const [confirmBox, setConfirmBox] = useState(false);
 
   const [showSearchImage, setSearchImage] = useState(false);
 
@@ -135,28 +128,6 @@ const CreateQuestions = () => {
     setSearchImage(false);
   }
 
-  async function generateQuestion() {
-    try {
-      setLoading(true);
-      const questionResponse = await geminiService.generateQuestion(themeName);
-
-      if (questionResponse.error) {
-        activeInformationBox(true, questionResponse.error);
-      } else {
-        setQuestion((prevQuestion) => ({
-          ...prevQuestion,
-          title: questionResponse.title,
-        }));
-        setAlternatives(questionResponse.alternatives);
-      }
-    } catch (error) {
-      activeInformationBox(true, "Tente novamente mais tarde!");
-    } finally {
-      setLoading(false);
-      setConfirmBox(false);
-    }
-  }
-
   function activeInformationBox(isFail, message) {
     if (isFail) {
       setInformationBoxData((prevData) => {
@@ -181,15 +152,6 @@ const CreateQuestions = () => {
       <QuestionListComponent callbackQuestions={callbackQuestions} />
 
       <div className="container-create-questions-header">
-        <div
-          className="button-generate-question"
-          onMouseEnter={() => setMessageRobot(true)}
-          onMouseLeave={() => setMessageRobot(false)}
-          onClick={() => setConfirmBox(true)}
-        >
-          <BsRobot />
-          {showMessageRobot && <p>Gerar Questão com IA</p>}
-        </div>
         <div className="container-create-theme-info">
           <img
             src={themeUrl == null || themeUrl == "" ? DEFAULT_IMG : themeUrl}
@@ -291,15 +253,6 @@ const CreateQuestions = () => {
         <SearchImage
           setSearchImage={setSearchImage}
           getUrlOfImage={getUrlOfImage}
-        />
-      )}
-      {confirmBox && (
-        <ConfirmBox
-          title="Deseja gerar uma questão utilizando Inteligência Artificial?"
-          textBtn1="Gerar"
-          textBtn2="Fechar"
-          onClickBtn1={generateQuestion}
-          onClickBtn2={() => setConfirmBox(false)}
         />
       )}
     </div>
