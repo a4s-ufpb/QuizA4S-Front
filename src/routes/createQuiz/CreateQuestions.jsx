@@ -138,13 +138,17 @@ const CreateQuestions = () => {
   async function generateQuestion() {
     try {
       setLoading(true);
-
       const questionResponse = await geminiService.generateQuestion(themeName);
 
-      question.title = questionResponse.title;
-
-      setAlternatives(questionResponse.alternatives);
-      
+      if (questionResponse.error) {
+        activeInformationBox(true, questionResponse.error);
+      } else {
+        setQuestion((prevQuestion) => ({
+          ...prevQuestion,
+          title: questionResponse.title,
+        }));
+        setAlternatives(questionResponse.alternatives);
+      }
     } catch (error) {
       activeInformationBox(true, "Tente novamente mais tarde!");
     } finally {
@@ -156,7 +160,12 @@ const CreateQuestions = () => {
   function activeInformationBox(isFail, message) {
     if (isFail) {
       setInformationBoxData((prevData) => {
-        return { ...prevData, text: message, color: "red", icon: "exclamation"};
+        return {
+          ...prevData,
+          text: message,
+          color: "red",
+          icon: "exclamation",
+        };
       });
       setInformationBox(true);
     } else {
@@ -169,7 +178,7 @@ const CreateQuestions = () => {
 
   return (
     <div className="container-create-questions">
-      <QuestionListComponent callbackQuestions={callbackQuestions}/>
+      <QuestionListComponent callbackQuestions={callbackQuestions} />
 
       <div className="container-create-questions-header">
         <div
@@ -233,35 +242,35 @@ const CreateQuestions = () => {
         </div>
 
         <div className="container-alternatives">
-          {alternatives.map((alternative, index) => (
-            <div key={index} className="alternative">
-              <span>{`Alternativa ${index + 1}:`}</span>
-
-              <label className="alternative-data">
-                <textarea
-                  placeholder="Digite o texto da alternativa"
-                  value={alternative.text}
-                  onChange={(e) =>
-                    changeAlternative(index, "text", e.target.value)
-                  }
-                  className="input-alternative-text"
-                  maxLength={100}
-                  required
-                ></textarea>
-                <input
-                  type="radio"
-                  name="alternative"
-                  id={`alt-${index + 1}`}
-                  checked={alternative.correct}
-                  onChange={(e) =>
-                    changeAlternative(index, "correct", e.target.checked)
-                  }
-                  className="input-alternative-check"
-                  required
-                />
-              </label>
-            </div>
-          ))}
+          {Array.isArray(alternatives) &&
+            alternatives.map((alternative, index) => (
+              <div key={index} className="alternative">
+                <span>{`Alternativa ${index + 1}:`}</span>
+                <label className="alternative-data">
+                  <textarea
+                    placeholder="Digite o texto da alternativa"
+                    value={alternative.text}
+                    onChange={(e) =>
+                      changeAlternative(index, "text", e.target.value)
+                    }
+                    className="input-alternative-text"
+                    maxLength={100}
+                    required
+                  ></textarea>
+                  <input
+                    type="radio"
+                    name="alternative"
+                    id={`alt-${index + 1}`}
+                    checked={alternative.correct}
+                    onChange={(e) =>
+                      changeAlternative(index, "correct", e.target.checked)
+                    }
+                    className="input-alternative-check"
+                    required
+                  />
+                </label>
+              </div>
+            ))}
         </div>
 
         <button type="submit" className="create-question-btn">

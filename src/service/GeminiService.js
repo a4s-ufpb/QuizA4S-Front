@@ -1,8 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GEMINI_API_KEY } from "../vite-env";
 
 export class GeminiService {
-  genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  genAI = new GoogleGenerativeAI('AIzaSyDG_hjlKWaPAN8ixAbdByRshX5Vqh9PJ2k');
 
   model = this.genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
@@ -23,7 +22,8 @@ export class GeminiService {
       const text = response.text();
       return JSON.parse(text);
     } catch (error) {
-      return error;
+      console.error("Erro ao gerar questão:", error);
+      return { error: "Tente novamente mais tarde!" };
     }
   }
 }
