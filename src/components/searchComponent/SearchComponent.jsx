@@ -47,7 +47,7 @@ const SearchComponent = ({
 
   return (
     <Container className="mb-4">
-      <h2 className="text-center mb-3">{title}</h2>
+      <h2 className="text-center mb-3 text-white">{title}</h2>
       <InputGroup className="shadow-sm">
         <InputGroup.Text>
           <Search />

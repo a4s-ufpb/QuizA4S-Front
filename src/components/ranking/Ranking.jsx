@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import { Modal, Table, Button, Container } from "react-bootstrap";
 import Loading from "../loading/Loading";
 import { useEffect, useState } from "react";
 import { ScoreService } from "./../../service/ScoreService";
 import NotFoundComponent from "../notFound/NotFoundComponent";
-
 import "./Ranking.css";
 
 const Ranking = ({ navigatePath, setShowRanking }) => {
@@ -14,7 +14,6 @@ const Ranking = ({ navigatePath, setShowRanking }) => {
   const { name: themeName } = JSON.parse(localStorage.getItem("theme"));
 
   const [ranking, setRanking] = useState([]);
-
   const [isNotFound, setNotFound] = useState(false);
 
   useEffect(() => {
@@ -41,27 +40,31 @@ const Ranking = ({ navigatePath, setShowRanking }) => {
   }
 
   return (
-    <div className="container-ranking">
-      <div className="ranking">
-        <div className="ranking-header">
-          <h2>Ranking</h2>
-
-          <p>Tema: {themeName}</p>
-        </div>
-
-        <div className="table-ranking">
-          <table>
-            <thead>
-              {ranking && ranking.length > 0 && (
+    <Modal
+      show={true}
+      onHide={closeRanking}
+      centered
+      dialogClassName="custom-modal"
+      size="lg"
+    >
+      <Modal.Header closeButton className="bg-primary text-white">
+        <Modal.Title>Ranking</Modal.Title>
+      </Modal.Header>
+      <Modal.Body className="overflow-y-scroll" style={{ maxHeight: "60vh" }}>
+        <Container>
+          <p className="text-center bg-primary text-white rounded-pill px-3 py-1 mb-3">
+            Tema: {themeName}
+          </p>
+          {ranking && ranking.length > 0 ? (
+            <Table striped hover responsive>
+              <thead>
                 <tr>
-                  <th>Usuário</th>
-                  <th>Pontuação</th>
+                  <th style={{ width: "80%" }}>Usuário</th>
+                  <th style={{ width: "20%", textAlign: "center" }}>Pontuação</th>
                 </tr>
-              )}
-            </thead>
-            <tbody>
-              {ranking &&
-                ranking.map((score, index) => (
+              </thead>
+              <tbody>
+                {ranking.map((score, index) => (
                   <tr key={score.id}>
                     <td>
                       <span className={`rank-icon rank-${index + 1}`}>
@@ -69,25 +72,24 @@ const Ranking = ({ navigatePath, setShowRanking }) => {
                       </span>
                       {score.user.name}
                     </td>
-                    <td>{score.result}</td>
+                    <td className="text-center">{score.result}</td>
                   </tr>
                 ))}
-            </tbody>
-          </table>
-        </div>
-
-        {isNotFound && (
-          <NotFoundComponent title="Nenhuma pontuação cadastrada" />
-        )}
-
-        <div>
-          <button type="button" onClick={closeRanking}>
-            Voltar
-          </button>
-        </div>
-      </div>
+              </tbody>
+            </Table>
+          ) : null}
+          {isNotFound && (
+            <NotFoundComponent title="Nenhuma pontuação cadastrada" />
+          )}
+        </Container>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="primary" onClick={closeRanking}>
+          Voltar
+        </Button>
+      </Modal.Footer>
       {loading && <Loading />}
-    </div>
+    </Modal>
   );
 };
 

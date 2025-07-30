@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import "./FilterComponent.css";
-import { ResponseService } from "../../service/ResponseService";
+import { Form, InputGroup, Dropdown, Button, Row, Col, Collapse } from "react-bootstrap";
 import { BsCalendar } from "react-icons/bs";
+import { ResponseService } from "../../service/ResponseService";
+import "./FilterComponent.css";
 
 const FilterComponent = ({ onData }) => {
   const [currentDate, setCurrentDate] = useState("");
@@ -79,103 +80,118 @@ const FilterComponent = ({ onData }) => {
 
   return (
     <div className="filter-container">
-      <div className="filter-body">
-        <div className="container-filter-input">
-          <label className="filter-input">
-            <span>Usuário:</span>
-            <input
-              type="text"
-              placeholder="Digite o nome do usuário"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onFocus={() => {
-                setUsernameDropDown(true);
-                fetchUsernames();
-              }}
-              onBlur={() => setTimeout(() => setUsernameDropDown(false), 100)}
-            />
-            {showUsernameDropDown && filteredUsernames.length > 0 && (
-              <div className="dropdown-options">
+      <Row className="g-3">
+        <Col md={6}>
+          <Form.Group controlId="username">
+            <Form.Label>Usuário:</Form.Label>
+            <InputGroup>
+              <Form.Control
+                type="text"
+                placeholder="Digite o nome do usuário"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onFocus={() => {
+                  setUsernameDropDown(true);
+                  fetchUsernames();
+                }}
+                onBlur={() => setTimeout(() => setUsernameDropDown(false), 100)}
+              />
+            </InputGroup>
+            <Dropdown show={showUsernameDropDown}>
+              <Dropdown.Menu>
                 {filteredUsernames.map((data, index) => (
-                  <div
+                  <Dropdown.Item
                     key={index}
-                    className="dropdown-option"
                     onMouseDown={() => setUsername(data.username)}
                   >
                     {data.username}
-                  </div>
+                  </Dropdown.Item>
                 ))}
-              </div>
-            )}
-          </label>
+              </Dropdown.Menu>
+            </Dropdown>
+          </Form.Group>
+        </Col>
 
-          <label className="filter-input">
-            <span>Tema:</span>
-            <input
-              type="text"
-              placeholder="Digite o nome do tema"
-              value={themeName}
-              onChange={(e) => setThemeName(e.target.value)}
-              onFocus={() => {
-                setThemeNameDropDown(true);
-                fetchThemeNames();
-              }}
-              onBlur={() => setTimeout(() => setThemeNameDropDown(false), 100)}
-            />
-            {showThemeNameDropDown && filteredThemes.length > 0 && (
-              <div className="dropdown-options">
+        <Col md={6}>
+          <Form.Group controlId="themeName">
+            <Form.Label>Tema:</Form.Label>
+            <InputGroup>
+              <Form.Control
+                type="text"
+                placeholder="Digite o nome do tema"
+                value={themeName}
+                onChange={(e) => setThemeName(e.target.value)}
+                onFocus={() => {
+                  setThemeNameDropDown(true);
+                  fetchThemeNames();
+                }}
+                onBlur={() => setTimeout(() => setThemeNameDropDown(false), 100)}
+              />
+            </InputGroup>
+            <Dropdown show={showThemeNameDropDown}>
+              <Dropdown.Menu>
                 {filteredThemes.map((data, index) => (
-                  <div
+                  <Dropdown.Item
                     key={index}
-                    className="dropdown-option"
                     onMouseDown={() => setThemeName(data.themeName)}
                   >
                     {data.themeName}
-                  </div>
+                  </Dropdown.Item>
                 ))}
-              </div>
-            )}
-          </label>
+              </Dropdown.Menu>
+            </Dropdown>
+          </Form.Group>
+        </Col>
+      </Row>
 
-          <div className="filter-date-container">
-            <div className="set-filter-date" onClick={() => setFilterPerDate(!showFilterPerDate)}>
-              <p>Filtrar por período</p>
-              <BsCalendar />
-            </div>
+      <Row className="mt-3">
+        <Col>
+          <Form.Group>
+            <Button
+              variant="link"
+              onClick={() => setFilterPerDate(!showFilterPerDate)}
+              className="d-flex align-items-center gap-2"
+            >
+              <BsCalendar /> Filtrar por período
+            </Button>
+            <Collapse in={showFilterPerDate}>
+              <Row className="g-3 mt-2">
+                <Col md={6}>
+                  <Form.Group controlId="currentDate">
+                    <Form.Label>Data Inicial</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={currentDate}
+                      onChange={(e) => setCurrentDate(e.target.value)}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group controlId="finalDate">
+                    <Form.Label>Data Final</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={finalDate}
+                      onChange={(e) => setFinalDate(e.target.value)}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            </Collapse>
+          </Form.Group>
+        </Col>
+      </Row>
 
-            {showFilterPerDate && (
-              <div className="filter-date">
-                <label className="filter-input">
-                  <span>Data Inicial</span>
-                  <input
-                    type="date"
-                    value={currentDate}
-                    onChange={(e) => setCurrentDate(e.target.value)}
-                  />
-                </label>
-                <label className="filter-input">
-                  <span>Data Final</span>
-                  <input
-                    type="date"
-                    value={finalDate}
-                    onChange={(e) => setFinalDate(e.target.value)}
-                  />
-                </label>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="filter-buttons">
-          <button type="button" onClick={handleFilter}>
+      <Row className="mt-3">
+        <Col className="d-flex gap-2">
+          <Button variant="primary" onClick={handleFilter}>
             Filtrar
-          </button>
-
-          <button type="button" onClick={clearInputs}>
+          </Button>
+          <Button variant="danger" onClick={clearInputs}>
             Limpar
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Col>
+      </Row>
     </div>
   );
 };

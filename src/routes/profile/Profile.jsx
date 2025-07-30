@@ -227,7 +227,7 @@ const Profile = () => {
     <Container fluid className="py-4 min-vh-100">
       <Row className="g-4">
         <Col lg={3} md={4} sm={12}>
-          <Card className="shadow-sm border-0 h-100">
+          <Card className="shadow-sm border-0">
             <Card.Body className="text-center d-flex flex-column align-items-center gap-3">
               <PersonCircle size={80} className="text-primary" />
               <h5 className="mb-0">{name}</h5>

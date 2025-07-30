@@ -2,14 +2,12 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-family: 'Poppins', sans-serif;
   list-style: none;
 }
 
-body{
-  background-image: url("./assets/background-quiz.webp");
-  background-size: cover;
-  background-position: center;
+body {
+  background: linear-gradient(135deg, #40c4ff 0%, #0033a0 100%);
 }
 
 .span-error-message{
@@ -19,37 +17,6 @@ body{
   font-size: .9em;
   color: rgb(194, 0, 0);
   font-weight: bold;
-}
-
-.table {
-  width: 100%;
-  min-width: 650px;
-  border-collapse: collapse;
-}
-
-.table th, .table td {
-  padding: 8px;
-  text-align: center;
-  border-right: 1px solid #005982;
-}
-
-.table th {
-  background-color: #187ba7;
-  color: #fff;
-}
-
-.table tbody tr:nth-child(even) {
-  background-color: #187ba7;
-}
-
-.table tbody tr:nth-child(odd) {
-  background-color: #309dcb;
-}
-
-.table td {
-  color: #fff;
-  font-size: 1.05em;
-  line-height: 35px;
 }
 
 .button-close {

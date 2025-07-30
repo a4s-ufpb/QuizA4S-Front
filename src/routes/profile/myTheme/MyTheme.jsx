@@ -85,6 +85,7 @@ const MyTheme = () => {
         totalPages={totalPages}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
+        color={"dark"}
       />
 
       {loading && <Loading />}

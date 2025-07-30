@@ -1,10 +1,10 @@
-import "./MyStatisticConclusion.css";
-import { StatisticService } from "./../../../service/StatisticService";
 import { useEffect, useState } from "react";
-import Loading from "../../../components/loading/Loading";
+import { Container, Table, Row, Col } from "react-bootstrap";
+import FilterStatistic from "../../../components/filterStatistic/FilterStatistic";
 import Pagination from "../../../components/pagination/Pagination";
+import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
-import FilterStatistic from "../../../components/filterStatistic/FilterStatistic"
+import { StatisticService } from "../../../service/StatisticService";
 
 function MyStatisticConclusion() {
   const statisticService = new StatisticService();
@@ -27,15 +27,14 @@ function MyStatisticConclusion() {
     const { uuid: creatorId } = JSON.parse(localStorage.getItem("user"));
     try {
       setLoading(true);
-      const statisticResponse =
-        await statisticService.findAllStatisticByCreator(
-          currentPage,
-          creatorId,
-          studentName,
-          themeName,
-          startDate,
-          endDate
-        );
+      const statisticResponse = await statisticService.findAllStatisticByCreator(
+        currentPage,
+        creatorId,
+        studentName,
+        themeName,
+        startDate,
+        endDate
+      );
 
       if (!statisticResponse.success) {
         alert("Tente novamente mais tarde!");
@@ -64,45 +63,56 @@ function MyStatisticConclusion() {
   };
 
   return (
-    <div className="container-statistic-conclusion">
-      <FilterStatistic onFilter={handleFilter} />
-
-      <div className="container-table-statistics">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Usuário</th>
-              <th>Tema</th>
-              <th>Data</th>
-              <th>Porcentagem de Acertos</th>
-            </tr>
-          </thead>
-          <tbody>
-            {statisticList &&
-              statisticList.map((statistic) => (
-                <tr key={statistic.id}>
-                  <td>{statistic.studentName}</td>
-                  <td>{statistic.themeName}</td>
-                  <td>{statistic.date}</td>
-                  <td>{statistic.percentagemOfHits.toFixed(1)}%</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
-
+    <Container fluid className="py-4">
+      <Row className="mb-3">
+        <Col>
+          <FilterStatistic onFilter={handleFilter} />
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <Table striped bordered hover responsive>
+            <thead>
+              <tr>
+                <th>Usuário</th>
+                <th>Tema</th>
+                <th>Data</th>
+                <th>Porcentagem de Acertos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {statisticList &&
+                statisticList.map((statistic) => (
+                  <tr key={statistic.id}>
+                    <td>{statistic.studentName}</td>
+                    <td>{statistic.themeName}</td>
+                    <td>{statistic.date}</td>
+                    <td>{statistic.percentagemOfHits.toFixed(1)}%</td>
+                  </tr>
+                ))}
+            </tbody>
+          </Table>
+        </Col>
+      </Row>
       {!loading && statisticList.length === 0 && (
-        <NotFoundComponent title="Nenhuma Estatística Encontrada" />
+        <Row>
+          <Col>
+            <NotFoundComponent title="Nenhuma Estatística Encontrada" />
+          </Col>
+        </Row>
       )}
-
-      <Pagination
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        totalPages={totalPages}
-      />
-
+      <Row>
+        <Col>
+          <Pagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            color={"dark"}
+          />
+        </Col>
+      </Row>
       {loading && <Loading />}
-    </div>
+    </Container>
   );
 }
 

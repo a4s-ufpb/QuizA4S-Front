@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Container } from "react-bootstrap";
 
-const Pagination = ({ totalPages, currentPage, setCurrentPage }) => {
+const Pagination = ({ totalPages, currentPage, setCurrentPage, color }) => {
   const [isFirstPage, setIsFirstPage] = useState(true);
   const [isLastPage, setIsLastPage] = useState(false);
 
@@ -19,9 +19,9 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }) => {
   }
 
   return (
-    <Container className="d-flex justify-content-center align-items-center my-4">
+    <Container className={`d-flex justify-content-center align-items-center my-4 text-${color || "white"}`}>
       <Button
-        variant="outline-dark"
+        variant={`outline-${color || "white"}`}
         className="me-2"
         onClick={() => alterPage("prev")}
         disabled={isFirstPage}
@@ -32,7 +32,7 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }) => {
         Página {currentPage + 1} de {totalPages}
       </span>
       <Button
-        variant="outline-dark"
+        variant={`outline-${color || "white"}`}
         onClick={() => alterPage("next")}
         disabled={isLastPage || totalPages === 0}
       >

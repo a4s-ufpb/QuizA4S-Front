@@ -104,6 +104,7 @@ function SearchImage({ setSearchImage, getUrlOfImage }) {
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           totalPages={totalPages}
+          color="dark"
         />
       </Modal.Footer>
 

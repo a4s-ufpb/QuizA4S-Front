@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./MyStatistics.css";
+import { Container, Form, Table, Row, Col } from "react-bootstrap";
 import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
 import { ThemeService } from "../../../service/ThemeService";
@@ -57,14 +57,11 @@ function MyStatistics() {
     }
 
     setLoading(true);
-    const response = await responseService.findResponsesStatistics(
-      nameOfTheme,
-      userId
-    );
+    const response = await responseService.findResponsesStatistics(nameOfTheme, userId);
     setLoading(false);
 
     if (!response.success) {
-      alert("Tente novamente mais tarde!")
+      alert("Tente novamente mais tarde!");
       return;
     }
 
@@ -73,58 +70,64 @@ function MyStatistics() {
   }
 
   return (
-    <div className="container-statistics">
-      <div className="filter-statistics">
-        <span>Selecione um tema</span>
-        <select
-          name="theme"
-          value={selectedTheme}
-          onChange={(e) => searchStatistics(e.target.value)}
-        >
-          {themeNamesList &&
-            themeNamesList.map((theme) => (
-              <option value={theme.name} key={theme.name}>
-                {theme.name}
-              </option>
-            ))}
-        </select>
-      </div>
-
-      <div className="container-table-statistics">
-        <table className="table table-statistic-response">
-          <thead>
-            <tr>
-              <th>Título da Questão</th>
-              <th>Total de Respostas</th>
-              <th>Respostas Certas</th>
-              <th>Respostas Erradas</th>
-              <th>Porcentagem de Certas</th>
-              <th>Porcentagem de Erradas</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {statistics &&
-              statistics.map((statistic) => (
-                <tr key={statistic.questionId}>
-                  <td>{statistic.questionTitle}</td>
-                  <td>{statistic.totalOfAnswers}</td>
-                  <td>{statistic.totalOfCorrectAnswers}</td>
-                  <td>{statistic.totalOfIncorrectAnswers}</td>
-                  <td>{statistic.percentageOfAnswersCorrect.toFixed(1)}%</td>
-                  <td>{statistic.percentageOfAnswersIncorrect.toFixed(1)}%</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
-
-      {loading && <Loading />}
-
+    <Container fluid className="py-4">
+      <Row className="mb-3 d-flex justify-content-center">
+        <Col md={6} lg={4}>
+          <Form.Group controlId="themeSelect" className="d-flex flex-column align-items-center justify-content-center">
+            <Form.Label>Selecione um tema</Form.Label>
+            <Form.Select
+              name="theme"
+              value={selectedTheme}
+              onChange={(e) => searchStatistics(e.target.value)}
+            >
+              {themeNamesList &&
+                themeNamesList.map((theme) => (
+                  <option value={theme.name} key={theme.name}>
+                    {theme.name}
+                  </option>
+                ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <Table striped bordered hover responsive>
+            <thead>
+              <tr>
+                <th>Título da Questão</th>
+                <th>Total de Respostas</th>
+                <th>Respostas Certas</th>
+                <th>Respostas Erradas</th>
+                <th>Porcentagem de Certas</th>
+                <th>Porcentagem de Erradas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {statistics &&
+                statistics.map((statistic) => (
+                  <tr key={statistic.questionId}>
+                    <td>{statistic.questionTitle}</td>
+                    <td>{statistic.totalOfAnswers}</td>
+                    <td>{statistic.totalOfCorrectAnswers}</td>
+                    <td>{statistic.totalOfIncorrectAnswers}</td>
+                    <td>{statistic.percentageOfAnswersCorrect.toFixed(1)}%</td>
+                    <td>{statistic.percentageOfAnswersIncorrect.toFixed(1)}%</td>
+                  </tr>
+                ))}
+            </tbody>
+          </Table>
+        </Col>
+      </Row>
       {!loading && themeNamesList.length === 0 && (
-        <NotFoundComponent title="Nenhuma estatística encontrada" />
+        <Row>
+          <Col>
+            <NotFoundComponent title="Nenhuma estatística encontrada" />
+          </Col>
+        </Row>
       )}
-    </div>
+      {loading && <Loading />}
+    </Container>
   );
 }
 

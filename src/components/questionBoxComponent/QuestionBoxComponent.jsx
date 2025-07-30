@@ -1,10 +1,10 @@
-import "./QuestionBoxComponent.css";
-import { useState } from "react";
+import React, { useState } from "react";
+import { Modal, Button, Card, Row, Col } from "react-bootstrap";
 import UpdateBox from "../../components/updateBox/UpdateBox";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
-import { AlternativeService } from "./../../service/AlternativeService";
-import { QuestionService } from "./../../service/QuestionService";
+import { AlternativeService } from "../../service/AlternativeService";
+import { QuestionService } from "../../service/QuestionService";
 import { BsPencilSquare } from "react-icons/bs";
 import ConfirmBox from "../confirmBox/ConfirmBox";
 import { DEFAULT_IMG } from "../../vite-env";
@@ -72,14 +72,18 @@ function QuestionBoxComponent({
 
   function activeInformationBox(isFail, message) {
     if (isFail) {
-      setInformationData((prevData) => {
-        return { ...prevData, text: message };
-      });
+      setInformationData((prevData) => ({
+        ...prevData,
+        text: message,
+      }));
       setInformationBox(true);
     } else {
-      setInformationData((prevData) => {
-        return { ...prevData, text: message, color: "green", icon: "check" };
-      });
+      setInformationData((prevData) => ({
+        ...prevData,
+        text: message,
+        color: "green",
+        icon: "check",
+      }));
       setInformationBox(true);
     }
   }
@@ -90,14 +94,16 @@ function QuestionBoxComponent({
         setResponse(value);
         break;
       case "Novo título:":
-        setNewQuestion((prevQuestion) => {
-          return { ...prevQuestion, title: value };
-        });
+        setNewQuestion((prevQuestion) => ({
+          ...prevQuestion,
+          title: value,
+        }));
         break;
       case "URL da Imagem:":
-        setNewQuestion((prevQuestion) => {
-          return { ...prevQuestion, imageUrl: value };
-        });
+        setNewQuestion((prevQuestion) => ({
+          ...prevQuestion,
+          imageUrl: value,
+        }));
         break;
       default:
         return "";
@@ -111,21 +117,13 @@ function QuestionBoxComponent({
   }
 
   function showUpdateQuestioneBox(id, title, imageUrl) {
-    const question = {
-      id,
-      title,
-      imageUrl,
-    };
+    const question = { id, title, imageUrl };
     setNewQuestion(question);
     setUpdateBoxQuestion(true);
   }
 
   function showConfirmBox(id, title, imageUrl) {
-    const question = {
-      id,
-      title,
-      imageUrl,
-    };
+    const question = { id, title, imageUrl };
     setNewQuestion(question);
     setConfirmBox(true);
   }
@@ -142,17 +140,12 @@ function QuestionBoxComponent({
       return;
     }
 
-    setQuestion((prevQuestion) => {
-      return {
-        ...prevQuestion,
-        alternatives: prevQuestion.alternatives.map(
-          (alt) =>
-            alt.id === alternativeId
-              ? { ...alt, text: response.data.text } // Atualiza o texto da alternativa
-              : alt // Mantém as outras alternativas inalteradas
-        ),
-      };
-    });
+    setQuestion((prevQuestion) => ({
+      ...prevQuestion,
+      alternatives: prevQuestion.alternatives.map((alt) =>
+        alt.id === alternativeId ? { ...alt, text: response.data.text } : alt
+      ),
+    }));
     setCallback({});
     activeInformationBox(false, "Alternativa atualizada com sucesso!");
     setUpdateBoxAlternative(false);
@@ -172,7 +165,6 @@ function QuestionBoxComponent({
       return;
     }
 
-    console.log(response.data);
     setCallback({});
     setQuestion(response.data);
     activeInformationBox(false, "Questão atualizada com sucesso!");
@@ -200,57 +192,71 @@ function QuestionBoxComponent({
   }
 
   return (
-    <div className="container-question-box">
-      <div className="question-box">
-        <span className="button-close" onClick={() => setQuestionBox(false)}>
-          X
-        </span>
-
-        <div className="question-box-header">
-          <h2>{question?.title}</h2>
-
-          <div className="question-box-header-img">
-            {question.imageUrl && (
-              <img src={question.imageUrl} alt="" width={300} height={250} />
-            )}
-            {!question.imageUrl && (
-              <img src={DEFAULT_IMG} alt="" width={300} height={250} />
-            )}
-            <BsPencilSquare
-              className="question-box-header-icon"
-              onClick={() =>
-                showUpdateQuestioneBox(
-                  question.id,
-                  question.title,
-                  question.imageUrl
-                )
-              }
-            />
-          </div>
-        </div>
-        <div className="question-box-body">
+    <Modal
+      show={true}
+      onHide={() => setQuestionBox(false)}
+      centered
+      size="lg"
+      dialogClassName="custom-modal"
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>{question?.title}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body className="bg-gradient">
+        <Card className="mb-3 d-flex justify-content-center align-items-center border-0">
+          <Card.Img
+            variant="top"
+            src={question.imageUrl || DEFAULT_IMG}
+            alt="question"
+            style={{ width: "300px", height: "300px"}}
+            className="rounded"
+          />
+        </Card>
+        <Row className="g-3">
           {question.alternatives &&
             question.alternatives.map((alternative, index) => (
-              <div
-                key={alternative.id}
-                className={`question-box-data ${
-                  alternative.correct ? "correct" : ""
-                }`}
-              >
-                <span className="alternative-letter">
-                  {alternativesList[index]}
-                </span>
-                <span className="alternative-text">{alternative.text}</span>
-                <i
-                  className="bi bi-pencil-square"
-                  onClick={() =>
-                    showUpdateAlternativeBox(alternative.text, alternative.id)
-                  }
-                ></i>
-              </div>
+              <Col key={alternative.id} md={6}>
+                <Card className={alternative.correct ? "bg-success bg-opacity-50" : ""}>
+                  <Card.Body className="d-flex align-items-center">
+                    <span className="me-2 fw-bold">
+                      {alternativesList[index]}
+                    </span>
+                    <span className="flex-grow-1">{alternative.text}</span>
+                    <Button
+                      variant="link"
+                      onClick={() =>
+                        showUpdateAlternativeBox(
+                          alternative.text,
+                          alternative.id
+                        )
+                      }
+                    >
+                      <BsPencilSquare />
+                    </Button>
+                  </Card.Body>
+                </Card>
+              </Col>
             ))}
-        </div>
-      </div>
+        </Row>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button
+          variant="primary"
+          onClick={() =>
+            showUpdateQuestioneBox(question.id, question.title, question.imageUrl)
+          }
+        >
+          Editar Questão
+        </Button>
+        <Button
+          variant="danger"
+          onClick={() =>
+            showConfirmBox(question.id, question.title, question.imageUrl)
+          }
+        >
+          Remover Questão
+        </Button>
+      </Modal.Footer>
 
       {isUpdateAlternative && (
         <UpdateBox
@@ -292,7 +298,7 @@ function QuestionBoxComponent({
           onClickBtn2={() => setConfirmBox(false)}
         />
       )}
-    </div>
+    </Modal>
   );
 }
 

@@ -1,28 +1,42 @@
 .feedback-box {
-  width: 250px;
+  width: 300px;
   position: fixed;
-  top: 0;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  opacity: 0;
-  animation: slideDown 2s ease-in-out forwards;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   text-align: center;
+  z-index: 1000;
+  opacity: 0;
+  animation: slideInOut 4s ease-in-out forwards;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-@keyframes slideDown {
+/* Progress bar */
+.feedback-box::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.7);
+  animation: shrinkBar 4s linear forwards;
+}
+
+/* Slide-in and slide-out animation */
+@keyframes slideInOut {
   0% {
     top: -50px;
     opacity: 0;
   }
-  20% {
+  10% {
     top: 20px;
     opacity: 1;
   }
-  80% {
+  90% {
     top: 20px;
     opacity: 1;
   }
@@ -32,16 +46,38 @@
   }
 }
 
+/* Progress bar shrinking animation */
+@keyframes shrinkBar {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0;
+  }
+}
+
+/* Success (green) styling */
 .feedback-box.green {
-  background-color: #4caf50;
+  background-color: #28a745; /* Bootstrap success green */
   color: white;
 }
 
+/* Error (red) styling */
 .feedback-box.red {
-  background-color: #f44336;
+  background-color: #dc3545; /* Bootstrap danger red */
   color: white;
 }
 
+/* Text styling */
 .feedback-box p {
-  font-size: 1.1em;
+  margin: 0;
+  font-size: 1.2em;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 400px) {
+  .feedback-box {
+    width: 90%;
+  }
 }

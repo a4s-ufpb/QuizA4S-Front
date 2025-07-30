@@ -1,11 +1,11 @@
-import "./FeedbackBox.css"
+import "./FeedbackBox.css";
 
-function FeedbackBox({title, color}) {
+function FeedbackBox({ title, color }) {
   return (
     <div className={`feedback-box ${color}`}>
-        <p className={color}>{title}</p>
+      <p>{title}</p>
     </div>
-  )
+  );
 }
 
-export default FeedbackBox
+export default FeedbackBox;
