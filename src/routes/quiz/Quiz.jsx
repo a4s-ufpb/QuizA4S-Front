@@ -8,10 +8,17 @@ import { QuestionService } from "../../service/QuestionService";
 import { ResponseService } from "../../service/ResponseService";
 import FeedbackBox from "../../components/feedbackBox/FeedbackBox";
 
-//Css
+import correctSoundFile from "../../assets/sounds/alternative-success.mp3";
+import errorSoundFile from "../../assets/sounds/alternative-error.mp3";
+
+// CSS
 import "./Quiz.css";
 
 const Quiz = () => {
+  // Audio files
+  const correctSound = new Audio(correctSoundFile);
+  const errorSound = new Audio(errorSoundFile);
+
   const questionService = new QuestionService();
   const responseService = new ResponseService();
 
@@ -88,10 +95,18 @@ const Quiz = () => {
       setScore(score + 1);
       setFeedbackMessage("Parabéns, você acertou!");
       setFeedbackColor("green");
+      // Play correct sound
+      correctSound.play().catch((error) => {
+        console.error("Error playing correct sound:", error);
+      });
     } else {
       event.currentTarget.classList.add("wrong-answer");
       setFeedbackMessage("Que pena, você errou!");
       setFeedbackColor("red");
+      // Play error sound
+      errorSound.play().catch((error) => {
+        console.error("Error playing error sound:", error);
+      });
     }
 
     setShowFeedback(true);
