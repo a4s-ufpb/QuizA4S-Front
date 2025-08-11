@@ -1,5 +1,6 @@
 import "./Home.css";
 import qrCode from "../../assets/qr-code.webp";
+import backgroundImage from "../../assets/background-quiz.webp"
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
@@ -11,7 +12,7 @@ const Home = () => {
   }
 
   return (
-    <div className="container-home">
+    <div className="container-home" style={{ backgroundImage: `url(${backgroundImage})` }}>
       <div className="home">
         <h1 className="home-title">Aprenda se divertindo</h1>
         <p className="home-description">

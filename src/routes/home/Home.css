@@ -4,6 +4,11 @@
   align-items: start;
   justify-content: center;
   min-height: 800px;
+  background: transparent;
+  background-position: center;
+  background-size: cover;
+  margin-top: -32px;
+  margin-bottom: -32px;
 }
 
 .home {
@@ -25,6 +30,7 @@
 
 .home-description {
   font-size: 1.2em;
+  font-weight: bold;
 }
 
 .home-button {
