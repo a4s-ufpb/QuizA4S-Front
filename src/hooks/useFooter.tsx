@@ -1,0 +1,20 @@
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+
+export const useFooter = (): boolean => {
+  const [showFooter, setShowFooter] = useState(true);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (
+      location.pathname.includes("/quiz") ||
+      location.pathname.includes("/room")
+    ) {
+      setShowFooter(false);
+    } else {
+      setShowFooter(true);
+    }
+  }, [location.pathname]);
+
+  return showFooter;
+};
