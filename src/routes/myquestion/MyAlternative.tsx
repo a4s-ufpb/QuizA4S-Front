@@ -20,7 +20,7 @@ const MyAlternative = ({
   setAlternatives,
 }: MyAlternativeProps) => {
   const alternativeService = new AlternativeService();
-  const alternativeList = ["A", "B", "C", "D"];
+  const alternativeList = ["A", "B", "C", "D", "E", "F"];
   const [newResponse, setResponse] = useState("");
   const [alternativeId, setAlternativeId] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ const MyAlternative = ({
       type: "text",
       placeholder: "Digite sua resposta",
       value: newResponse,
-      maxLength: 100,
+      maxLength: 500,
       minLength: 1,
     },
   ];

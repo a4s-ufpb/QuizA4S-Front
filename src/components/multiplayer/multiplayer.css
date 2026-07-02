@@ -1,0 +1,95 @@
+/* Animações e toques de gamificação do modo multiplayer. */
+
+.mp-player-item {
+  animation: mpSlideIn 0.35s ease;
+}
+
+@keyframes mpSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.mp-fade-in {
+  animation: mpFadeIn 0.4s ease;
+}
+
+@keyframes mpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.mp-pop {
+  animation: mpPop 0.32s cubic-bezier(0.22, 1.2, 0.4, 1);
+}
+
+@keyframes mpPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.mp-ready-badge {
+  animation: mpPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes mpPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.09);
+  }
+}
+
+.mp-code-chip {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  border-radius: 10px;
+  background: linear-gradient(160deg, #eaf4ff, #cfe4ff);
+  color: #0b4a8a;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+.mp-answer-btn {
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.15s ease;
+}
+
+.mp-answer-btn:not(:disabled):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.mp-answer-btn:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.mp-timer {
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease;
+}
+
+.mp-timer.low {
+  color: #d9434f;
+  animation: mpPulse 0.8s ease-in-out infinite;
+}

@@ -55,6 +55,12 @@ const Menu = ({ setMenu, isAuth }: MenuProps) => {
           </button>
           <button
             type="button"
+            onClick={() => handleButtonClick(() => navigate("/multiplayer"))}
+          >
+            Multiplayer
+          </button>
+          <button
+            type="button"
             onClick={() => handleButtonClick(() => navigate("/ranking"))}
           >
             Ranking
@@ -72,6 +78,12 @@ const Menu = ({ setMenu, isAuth }: MenuProps) => {
             onClick={() => handleButtonClick(() => navigate("/"))}
           >
             Jogar
+          </button>
+          <button
+            type="button"
+            onClick={() => handleButtonClick(() => navigate("/multiplayer"))}
+          >
+            Multiplayer
           </button>
           <button
             type="button"

@@ -50,7 +50,7 @@ const Theme = ({
       type: "text",
       placeholder: "Digite o nome do tema",
       value: newName,
-      maxLength: 20,
+      maxLength: 70,
       minLength: 3,
     },
     {

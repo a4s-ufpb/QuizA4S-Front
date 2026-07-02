@@ -9,6 +9,8 @@ import { BsPencilSquare } from "react-icons/bs";
 import ConfirmBox from "../confirmBox/ConfirmBox";
 import { DEFAULT_IMG } from "../../vite-env";
 import type { InformationData, Question } from "../../types";
+import QuestionImageGallery from "../questionImageGallery/QuestionImageGallery";
+import { getOrderedQuestionImages } from "../../util/questionImages";
 
 interface QuestionBoxComponentProps {
   setQuestionBox: Dispatch<SetStateAction<boolean>>;
@@ -25,7 +27,7 @@ function QuestionBoxComponent({
 }: QuestionBoxComponentProps) {
   const alternativeService = new AlternativeService();
   const questionService = new QuestionService();
-  const alternativesList = ["A", "B", "C", "D"];
+  const alternativesList = ["A", "B", "C", "D", "E", "F"];
 
   const [newResponse, setResponse] = useState("");
   const [alternativeId, setAlternativeId] = useState(0);
@@ -42,7 +44,7 @@ function QuestionBoxComponent({
       type: "text",
       placeholder: "Digite sua resposta",
       value: newResponse,
-      maxLength: 100,
+      maxLength: 500,
       minLength: 1,
     },
   ];
@@ -59,7 +61,7 @@ function QuestionBoxComponent({
       type: "text",
       placeholder: "Digite o título da questão",
       value: newQuestion.title,
-      maxLength: 170,
+      maxLength: 1500,
       minLength: 4,
     },
     {
@@ -212,12 +214,13 @@ function QuestionBoxComponent({
       </Modal.Header>
       <Modal.Body className="bg-gradient">
         <Card className="mb-3 d-flex justify-content-center align-items-center border-0">
-          <Card.Img
-            variant="top"
-            src={question.imageUrl || DEFAULT_IMG}
-            alt="question"
-            style={{ width: "300px", height: "300px" }}
-            className="rounded"
+          <QuestionImageGallery
+            images={
+              getOrderedQuestionImages(question).length > 0
+                ? getOrderedQuestionImages(question)
+                : [DEFAULT_IMG]
+            }
+            className="question-box-image"
           />
         </Card>
         <Row className="g-3">

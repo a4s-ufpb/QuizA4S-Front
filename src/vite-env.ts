@@ -1,4 +1,10 @@
-export const API_URL = "https://quizapp.a4s.dev.br/api/v1";
+// Base da API. Sobrescrevível em build via VITE_API_URL (ex.: stack local
+// no docker). Fallback = produção.
+export const API_URL =
+  import.meta.env.VITE_API_URL ?? "https://quizapp.a4s.dev.br/api/v1";
+// Endpoint SockJS/STOMP do modo multiplayer (backend registra "/ws" na raiz).
+export const WS_URL =
+  import.meta.env.VITE_WS_URL ?? API_URL.replace(/\/v1$/, "") + "/ws";
 export const DEFAULT_IMG =
   "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
 export const PEXELS_CLIENT_ID =

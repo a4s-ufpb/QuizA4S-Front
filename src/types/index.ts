@@ -45,6 +45,9 @@ export interface Question {
   id: number;
   title: string;
   imageUrl: string;
+  imageBase64One?: string;
+  imageBase64Two?: string;
+  imagesOrder?: string;
   creatorId?: string;
   alternatives?: Alternative[];
   theme?: Theme;

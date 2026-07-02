@@ -1,11 +1,16 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import type { MouseEvent } from "react";
 import "./Question.css";
-import type { Alternative } from "../../types";
+import type { Alternative, Question as QuestionModel } from "../../types";
+import QuestionImageGallery from "../questionImageGallery/QuestionImageGallery";
+import { getOrderedQuestionImages } from "../../util/questionImages";
 
 interface QuestionProps {
   title: string;
   questionId: number;
   questionImg?: string;
+  imageBase64One?: string;
+  imageBase64Two?: string;
+  imagesOrder?: string;
   creatorId?: string;
   alternatives?: Alternative[];
   onAnswerClick: (
@@ -22,23 +27,23 @@ const Question = ({
   title,
   questionId,
   questionImg,
+  imageBase64One,
+  imageBase64Two,
+  imagesOrder,
   creatorId,
   alternatives,
   onAnswerClick,
   currentQuestion,
   lastQuestion,
 }: QuestionProps) => {
-  const alternativeList = ["A", "B", "C", "D"];
-  const [isImageValid, setImageValid] = useState(false);
+  const alternativeList = ["A", "B", "C", "D", "E", "F"];
 
-  useEffect(() => {
-    if (questionImg == "" || questionImg == null || questionImg == undefined) {
-      setImageValid(false);
-      return;
-    }
-
-    setImageValid(true);
-  }, [questionImg]);
+  const images = getOrderedQuestionImages({
+    imageUrl: questionImg,
+    imageBase64One,
+    imageBase64Two,
+    imagesOrder,
+  } as QuestionModel);
 
   return (
     <div className="question">
@@ -47,15 +52,7 @@ const Question = ({
           Questão {currentQuestion} de {lastQuestion}
         </p>
         <h1 className="question-title">{title}</h1>
-        {isImageValid && (
-          <img
-            src={questionImg}
-            className="question-image"
-            loading="lazy"
-            width={300}
-            height={300}
-          />
-        )}
+        <QuestionImageGallery images={images} className="question-image" />
       </div>
 
       <ul className="alternatives">

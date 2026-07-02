@@ -59,7 +59,7 @@ const MyQuestion = () => {
       type: "text",
       placeholder: "Digite o título da questão",
       value: newQuestion.title,
-      maxLength: 170,
+      maxLength: 1500,
       minLength: 4,
     },
     {

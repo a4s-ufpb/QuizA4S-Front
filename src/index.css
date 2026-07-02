@@ -7,7 +7,10 @@
 }
 
 body {
-  background: linear-gradient(135deg, #40c4ff 0%, #0033a0 100%);
+  min-height: 100dvh;
+  /* Azul suave usado em toda a aplicação (Home usa imagem própria, Quiz também). */
+  background: linear-gradient(160deg, #78b9f2 0%, #3f7fd6 100%);
+  background-attachment: fixed;
 }
 
 .span-error-message{

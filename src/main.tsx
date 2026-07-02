@@ -17,6 +17,8 @@ import PrivateRoute from "./components/privateRoute/PrivateRoute";
 import CreateQuestion from "./routes/createQuiz/CreateQuestions";
 import SelectTheme from "./routes/createQuiz/SelectTheme";
 import RankingPage from "./routes/rankingPage/RankingPage";
+import Multiplayer from "./routes/multiplayer/Multiplayer";
+import Room from "./routes/multiplayer/Room";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
@@ -31,6 +33,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             <Route path="/register" element={<Register />} />
             <Route path="/theme" element={<ChooseTheme />} />
             <Route path="/theme/quiz/:id" element={<Quiz />} />
+            <Route path="/multiplayer" element={<Multiplayer />} />
+            <Route path="/room/:code" element={<Room />} />
             <Route
               path="/create/quiz"
               element={

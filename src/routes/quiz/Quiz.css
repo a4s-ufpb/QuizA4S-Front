@@ -1,14 +1,43 @@
 .container-quiz-external {
   width: 100%;
-  min-height: 100vh;
-  height: 100%;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow-y: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   background-image: url("../../assets/background-question.webp");
   background-size: cover;
+  background-position: center;
   margin-top: -2em;
   padding: 30px 0px;
+  position: relative;
+}
+
+.fullscreen-btn {
+  position: absolute;
+  top: 3em;
+  left: 16px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  color: rgb(1, 65, 106);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.fullscreen-btn:hover {
+  background: #fff;
+  transform: scale(1.08);
 }
 
 .container-quiz {

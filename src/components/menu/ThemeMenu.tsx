@@ -44,7 +44,7 @@ const ThemeMenu = ({ setThemeMenu }: ThemeMenuProps) => {
     name: string()
       .required("Campo obrigatório")
       .min(3, "Mínimo de 3 caracteres")
-      .max(20, "Máximo de 20 caracteres"),
+      .max(70, "Máximo de 70 caracteres"),
     imageUrl: string().url("URL inválida"),
   });
 
@@ -98,6 +98,7 @@ const ThemeMenu = ({ setThemeMenu }: ThemeMenuProps) => {
             <Form.Control
               type="text"
               placeholder="Digite o nome do seu tema"
+              maxLength={70}
               {...register("name")}
               isInvalid={!!errors.name}
             />

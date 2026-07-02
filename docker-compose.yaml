@@ -1,8 +1,13 @@
-version: '3.5'
-
 services:
   frontend-quiz:
-    image: a4sufpb/frontend-quiz
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Aponta o build para o stack local (API do QuizAPI em :8080).
+        # A API local não tem o prefixo /api do proxy de produção.
+        VITE_API_URL: "http://localhost:8080/v1"
+        VITE_WS_URL: "http://localhost:8080/ws"
     restart: always
     ports:
       - "8888:80"

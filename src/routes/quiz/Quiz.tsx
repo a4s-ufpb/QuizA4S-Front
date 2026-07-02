@@ -1,5 +1,6 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { ArrowsFullscreen, FullscreenExit } from "react-bootstrap-icons";
 import Question from "../../components/question/Question";
 import InformationBox from "../../components/informationBox/InformationBox";
 import Loading from "../../components/loading/Loading";
@@ -39,6 +40,9 @@ const Quiz = () => {
 
   const [quizFinished, setQuizFinished] = useState(false);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   const { id: themeId } = useParams();
 
   useEffect(() => {
@@ -60,11 +64,32 @@ const Quiz = () => {
       if (response.data.length < 5) {
         setTextAlert("Cadastre no mínimo 5 questões para jogar esse quiz");
         setInformationAlert(true);
+      } else {
+        // Tenta iniciar em tela cheia (pode ser bloqueado sem gesto do usuário;
+        // nesse caso o botão no canto superior esquerdo permite ativar).
+        containerRef.current?.requestFullscreen?.().catch(() => {});
       }
 
       setLoading(false);
     });
   }, [themeId]);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    };
+  }, []);
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen?.().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
 
   const [clickEnabled, setClickEnabled] = useState(true);
 
@@ -170,7 +195,20 @@ const Quiz = () => {
   }
 
   return (
-    <div className="container-quiz-external">
+    <div className="container-quiz-external" ref={containerRef}>
+      <button
+        type="button"
+        className="fullscreen-btn"
+        onClick={toggleFullscreen}
+        title={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+        aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+      >
+        {isFullscreen ? (
+          <FullscreenExit size={20} />
+        ) : (
+          <ArrowsFullscreen size={20} />
+        )}
+      </button>
       <div className="container-quiz">
         <div className="timer">
           <p>{time}s</p>
@@ -182,6 +220,9 @@ const Quiz = () => {
               title={questions[currentQuestionIndex].title}
               questionId={questions[currentQuestionIndex].id}
               questionImg={questions[currentQuestionIndex].imageUrl}
+              imageBase64One={questions[currentQuestionIndex].imageBase64One}
+              imageBase64Two={questions[currentQuestionIndex].imageBase64Two}
+              imagesOrder={questions[currentQuestionIndex].imagesOrder}
               creatorId={questions[currentQuestionIndex].creatorId}
               alternatives={questions[currentQuestionIndex].alternatives}
               onAnswerClick={

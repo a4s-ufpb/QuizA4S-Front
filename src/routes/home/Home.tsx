@@ -1,14 +1,13 @@
 import "./Home.css";
+import { useState } from "react";
 import qrCode from "../../assets/qr-code.webp";
 import backgroundImage from "../../assets/background-quiz.webp";
 import { useNavigate } from "react-router-dom";
+import GameModeModal from "../../components/gameMode/GameModeModal";
 
 const Home = () => {
   const navigate = useNavigate();
-
-  function handleNavigate() {
-    navigate("/theme");
-  }
+  const [showModes, setShowModes] = useState(false);
 
   return (
     <div
@@ -20,7 +19,11 @@ const Home = () => {
         <p className="home-description">
           Clique no botão abaixo e inicie um Quiz agora!
         </p>
-        <button className="home-button" type="button" onClick={handleNavigate}>
+        <button
+          className="home-button"
+          type="button"
+          onClick={() => setShowModes(true)}
+        >
           Jogar
         </button>
 
@@ -29,6 +32,13 @@ const Home = () => {
           <img src={qrCode} alt="qr-code" width={120} height={120} />
         </div>
       </div>
+
+      <GameModeModal
+        show={showModes}
+        onHide={() => setShowModes(false)}
+        onSingle={() => navigate("/theme")}
+        onMulti={() => navigate("/multiplayer")}
+      />
     </div>
   );
 };

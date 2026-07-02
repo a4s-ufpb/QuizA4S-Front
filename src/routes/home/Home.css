@@ -3,7 +3,7 @@
   display: flex;
   align-items: start;
   justify-content: center;
-  min-height: 800px;
+  min-height: 100dvh;
   background: transparent;
   background-position: center;
   background-size: cover;

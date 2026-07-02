@@ -234,6 +234,115 @@
   color: #3498db;
 }
 
+.container-question-image-actions {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+}
+
+.container-question-image-actions .create-question-btn {
+  width: 320px;
+  height: 45px;
+  font-size: 1.1em;
+}
+
+.upload-images-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.upload-images-hint {
+  color: #fff;
+  font-size: 0.85em;
+  text-align: center;
+  max-width: 100%;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+.container-images-order {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8em;
+  background-color: #ffffff1f;
+  border-radius: 15px;
+  padding: 15px;
+}
+
+.container-images-order > span {
+  color: #fff;
+  font-weight: bold;
+}
+
+.images-order-list {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1em;
+}
+
+.image-order-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  width: 140px;
+}
+
+.image-order-item img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.image-order-label {
+  font-size: 0.85em;
+  text-align: center;
+  word-wrap: break-word;
+}
+
+.image-order-actions {
+  display: flex;
+  gap: 0.4em;
+}
+
+.image-order-actions button {
+  border: none;
+  border-radius: 5px;
+  background-color: #3498db;
+  color: #fff;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+}
+
+.image-order-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.image-order-remove {
+  background-color: #d9434f !important;
+}
+
+.add-alternative-btn {
+  width: 320px;
+  height: 45px;
+  font-size: 1.2em;
+}
+
 @media (max-width: 880px) {
   .button-generate-question {
     top: 40%;
@@ -290,5 +399,12 @@
     width: 300px;
     height: 45px;
     font-size: 1.1em;
+  }
+
+  .container-question-image-actions .create-question-btn,
+  .add-alternative-btn {
+    width: 260px;
+    height: 40px;
+    font-size: 1em;
   }
 }
