@@ -1,5 +1,19 @@
 import { useState } from "react";
-import { Modal, Form, Button } from "react-bootstrap";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Slider,
+  Button,
+  Stack,
+  Typography,
+  type SelectChangeEvent,
+} from "@mui/material";
 import type {
   AdvanceMode,
   GameConfig,
@@ -22,83 +36,95 @@ const RoomConfigForm = ({ config, onSave, onClose }: RoomConfigFormProps) => {
   }
 
   return (
-    <Modal show onHide={onClose} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>Regras da partida</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form>
-          <Form.Group className="mb-3">
-            <Form.Label>Modo</Form.Label>
-            <Form.Select
+    <Dialog open onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Regras da partida</DialogTitle>
+      <DialogContent>
+        <Stack spacing={3} sx={{ mt: 1 }}>
+          <FormControl fullWidth>
+            <InputLabel id="room-mode-label">Modo</InputLabel>
+            <Select
+              labelId="room-mode-label"
+              label="Modo"
               value={draft.roomMode}
-              onChange={(e) => update("roomMode", e.target.value as RoomMode)}
+              onChange={(e: SelectChangeEvent) =>
+                update("roomMode", e.target.value as RoomMode)
+              }
             >
-              <option value="INDIVIDUAL">Individual (todos contra todos)</option>
-              <option value="TEAM">Equipes</option>
-            </Form.Select>
-          </Form.Group>
+              <MenuItem value="INDIVIDUAL">
+                Individual (todos contra todos)
+              </MenuItem>
+              <MenuItem value="TEAM">Equipes</MenuItem>
+            </Select>
+          </FormControl>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Pontuação</Form.Label>
-            <Form.Select
+          <FormControl fullWidth>
+            <InputLabel id="scoring-mode-label">Pontuação</InputLabel>
+            <Select
+              labelId="scoring-mode-label"
+              label="Pontuação"
               value={draft.scoringMode}
-              onChange={(e) =>
+              onChange={(e: SelectChangeEvent) =>
                 update("scoringMode", e.target.value as ScoringMode)
               }
             >
-              <option value="SPEED">Por velocidade (estilo Kahoot)</option>
-              <option value="FIXED">Pontos fixos por acerto</option>
-            </Form.Select>
-          </Form.Group>
+              <MenuItem value="SPEED">Por velocidade (estilo Kahoot)</MenuItem>
+              <MenuItem value="FIXED">Pontos fixos por acerto</MenuItem>
+            </Select>
+          </FormControl>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Avanço das questões</Form.Label>
-            <Form.Select
+          <FormControl fullWidth>
+            <InputLabel id="advance-mode-label">Avanço das questões</InputLabel>
+            <Select
+              labelId="advance-mode-label"
+              label="Avanço das questões"
               value={draft.advanceMode}
-              onChange={(e) =>
+              onChange={(e: SelectChangeEvent) =>
                 update("advanceMode", e.target.value as AdvanceMode)
               }
             >
-              <option value="HOST">Manual (o líder avança)</option>
-              <option value="AUTO">Automático (após o tempo)</option>
-            </Form.Select>
-          </Form.Group>
+              <MenuItem value="HOST">Manual (o líder avança)</MenuItem>
+              <MenuItem value="AUTO">Automático (após o tempo)</MenuItem>
+            </Select>
+          </FormControl>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Tempo por questão: {draft.questionTimeSeconds}s</Form.Label>
-            <Form.Range
+          <div>
+            <Typography gutterBottom>
+              Tempo por questão: {draft.questionTimeSeconds}s
+            </Typography>
+            <Slider
               min={5}
               max={60}
               step={5}
               value={draft.questionTimeSeconds}
-              onChange={(e) =>
-                update("questionTimeSeconds", Number(e.target.value))
+              onChange={(_e, value) =>
+                update("questionTimeSeconds", value as number)
               }
             />
-          </Form.Group>
+          </div>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Número de questões: {draft.questionCount}</Form.Label>
-            <Form.Range
+          <div>
+            <Typography gutterBottom>
+              Número de questões: {draft.questionCount}
+            </Typography>
+            <Slider
               min={1}
               max={30}
               step={1}
               value={draft.questionCount}
-              onChange={(e) => update("questionCount", Number(e.target.value))}
+              onChange={(_e, value) => update("questionCount", value as number)}
             />
-          </Form.Group>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onClose}>
+          </div>
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button variant="outlined" color="secondary" onClick={onClose}>
           Cancelar
         </Button>
-        <Button variant="primary" onClick={() => onSave(draft)}>
+        <Button variant="contained" onClick={() => onSave(draft)}>
           Salvar regras
         </Button>
-      </Modal.Footer>
-    </Modal>
+      </DialogActions>
+    </Dialog>
   );
 };
 

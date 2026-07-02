@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Container, Row, Col, Button, Card, ProgressBar } from "react-bootstrap";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Container,
+  LinearProgress,
+  Typography,
+} from "@mui/material";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
 import { DEFAULT_IMG } from "../../vite-env";
 import "./multiplayer.css";
@@ -8,7 +17,12 @@ interface GamePlayProps {
   room: UseGameRoom;
 }
 
-const ANSWER_VARIANTS = ["danger", "primary", "warning", "success"];
+const ANSWER_COLORS = [
+  "error",
+  "primary",
+  "warning",
+  "success",
+] as const;
 
 const GamePlay = ({ room }: GamePlayProps) => {
   const { question, result, state } = room;
@@ -41,7 +55,7 @@ const GamePlay = ({ room }: GamePlayProps) => {
 
   if (!question) {
     return (
-      <Container className="py-5 text-center text-muted">
+      <Container sx={{ py: 5, textAlign: "center", color: "text.secondary" }}>
         Preparando questão...
       </Container>
     );
@@ -56,118 +70,140 @@ const GamePlay = ({ room }: GamePlayProps) => {
   const showResult = state!.status === "BETWEEN" && result != null;
 
   return (
-    <Container className="py-4">
-      <Row className="mb-2">
-        <Col className="d-flex justify-content-between align-items-center">
-          <span className="text-muted">
-            Questão {question.index + 1} de {question.total}
+    <Container sx={{ py: 4 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography color="text.secondary">
+          Questão {question.index + 1} de {question.total}
+        </Typography>
+        {inQuestion && (
+          <span className={`fw-bold fs-5 mp-timer ${remaining <= 5 ? "low" : ""}`}>
+            {remaining}s
           </span>
-          {inQuestion && (
-            <span
-              className={`fw-bold fs-5 mp-timer ${remaining <= 5 ? "low" : ""}`}
-            >
-              {remaining}s
-            </span>
-          )}
-        </Col>
-      </Row>
+        )}
+      </Box>
       {inQuestion && (
-        <ProgressBar
-          now={(remaining / question.timeSeconds) * 100}
-          className="mb-3"
+        <LinearProgress
+          variant="determinate"
+          value={(remaining / question.timeSeconds) * 100}
+          sx={{ mb: 3 }}
         />
       )}
 
-      <Card key={question.index} className="shadow-sm border-0 mb-4 mp-fade-in">
-        <Card.Body className="text-center">
-          <h3>{question.title}</h3>
+      <Card key={question.index} elevation={2} className="mp-fade-in" sx={{ mb: 4 }}>
+        <CardContent sx={{ textAlign: "center" }}>
+          <Typography variant="h5">{question.title}</Typography>
           {question.imageUrl && (
-            <img
+            <Box
+              component="img"
               src={question.imageUrl || DEFAULT_IMG}
               alt="questão"
-              style={{ maxHeight: "220px", objectFit: "contain" }}
-              className="my-3"
+              sx={{ maxHeight: "220px", objectFit: "contain", my: 3 }}
             />
           )}
-        </Card.Body>
+        </CardContent>
       </Card>
 
-      <Row className="g-3">
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+          gap: 2,
+        }}
+      >
         {question.alternatives.map((alt, i) => {
           const isCorrect = result?.correctAlternativeId === alt.id;
           const isSelected = selectedId === alt.id;
-          let variant = ANSWER_VARIANTS[i % ANSWER_VARIANTS.length];
+          let color: (typeof ANSWER_COLORS)[number] | "inherit" =
+            ANSWER_COLORS[i % ANSWER_COLORS.length];
+          let variant: "contained" | "outlined" = "contained";
           if (showResult) {
-            variant = isCorrect
-              ? "success"
-              : isSelected
-                ? "danger"
-                : "outline-secondary";
+            if (isCorrect) {
+              color = "success";
+            } else if (isSelected) {
+              color = "error";
+            } else {
+              color = "inherit";
+              variant = "outlined";
+            }
           } else if (isSelected) {
-            variant = "dark";
+            color = "inherit";
           }
           return (
-            <Col xs={12} md={6} key={alt.id}>
-              <Button
-                variant={variant}
-                size="lg"
-                className="w-100 text-start py-3 mp-answer-btn"
-                disabled={selectedId != null || !inQuestion}
-                onClick={() => pick(alt.id)}
-              >
-                {alt.text}
-                {showResult && isCorrect && " ✓"}
-              </Button>
-            </Col>
+            <Button
+              key={alt.id}
+              variant={variant}
+              color={color === "inherit" ? undefined : color}
+              size="large"
+              className="mp-answer-btn"
+              sx={{ justifyContent: "flex-start", textAlign: "left", py: 2 }}
+              disabled={selectedId != null || !inQuestion}
+              onClick={() => pick(alt.id)}
+            >
+              {alt.text}
+              {showResult && isCorrect && " ✓"}
+            </Button>
           );
         })}
-      </Row>
+      </Box>
 
       {inQuestion && selectedId != null && (
-        <p className="text-center text-muted mt-3">
+        <Typography align="center" color="text.secondary" sx={{ mt: 3 }}>
           Resposta enviada. Aguardando os demais...
-        </p>
+        </Typography>
       )}
 
       {showResult && (
-        <Card className="shadow-sm border-0 mt-4">
-          <Card.Header className="fw-bold">Placar</Card.Header>
-          <Card.Body>
+        <Card elevation={2} sx={{ mt: 4 }}>
+          <CardHeader title="Placar" sx={{ fontWeight: "bold" }} />
+          <CardContent>
             {state!.config.roomMode === "TEAM" && (
-              <div className="mb-3">
+              <Box sx={{ mb: 3 }}>
                 {result!.teamScoreboard.map((t) => (
-                  <div key={t.id} className="d-flex justify-content-between">
+                  <Box
+                    key={t.id}
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
                     <span>{t.name}</span>
                     <strong>{t.score}</strong>
-                  </div>
+                  </Box>
                 ))}
                 <hr />
-              </div>
+              </Box>
             )}
             {scoreboard.slice(0, 5).map((p, i) => (
-              <div key={p.id} className="d-flex justify-content-between">
+              <Box
+                key={p.id}
+                sx={{ display: "flex", justifyContent: "space-between" }}
+              >
                 <span>
                   {i + 1}. {p.name}
                   {p.id === room.playerId && " (você)"}
                 </span>
                 <strong>{p.score}</strong>
-              </div>
+              </Box>
             ))}
             {room.isHost && state!.config.advanceMode === "HOST" && (
-              <div className="d-grid mt-3">
-                <Button variant="primary" onClick={room.next}>
+              <Box sx={{ display: "grid", mt: 3 }}>
+                <Button variant="contained" onClick={room.next}>
                   {result!.lastQuestion ? "Ver resultado final" : "Próxima questão"}
                 </Button>
-              </div>
+              </Box>
             )}
             {state!.config.advanceMode === "AUTO" && (
-              <p className="text-muted text-center mt-3 mb-0">
+              <Typography color="text.secondary" align="center" sx={{ mt: 3, mb: 0 }}>
                 {result!.lastQuestion
                   ? "Finalizando..."
                   : "Próxima questão em instantes..."}
-              </p>
+              </Typography>
             )}
-          </Card.Body>
+          </CardContent>
         </Card>
       )}
     </Container>

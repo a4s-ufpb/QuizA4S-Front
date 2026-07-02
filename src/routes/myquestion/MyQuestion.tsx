@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import {
   Container,
-  Row,
-  Col,
+  Box,
   Card,
+  CardMedia,
+  CardContent,
+  Typography,
   Button,
-  OverlayTrigger,
+  IconButton,
   Tooltip,
-} from "react-bootstrap";
-import { PlusCircleFill } from "react-bootstrap-icons";
+} from "@mui/material";
+import { BsPlusCircleFill, BsPencilSquare, BsTrashFill } from "react-icons/bs";
 import Pagination from "../../components/pagination/Pagination";
 import SearchComponent from "../../components/searchComponent/SearchComponent";
 import Loading from "../../components/loading/Loading";
@@ -182,32 +184,31 @@ const MyQuestion = () => {
   }
 
   return (
-    <Container fluid className="py-4 min-vh-100">
-      <Row className="mb-4">
-        <Col>
-          <Card className="shadow-sm border-0">
-            <Card.Body className="d-flex align-items-center gap-3">
-              <img
-                src={
-                  themeUrl == null || themeUrl === "" ? DEFAULT_IMG : themeUrl
-                }
-                alt="image-theme"
-                loading="lazy"
-                style={{
-                  width: "60px",
-                  height: "60px",
-                  objectFit: "cover",
-                  borderRadius: "10px",
-                }}
-              />
-              <div>
-                <h5 className="mb-0">{themeName}</h5>
-                <h2 className="mt-2">Minhas questões</h2>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+    <Container maxWidth={false} sx={{ py: 4, minHeight: "100vh" }}>
+      <Card elevation={2} sx={{ mb: 4 }}>
+        <CardContent sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+          <Box
+            component="img"
+            src={themeUrl == null || themeUrl === "" ? DEFAULT_IMG : themeUrl}
+            alt="image-theme"
+            loading="lazy"
+            sx={{
+              width: "60px",
+              height: "60px",
+              objectFit: "cover",
+              borderRadius: "10px",
+            }}
+          />
+          <div>
+            <Typography variant="h6" sx={{ mb: 0 }}>
+              {themeName}
+            </Typography>
+            <Typography variant="h5" sx={{ mt: 1 }}>
+              Minhas questões
+            </Typography>
+          </div>
+        </CardContent>
+      </Card>
 
       <SearchComponent
         placeholder="Digite o título de uma questão"
@@ -218,81 +219,95 @@ const MyQuestion = () => {
         onSearch={changeName}
       />
 
-      <Row xs={1} sm={2} md={3} lg={4} className="g-4 mt-3">
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            md: "1fr 1fr 1fr",
+            lg: "1fr 1fr 1fr 1fr",
+          },
+          gap: 3,
+          mt: 3,
+        }}
+      >
         {questions &&
           questions.map((question) => (
-            <Col key={question.id}>
-              <Card className="shadow-sm border-0 h-100">
-                <Card.Img
-                  variant="top"
-                  src={
-                    question.imageUrl == null || question.imageUrl === ""
-                      ? DEFAULT_IMG
-                      : question.imageUrl
-                  }
-                  alt="image-question"
-                  style={{
-                    height: "150px",
-                    objectFit: "cover",
-                    borderRadius: "10px 10px 0 0",
+            <Card
+              key={question.id}
+              elevation={2}
+              sx={{ height: "100%", display: "flex", flexDirection: "column" }}
+            >
+              <CardMedia
+                component="img"
+                image={
+                  question.imageUrl == null || question.imageUrl === ""
+                    ? DEFAULT_IMG
+                    : question.imageUrl
+                }
+                alt="image-question"
+                sx={{
+                  height: "150px",
+                  objectFit: "cover",
+                }}
+              />
+              <CardContent
+                sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
+              >
+                <Typography sx={{ flexGrow: 1 }}>{question.title}</Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mt: 2,
                   }}
-                />
-                <Card.Body className="d-flex flex-column">
-                  <Card.Text className="flex-grow-1">
-                    {question.title}
-                  </Card.Text>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={() => showAlternatives(question.alternatives)}
-                    >
-                      Alternativas
-                    </Button>
-                    <div className="d-flex gap-2">
-                      <OverlayTrigger
-                        placement="top"
-                        overlay={<Tooltip>Editar</Tooltip>}
+                >
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => showAlternatives(question.alternatives)}
+                  >
+                    Alternativas
+                  </Button>
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <Tooltip title="Editar">
+                      <IconButton
+                        size="small"
+                        color="warning"
+                        onClick={() =>
+                          showUpdateBox(
+                            question.id,
+                            question.title,
+                            question.imageUrl
+                          )
+                        }
                       >
-                        <Button
-                          variant="outline-warning"
-                          size="sm"
-                          onClick={() =>
-                            showUpdateBox(
-                              question.id,
-                              question.title,
-                              question.imageUrl
-                            )
-                          }
-                        >
-                          <i className="bi bi-pencil-square"></i>
-                        </Button>
-                      </OverlayTrigger>
-                      <OverlayTrigger
-                        placement="top"
-                        overlay={<Tooltip>Excluir</Tooltip>}
+                        <BsPencilSquare />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Excluir">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() =>
+                          showConfirmBox(
+                            question.id,
+                            question.title,
+                            question.imageUrl
+                          )
+                        }
                       >
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={() =>
-                            showConfirmBox(
-                              question.id,
-                              question.title,
-                              question.imageUrl
-                            )
-                          }
-                        >
-                          <i className="bi bi-trash-fill"></i>
-                        </Button>
-                      </OverlayTrigger>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
+                        <BsTrashFill />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
           ))}
-      </Row>
+      </Box>
 
       {!loading && questions.length === 0 && (
         <NotFoundComponent title="Questão não encontrada" />
@@ -304,19 +319,25 @@ const MyQuestion = () => {
         totalPages={totalPages}
       />
 
-      <OverlayTrigger
-        placement="top"
-        overlay={<Tooltip>Cadastrar questão</Tooltip>}
-      >
-        <Button
-          variant="primary"
-          className="rounded-circle position-fixed bottom-0 end-0 m-4"
-          style={{ width: "60px", height: "60px" }}
+      <Tooltip title="Cadastrar questão">
+        <IconButton
+          color="primary"
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            right: 0,
+            m: 4,
+            width: "60px",
+            height: "60px",
+            bgcolor: "primary.main",
+            color: "#fff",
+            "&:hover": { bgcolor: "primary.dark" },
+          }}
           onClick={navigateForRegisterQuestions}
         >
-          <PlusCircleFill size={24} />
-        </Button>
-      </OverlayTrigger>
+          <BsPlusCircleFill size={24} />
+        </IconButton>
+      </Tooltip>
 
       {isShowAlternatives && (
         <MyAlternative

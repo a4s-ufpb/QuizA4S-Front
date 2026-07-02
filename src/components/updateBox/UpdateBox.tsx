@@ -1,4 +1,12 @@
-import { Modal, Form, Button } from "react-bootstrap";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Stack,
+} from "@mui/material";
 import type { InputField } from "../../types";
 
 interface UpdateBoxProps {
@@ -17,49 +25,41 @@ const UpdateBox = ({
   onClickCancel,
 }: UpdateBoxProps) => {
   return (
-    <Modal show={true} onHide={onClickCancel} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>{title}</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form>
+    <Dialog open={true} onClose={onClickCancel} fullWidth maxWidth="sm">
+      <DialogTitle>{title}</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2} sx={{ mt: 1 }}>
           {inputs &&
             inputs.map((input) => (
-              <Form.Group key={input.label} className="mb-3">
-                <Form.Label>{input.label}</Form.Label>
-                {input.type === "password" ? (
-                  <Form.Control
-                    type={input.type}
-                    placeholder={input.placeholder}
-                    value={input.value}
-                    onChange={(e) => onChange(e.target.value, input.label)}
-                    maxLength={input.maxLength}
-                    minLength={input.minLength}
-                  />
-                ) : (
-                  <Form.Control
-                    as="textarea"
-                    placeholder={input.placeholder}
-                    value={input.value}
-                    onChange={(e) => onChange(e.target.value, input.label)}
-                    maxLength={input.maxLength}
-                    minLength={input.minLength}
-                    rows={3}
-                  />
-                )}
-              </Form.Group>
+              <TextField
+                key={input.label}
+                label={input.label}
+                type={input.type === "password" ? "password" : "text"}
+                multiline={input.type !== "password"}
+                rows={input.type === "password" ? undefined : 3}
+                placeholder={input.placeholder}
+                value={input.value}
+                onChange={(e) => onChange(e.target.value, input.label)}
+                slotProps={{
+                  htmlInput: {
+                    maxLength: input.maxLength,
+                    minLength: input.minLength,
+                  },
+                }}
+                fullWidth
+              />
             ))}
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="success" onClick={onClickSave}>
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button variant="contained" color="success" onClick={onClickSave}>
           Salvar
         </Button>
-        <Button variant="danger" onClick={onClickCancel}>
+        <Button variant="contained" color="error" onClick={onClickCancel}>
           Cancelar
         </Button>
-      </Modal.Footer>
-    </Modal>
+      </DialogActions>
+    </Dialog>
   );
 };
 

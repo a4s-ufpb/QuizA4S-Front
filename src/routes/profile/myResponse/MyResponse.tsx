@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
-import { Container, Table, Row, Col } from "react-bootstrap";
+import {
+  Box,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Paper,
+} from "@mui/material";
 import FilterComponent, {
   type ResponseFilterData,
 } from "../../../components/filterComponent/FilterComponent";
@@ -60,64 +69,54 @@ const MyResponse = () => {
   }
 
   return (
-    <Container fluid className="py-4">
-      <Row>
-        <Col>
-          <FilterComponent onData={changeData} />
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <Table striped bordered hover responsive className="mt-3">
-            <thead>
-              <tr>
-                <th>Usuário</th>
-                <th>Tema</th>
-                <th>Questão</th>
-                <th>Respondeu</th>
-                <th>Acertou</th>
-              </tr>
-            </thead>
-            <tbody>
-              {responses &&
-                responses.map((response) => (
-                  <tr key={response.id}>
-                    <td>{response.user.name}</td>
-                    <td>{response.question.theme.name}</td>
-                    <td>{response.question.title}</td>
-                    <td>{response.alternative.text}</td>
-                    <td className="text-center">
-                      {response.alternative.correct ? (
-                        <BsCheckCircleFill className="text-success" />
-                      ) : (
-                        <BsFillXCircleFill className="text-danger" />
-                      )}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </Table>
-        </Col>
-      </Row>
+    <Box sx={{ py: 4 }}>
+      <FilterComponent onData={changeData} />
+
+      <TableContainer component={Paper} sx={{ mt: 3 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Usuário</TableCell>
+              <TableCell>Tema</TableCell>
+              <TableCell>Questão</TableCell>
+              <TableCell>Respondeu</TableCell>
+              <TableCell align="center">Acertou</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {responses &&
+              responses.map((response) => (
+                <TableRow key={response.id} hover>
+                  <TableCell>{response.user.name}</TableCell>
+                  <TableCell>{response.question.theme.name}</TableCell>
+                  <TableCell>{response.question.title}</TableCell>
+                  <TableCell>{response.alternative.text}</TableCell>
+                  <TableCell align="center">
+                    {response.alternative.correct ? (
+                      <BsCheckCircleFill color="green" />
+                    ) : (
+                      <BsFillXCircleFill color="red" />
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
       {!loading && responses.length === 0 && (
-        <Row>
-          <Col>
-            <NotFoundComponent title="Nenhuma resposta encontrada" />
-          </Col>
-        </Row>
+        <NotFoundComponent title="Nenhuma resposta encontrada" />
       )}
-      <Row>
-        <Col>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            setCurrentPage={setCurrentPage}
-            color={"dark"}
-          />
-        </Col>
-      </Row>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        setCurrentPage={setCurrentPage}
+        color={"dark"}
+      />
+
       {loading && <Loading />}
-    </Container>
+    </Box>
   );
 };
 

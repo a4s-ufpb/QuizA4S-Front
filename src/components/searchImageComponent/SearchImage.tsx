@@ -1,14 +1,16 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 import {
-  Modal,
-  Form,
-  InputGroup,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
   Button,
-  Row,
-  Col,
+  Box,
   Card,
-} from "react-bootstrap";
-import { Search } from "react-bootstrap-icons";
+  CardMedia,
+} from "@mui/material";
+import { BsSearch } from "react-icons/bs";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
 import Pagination from "../pagination/Pagination";
@@ -59,68 +61,73 @@ function SearchImage({ setSearchImage, getUrlOfImage }: SearchImageProps) {
   }
 
   return (
-    <Modal show={true} onHide={() => setSearchImage(false)} centered size="lg">
-      <Modal.Header closeButton>
-        <Modal.Title>Pesquisar Imagem</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form.Group className="mb-3">
-          <InputGroup>
-            <Form.Control
-              type="text"
-              placeholder="Digite o nome da imagem"
-              value={imageName}
-              onChange={(e) => setImageName(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            <Button
-              variant="primary"
-              onClick={() => {
-                setCurrentPage(0);
-                searchImage();
-              }}
-            >
-              <Search />
-            </Button>
-          </InputGroup>
-        </Form.Group>
+    <Dialog open={true} onClose={() => setSearchImage(false)} fullWidth maxWidth="lg">
+      <DialogTitle>Pesquisar Imagem</DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: "flex", gap: 1, mb: 3 }}>
+          <TextField
+            fullWidth
+            placeholder="Digite o nome da imagem"
+            value={imageName}
+            onChange={(e) => setImageName(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <Button
+            variant="contained"
+            onClick={() => {
+              setCurrentPage(0);
+              searchImage();
+            }}
+          >
+            <BsSearch />
+          </Button>
+        </Box>
 
-        <Row xs={2} sm={3} md={4} lg={5} className="g-3">
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr 1fr",
+              sm: "1fr 1fr 1fr",
+              md: "1fr 1fr 1fr 1fr",
+              lg: "1fr 1fr 1fr 1fr 1fr",
+            },
+            gap: 2,
+          }}
+        >
           {images &&
             images.map((img) => (
-              <Col key={img.id}>
-                <Card
-                  className="shadow-sm border-0 h-100"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => getUrlOfImage(img.src.medium)}
-                >
-                  <Card.Img
-                    variant="top"
-                    src={img.src.medium}
-                    alt={img.alt}
-                    style={{
-                      height: "150px",
-                      objectFit: "cover",
-                      borderRadius: "10px 10px 0 0",
-                    }}
-                  />
-                </Card>
-              </Col>
+              <Card
+                key={img.id}
+                elevation={2}
+                sx={{ height: "100%", cursor: "pointer" }}
+                onClick={() => getUrlOfImage(img.src.medium)}
+              >
+                <CardMedia
+                  component="img"
+                  image={img.src.medium}
+                  alt={img.alt}
+                  sx={{
+                    height: "150px",
+                    objectFit: "cover",
+                  }}
+                />
+              </Card>
             ))}
-        </Row>
+        </Box>
 
         {images && images.length === 0 && (
           <NotFoundComponent title="Nenhuma imagem encontrada" />
         )}
-      </Modal.Body>
-      <Modal.Footer className="d-flex justify-content-between">
+      </DialogContent>
+      <DialogActions sx={{ justifyContent: "space-between" }}>
         <Pagination
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           totalPages={totalPages}
           color="dark"
         />
-      </Modal.Footer>
+      </DialogActions>
 
       {loading && <Loading />}
       {informationBox && (
@@ -131,7 +138,7 @@ function SearchImage({ setSearchImage, getUrlOfImage }: SearchImageProps) {
           closeBox={() => setInformationBox(false)}
         />
       )}
-    </Modal>
+    </Dialog>
   );
 }
 

@@ -1,5 +1,18 @@
 import { useNavigate } from "react-router-dom";
-import { Modal, Table, Button, Container } from "react-bootstrap";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Button,
+  Box,
+  Typography,
+} from "@mui/material";
 import Loading from "../loading/Loading";
 import { useEffect, useState } from "react";
 import { ScoreService } from "../../service/ScoreService";
@@ -47,58 +60,62 @@ const Ranking = ({ navigatePath, setShowRanking }: RankingProps) => {
   }
 
   return (
-    <Modal
-      show={true}
-      onHide={closeRanking}
-      centered
-      dialogClassName="custom-modal"
-      size="lg"
-    >
-      <Modal.Header closeButton className="bg-primary text-white">
-        <Modal.Title>Ranking</Modal.Title>
-      </Modal.Header>
-      <Modal.Body className="overflow-y-scroll" style={{ maxHeight: "60vh" }}>
-        <Container>
-          <p className="text-center bg-primary text-white rounded-pill px-3 py-1 mb-3">
+    <Dialog open={true} onClose={closeRanking} fullWidth maxWidth="md">
+      <DialogTitle sx={{ bgcolor: "primary.main", color: "#fff" }}>
+        Ranking
+      </DialogTitle>
+      <DialogContent sx={{ maxHeight: "60vh", overflowY: "auto" }}>
+        <Box>
+          <Typography
+            sx={{
+              textAlign: "center",
+              bgcolor: "primary.main",
+              color: "#fff",
+              borderRadius: 50,
+              px: 3,
+              py: 1,
+              mb: 3,
+            }}
+          >
             Tema: {themeName}
-          </p>
+          </Typography>
           {ranking && ranking.length > 0 ? (
-            <Table striped hover responsive>
-              <thead>
-                <tr>
-                  <th style={{ width: "80%" }}>Usuário</th>
-                  <th style={{ width: "20%", textAlign: "center" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ width: "80%" }}>Usuário</TableCell>
+                  <TableCell sx={{ width: "20%", textAlign: "center" }}>
                     Pontuação
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {ranking.map((score, index) => (
-                  <tr key={score.id}>
-                    <td>
+                  <TableRow key={score.id} hover>
+                    <TableCell>
                       <span className={`rank-icon rank-${index + 1}`}>
                         {index + 1}
                       </span>
                       {score.user.name}
-                    </td>
-                    <td className="text-center">{score.result}</td>
-                  </tr>
+                    </TableCell>
+                    <TableCell align="center">{score.result}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
+              </TableBody>
             </Table>
           ) : null}
           {isNotFound && (
             <NotFoundComponent title="Nenhuma pontuação cadastrada" />
           )}
-        </Container>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="primary" onClick={closeRanking}>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button variant="contained" onClick={closeRanking}>
           Voltar
         </Button>
-      </Modal.Footer>
+      </DialogActions>
       {loading && <Loading />}
-    </Modal>
+    </Dialog>
   );
 };
 

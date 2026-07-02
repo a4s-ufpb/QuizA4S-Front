@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowsFullscreen, FullscreenExit } from "react-bootstrap-icons";
+import { BsArrowsFullscreen, BsFullscreenExit } from "react-icons/bs";
 import Question from "../../components/question/Question";
 import InformationBox from "../../components/informationBox/InformationBox";
 import Loading from "../../components/loading/Loading";
@@ -204,9 +204,9 @@ const Quiz = () => {
         aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
       >
         {isFullscreen ? (
-          <FullscreenExit size={20} />
+          <BsFullscreenExit size={20} />
         ) : (
-          <ArrowsFullscreen size={20} />
+          <BsArrowsFullscreen size={20} />
         )}
       </button>
       <div className="container-quiz">

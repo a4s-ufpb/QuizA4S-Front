@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Card, Form, Button, InputGroup } from "react-bootstrap";
+import { Box, Card, CardHeader, CardContent, TextField, Button, Typography } from "@mui/material";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
 
 interface RoomChatProps {
@@ -24,45 +24,45 @@ const RoomChat = ({ room }: RoomChatProps) => {
   }
 
   return (
-    <Card className="shadow-sm border-0 h-100">
-      <Card.Header className="fw-bold">Chat</Card.Header>
-      <Card.Body className="d-flex flex-column p-2" style={{ minHeight: "300px" }}>
-        <div
+    <Card elevation={2} sx={{ height: "100%" }}>
+      <CardHeader title="Chat" />
+      <CardContent sx={{ display: "flex", flexDirection: "column", p: 1, minHeight: "300px" }}>
+        <Box
           ref={listRef}
-          className="flex-grow-1 overflow-auto mb-2 px-1"
-          style={{ maxHeight: "340px" }}
+          sx={{ flexGrow: 1, overflow: "auto", mb: 2, px: 1, maxHeight: "340px" }}
         >
           {room.messages.length === 0 && (
-            <p className="text-muted text-center small mt-3">
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 3 }}>
               Nenhuma mensagem ainda.
-            </p>
+            </Typography>
           )}
           {room.messages.map((m, i) => (
-            <div key={i} className="mb-1">
+            <Box key={i} sx={{ mb: 1 }}>
               <strong
-                className={m.playerId === room.playerId ? "text-primary" : ""}
+                style={{
+                  color: m.playerId === room.playerId ? "#3f7fd6" : undefined,
+                }}
               >
                 {m.name}:
               </strong>{" "}
               <span>{m.content}</span>
-            </div>
+            </Box>
           ))}
-        </div>
-        <Form onSubmit={submit}>
-          <InputGroup>
-            <Form.Control
-              type="text"
-              placeholder="Mensagem..."
-              value={text}
-              maxLength={300}
-              onChange={(e) => setText(e.target.value)}
-            />
-            <Button type="submit" variant="primary">
-              Enviar
-            </Button>
-          </InputGroup>
-        </Form>
-      </Card.Body>
+        </Box>
+        <Box component="form" onSubmit={submit} sx={{ display: "flex", gap: 1 }}>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Mensagem..."
+            value={text}
+            slotProps={{ htmlInput: { maxLength: 300 } }}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <Button type="submit" variant="contained">
+            Enviar
+          </Button>
+        </Box>
+      </CardContent>
     </Card>
   );
 };

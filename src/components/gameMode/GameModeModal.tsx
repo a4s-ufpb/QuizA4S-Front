@@ -1,4 +1,4 @@
-import { Modal } from "react-bootstrap";
+import { Dialog, DialogTitle, DialogContent } from "@mui/material";
 import onePlayerImg from "../../assets/img-one-player.webp";
 import multiplayerImg from "../../assets/img-multiplayer.webp";
 import "./GameModeModal.css";
@@ -18,11 +18,9 @@ const GameModeModal = ({
   onMulti,
 }: GameModeModalProps) => {
   return (
-    <Modal show={show} onHide={onHide} centered size="lg">
-      <Modal.Header closeButton>
-        <Modal.Title>Como você quer jogar?</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+    <Dialog open={show} onClose={onHide} fullWidth maxWidth="md">
+      <DialogTitle>Como você quer jogar?</DialogTitle>
+      <DialogContent>
         <div className="game-mode-options">
           <button
             type="button"
@@ -42,8 +40,8 @@ const GameModeModal = ({
             <span>Multijogador</span>
           </button>
         </div>
-      </Modal.Body>
-    </Modal>
+      </DialogContent>
+    </Dialog>
   );
 };
 

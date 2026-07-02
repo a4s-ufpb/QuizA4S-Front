@@ -1,6 +1,6 @@
-import { useState, type Dispatch, type SetStateAction } from "react";
-import { Container, Form, InputGroup } from "react-bootstrap";
-import { Search } from "react-bootstrap-icons";
+import { useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
+import { Box, TextField, InputAdornment, Typography } from "@mui/material";
+import { BsSearch } from "react-icons/bs";
 import { ApiFetch } from "../../util/ApiFetch";
 import Loading from "../loading/Loading";
 
@@ -56,22 +56,32 @@ const SearchComponent = ({
   }
 
   return (
-    <Container className="mb-4">
-      <h2 className="text-center mb-3 text-white">{title}</h2>
-      <InputGroup className="shadow-sm">
-        <InputGroup.Text>
-          <Search />
-        </InputGroup.Text>
-        <Form.Control
-          type="text"
-          placeholder={placeholder}
-          value={name}
-          onChange={(e) => searchDataName(e.target.value)}
-          className="border-start-0"
-        />
-      </InputGroup>
+    <Box sx={{ mb: 4 }}>
+      {title && (
+        <Typography variant="h5" align="center" sx={{ mb: 2, color: "#fff" }}>
+          {title}
+        </Typography>
+      )}
+      <TextField
+        fullWidth
+        placeholder={placeholder}
+        value={name}
+        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+          searchDataName(e.target.value)
+        }
+        sx={{ bgcolor: "background.paper", borderRadius: 1, boxShadow: 1 }}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <BsSearch />
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
       {loading && <Loading />}
-    </Container>
+    </Box>
   );
 };
 

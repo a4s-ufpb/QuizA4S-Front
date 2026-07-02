@@ -1,13 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
-  Form,
-  InputGroup,
-  Dropdown,
+  Box,
   Button,
-  Row,
-  Col,
+  TextField,
+  Autocomplete,
   Collapse,
-} from "react-bootstrap";
+  Stack,
+} from "@mui/material";
 import { BsCalendar } from "react-icons/bs";
 import { ResponseService } from "../../service/ResponseService";
 import { getStoredUser } from "../../util/storage";
@@ -30,15 +29,7 @@ const FilterComponent = ({ onData }: FilterComponentProps) => {
   const [username, setUsername] = useState("");
   const [themeName, setThemeName] = useState("");
   const [usernamesList, setUsernameList] = useState<{ username: string }[]>([]);
-  const [filteredUsernames, setFilteredUsernames] = useState<
-    { username: string }[]
-  >([]);
   const [themesList, setThemesList] = useState<{ themeName: string }[]>([]);
-  const [filteredThemes, setFilteredThemes] = useState<{ themeName: string }[]>(
-    []
-  );
-  const [showUsernameDropDown, setUsernameDropDown] = useState(false);
-  const [showThemeNameDropDown, setThemeNameDropDown] = useState(false);
   const [showFilterPerDate, setFilterPerDate] = useState(false);
 
   const responseService = new ResponseService();
@@ -66,7 +57,6 @@ const FilterComponent = ({ onData }: FilterComponentProps) => {
     const response = await responseService.findUsernamesByCreator(creatorId);
     if (response.success) {
       setUsernameList(response.data || []);
-      setFilteredUsernames(response.data || []);
     } else {
       console.error(response.message);
     }
@@ -78,144 +68,81 @@ const FilterComponent = ({ onData }: FilterComponentProps) => {
     const response = await responseService.findThemeNamesByCreator(creatorId);
     if (response.success) {
       setThemesList(response.data || []);
-      setFilteredThemes(response.data || []);
     } else {
       console.error(response.message);
     }
   };
 
-  useEffect(() => {
-    setFilteredUsernames(
-      usernamesList.filter((data) =>
-        data.username.toLowerCase().includes(username.toLowerCase())
-      )
-    );
-  }, [username, usernamesList]);
-
-  useEffect(() => {
-    setFilteredThemes(
-      themesList.filter((data) =>
-        data.themeName.toLowerCase().includes(themeName.toLowerCase())
-      )
-    );
-  }, [themeName, themesList]);
-
   return (
     <div className="filter-container">
-      <Row className="g-3">
-        <Col md={6}>
-          <Form.Group controlId="username">
-            <Form.Label>Usuário:</Form.Label>
-            <InputGroup>
-              <Form.Control
-                type="text"
-                placeholder="Digite o nome do usuário"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                onFocus={() => {
-                  setUsernameDropDown(true);
-                  fetchUsernames();
-                }}
-                onBlur={() => setTimeout(() => setUsernameDropDown(false), 100)}
-              />
-            </InputGroup>
-            <Dropdown show={showUsernameDropDown}>
-              <Dropdown.Menu>
-                {filteredUsernames.map((data, index) => (
-                  <Dropdown.Item
-                    key={index}
-                    onMouseDown={() => setUsername(data.username)}
-                  >
-                    {data.username}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </Form.Group>
-        </Col>
+      <Stack direction={{ xs: "column", md: "row" }} spacing={3}>
+        <Autocomplete
+          freeSolo
+          fullWidth
+          options={usernamesList.map((data) => data.username)}
+          inputValue={username}
+          onInputChange={(_e, newValue) => setUsername(newValue)}
+          onFocus={fetchUsernames}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Usuário"
+              placeholder="Digite o nome do usuário"
+            />
+          )}
+        />
 
-        <Col md={6}>
-          <Form.Group controlId="themeName">
-            <Form.Label>Tema:</Form.Label>
-            <InputGroup>
-              <Form.Control
-                type="text"
-                placeholder="Digite o nome do tema"
-                value={themeName}
-                onChange={(e) => setThemeName(e.target.value)}
-                onFocus={() => {
-                  setThemeNameDropDown(true);
-                  fetchThemeNames();
-                }}
-                onBlur={() =>
-                  setTimeout(() => setThemeNameDropDown(false), 100)
-                }
-              />
-            </InputGroup>
-            <Dropdown show={showThemeNameDropDown}>
-              <Dropdown.Menu>
-                {filteredThemes.map((data, index) => (
-                  <Dropdown.Item
-                    key={index}
-                    onMouseDown={() => setThemeName(data.themeName)}
-                  >
-                    {data.themeName}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </Form.Group>
-        </Col>
-      </Row>
+        <Autocomplete
+          freeSolo
+          fullWidth
+          options={themesList.map((data) => data.themeName)}
+          inputValue={themeName}
+          onInputChange={(_e, newValue) => setThemeName(newValue)}
+          onFocus={fetchThemeNames}
+          renderInput={(params) => (
+            <TextField {...params} label="Tema" placeholder="Digite o nome do tema" />
+          )}
+        />
+      </Stack>
 
-      <Row className="mt-3">
-        <Col>
-          <Form.Group>
-            <Button
-              variant="link"
-              onClick={() => setFilterPerDate(!showFilterPerDate)}
-              className="d-flex align-items-center gap-2"
-            >
-              <BsCalendar /> Filtrar por período
-            </Button>
-            <Collapse in={showFilterPerDate}>
-              <Row className="g-3 mt-2">
-                <Col md={6}>
-                  <Form.Group controlId="currentDate">
-                    <Form.Label>Data Inicial</Form.Label>
-                    <Form.Control
-                      type="date"
-                      value={currentDate}
-                      onChange={(e) => setCurrentDate(e.target.value)}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group controlId="finalDate">
-                    <Form.Label>Data Final</Form.Label>
-                    <Form.Control
-                      type="date"
-                      value={finalDate}
-                      onChange={(e) => setFinalDate(e.target.value)}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-            </Collapse>
-          </Form.Group>
-        </Col>
-      </Row>
+      <Box sx={{ mt: 3 }}>
+        <Button
+          variant="text"
+          onClick={() => setFilterPerDate(!showFilterPerDate)}
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+        >
+          <BsCalendar /> Filtrar por período
+        </Button>
+        <Collapse in={showFilterPerDate}>
+          <Stack direction={{ xs: "column", md: "row" }} spacing={3} sx={{ mt: 2 }}>
+            <TextField
+              label="Data Inicial"
+              type="date"
+              value={currentDate}
+              onChange={(e) => setCurrentDate(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              fullWidth
+            />
+            <TextField
+              label="Data Final"
+              type="date"
+              value={finalDate}
+              onChange={(e) => setFinalDate(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              fullWidth
+            />
+          </Stack>
+        </Collapse>
+      </Box>
 
-      <Row className="mt-3">
-        <Col className="d-flex gap-2">
-          <Button variant="primary" onClick={handleFilter}>
-            Filtrar
-          </Button>
-          <Button variant="danger" onClick={clearInputs}>
-            Limpar
-          </Button>
-        </Col>
-      </Row>
+      <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+        <Button variant="contained" onClick={handleFilter}>
+          Filtrar
+        </Button>
+        <Button variant="contained" color="error" onClick={clearInputs}>
+          Limpar
+        </Button>
+      </Stack>
     </div>
   );
 };

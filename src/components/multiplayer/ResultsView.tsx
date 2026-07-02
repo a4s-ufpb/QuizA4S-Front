@@ -1,6 +1,16 @@
 import { useNavigate } from "react-router-dom";
-import { Container, Card, Button, ListGroup, Badge } from "react-bootstrap";
-import { TrophyFill } from "react-bootstrap-icons";
+import {
+  Container,
+  Card,
+  CardHeader,
+  Button,
+  List,
+  ListItem,
+  Chip,
+  Box,
+  Typography,
+} from "@mui/material";
+import { BsTrophyFill } from "react-icons/bs";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
 import "./multiplayer.css";
 
@@ -20,56 +30,68 @@ const ResultsView = ({ room }: ResultsViewProps) => {
   const teams = [...state.teams].sort((a, b) => b.score - a.score);
 
   return (
-    <Container className="py-5" style={{ maxWidth: "640px" }}>
-      <div className="text-center mb-4 mp-pop">
-        <TrophyFill className="text-warning" size={56} />
-        <h2 className="mt-2 text-white">Fim de jogo!</h2>
-      </div>
+    <Container sx={{ py: 5, maxWidth: "640px" }}>
+      <Box className="mp-pop" sx={{ textAlign: "center", mb: 4 }}>
+        <BsTrophyFill color="gold" size={56} />
+        <Typography variant="h4" sx={{ mt: 2, color: "#fff" }}>
+          Fim de jogo!
+        </Typography>
+      </Box>
 
       {isTeam && (
-        <Card className="shadow-sm border-0 mb-4">
-          <Card.Header className="fw-bold">Equipes</Card.Header>
-          <ListGroup variant="flush">
+        <Card elevation={2} sx={{ mb: 4 }}>
+          <CardHeader title="Equipes" />
+          <List disablePadding>
             {teams.map((t, i) => (
-              <ListGroup.Item
+              <ListItem
                 key={t.id}
-                className="d-flex justify-content-between align-items-center"
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
               >
                 <span>
-                  {i === 0 && <Badge bg="warning" className="me-2">1º</Badge>}
+                  {i === 0 && (
+                    <Chip label="1º" color="warning" size="small" sx={{ mr: 1 }} />
+                  )}
                   {t.name}
                 </span>
                 <strong>{t.score}</strong>
-              </ListGroup.Item>
+              </ListItem>
             ))}
-          </ListGroup>
+          </List>
         </Card>
       )}
 
-      <Card className="shadow-sm border-0 mb-4">
-        <Card.Header className="fw-bold">Jogadores</Card.Header>
-        <ListGroup variant="flush">
+      <Card elevation={2} sx={{ mb: 4 }}>
+        <CardHeader title="Jogadores" />
+        <List disablePadding>
           {players.map((p, i) => (
-            <ListGroup.Item
+            <ListItem
               key={p.id}
-              className="d-flex justify-content-between align-items-center"
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
             >
               <span>
-                <span className="me-2 fw-bold">{i + 1}º</span>
+                <strong style={{ marginRight: 8 }}>{i + 1}º</strong>
                 {p.name}
                 {p.id === room.playerId && " (você)"}
               </span>
               <strong>{p.score}</strong>
-            </ListGroup.Item>
+            </ListItem>
           ))}
-        </ListGroup>
+        </List>
       </Card>
 
-      <div className="d-flex gap-2 justify-content-center">
-        <Button variant="outline-secondary" onClick={() => navigate("/multiplayer")}>
+      <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+        <Button variant="outlined" color="secondary" onClick={() => navigate("/multiplayer")}>
           Sair
         </Button>
-      </div>
+      </Box>
     </Container>
   );
 };

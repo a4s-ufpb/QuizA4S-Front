@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
+import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 import "./QuestionImageGallery.css";
 
 interface QuestionImageGalleryProps {
@@ -35,7 +35,7 @@ const QuestionImageGallery = ({
           onClick={() => goTo(current - 1)}
           aria-label="Imagem anterior"
         >
-          <ChevronLeft size={20} />
+          <BsChevronLeft size={20} />
         </button>
       )}
 
@@ -48,7 +48,7 @@ const QuestionImageGallery = ({
           onClick={() => goTo(current + 1)}
           aria-label="Próxima imagem"
         >
-          <ChevronRight size={20} />
+          <BsChevronRight size={20} />
         </button>
       )}
 

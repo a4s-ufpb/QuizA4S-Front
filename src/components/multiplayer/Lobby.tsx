@@ -1,21 +1,27 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Box,
   Container,
-  Row,
-  Col,
   Card,
+  CardHeader,
+  CardContent,
   Button,
-  Badge,
-  ListGroup,
-  Modal,
-} from "react-bootstrap";
+  Chip,
+  List,
+  ListItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import {
-  PersonFill,
-  StarFill,
-  XCircle,
-  BoxArrowRight,
-} from "react-bootstrap-icons";
+  BsPersonFill,
+  BsStarFill,
+  BsXCircle,
+  BsBoxArrowRight,
+} from "react-icons/bs";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
 import type { PlayerView } from "../../types/game";
 import ThemeTemplate from "../themeTemplate/ThemeTemplate";
@@ -47,100 +53,114 @@ const Lobby = ({ room }: LobbyProps) => {
   }
 
   return (
-    <Container className="py-4">
-      <Row className="mb-3 align-items-center">
-        <Col>
-          <h2 className="mb-1 text-white">
+    <Container sx={{ py: 4 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
+        <Box>
+          <Typography variant="h5" sx={{ mb: 1, color: "#fff" }}>
             Sala <span className="mp-code-chip">{state.code}</span>
-          </h2>
-          <div className="text-white-50">
+          </Typography>
+          <Box sx={{ color: "rgba(255,255,255,0.7)" }}>
             Quiz: <strong>{state.themeName || "nenhum selecionado"}</strong> ·{" "}
             {isTeamMode ? "Equipes" : "Individual"} ·{" "}
             {state.config.questionCount} questões ·{" "}
             {state.config.questionTimeSeconds}s
-          </div>
-        </Col>
-        <Col xs="auto">
-          <Button
-            variant="outline-light"
-            size="sm"
-            onClick={() => setConfirmLeave(true)}
-          >
-            <BoxArrowRight className="me-1" /> Sair da sala
-          </Button>
-        </Col>
-      </Row>
+          </Box>
+        </Box>
+        <Button
+          variant="outlined"
+          size="small"
+          sx={{ color: "#fff", borderColor: "#fff" }}
+          onClick={() => setConfirmLeave(true)}
+        >
+          <BsBoxArrowRight style={{ marginRight: 4 }} /> Sair da sala
+        </Button>
+      </Box>
 
-      <Row className="g-4">
-        <Col lg={7}>
-          <Card className="shadow-sm border-0 mb-3 mp-fade-in">
-            <Card.Header className="fw-bold">
-              Jogadores ({state.players.length})
-            </Card.Header>
-            <ListGroup variant="flush">
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", lg: "7fr 5fr" },
+          gap: 3,
+        }}
+      >
+        <Box>
+          <Card elevation={2} className="mp-fade-in" sx={{ mb: 3 }}>
+            <CardHeader title={`Jogadores (${state.players.length})`} />
+            <List disablePadding>
               {state.players.map((p) => (
-                <ListGroup.Item
+                <ListItem
                   key={p.id}
-                  className="d-flex align-items-center gap-2 mp-player-item"
+                  className="mp-player-item"
+                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
                 >
                   {p.host ? (
-                    <StarFill className="text-warning" title="Líder" />
+                    <BsStarFill color="orange" title="Líder" />
                   ) : (
-                    <PersonFill className="text-secondary" />
+                    <BsPersonFill color="gray" />
                   )}
-                  <span className="flex-grow-1">
+                  <Box sx={{ flexGrow: 1 }}>
                     {p.name}
                     {p.id === room.playerId && " (você)"}
                     {isTeamMode && p.teamId && (
-                      <Badge bg="info" className="ms-2">
-                        {state.teams.find((t) => t.id === p.teamId)?.name}
-                      </Badge>
+                      <Chip
+                        label={state.teams.find((t) => t.id === p.teamId)?.name}
+                        color="info"
+                        size="small"
+                        sx={{ ml: 1 }}
+                      />
                     )}
-                  </span>
+                  </Box>
                   {!p.host &&
                     (p.ready ? (
-                      <Badge bg="success" className="mp-ready-badge">
-                        Pronto
-                      </Badge>
+                      <Chip label="Pronto" color="success" size="small" />
                     ) : (
-                      <Badge bg="secondary">Aguardando</Badge>
+                      <Chip label="Aguardando" size="small" />
                     ))}
                   {room.isHost && !p.host && (
-                    <Button
-                      variant="link"
-                      className="text-danger p-0 ms-2"
+                    <IconButton
+                      size="small"
+                      color="error"
                       title="Remover"
                       onClick={() => setKickTarget(p)}
                     >
-                      <XCircle />
-                    </Button>
+                      <BsXCircle />
+                    </IconButton>
                   )}
-                </ListGroup.Item>
+                </ListItem>
               ))}
-            </ListGroup>
+            </List>
           </Card>
 
           {isTeamMode && me && !me.host && (
-            <Card className="shadow-sm border-0 mb-3 mp-fade-in">
-              <Card.Header className="fw-bold">Escolha sua equipe</Card.Header>
-              <Card.Body className="d-flex gap-2 flex-wrap">
+            <Card elevation={2} className="mp-fade-in" sx={{ mb: 3 }}>
+              <CardHeader title="Escolha sua equipe" />
+              <CardContent sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                 {state.teams.map((t) => (
                   <Button
                     key={t.id}
-                    variant={me.teamId === t.id ? "info" : "outline-info"}
+                    variant={me.teamId === t.id ? "contained" : "outlined"}
+                    color="info"
                     onClick={() => room.pickTeam(t.id)}
                   >
                     {t.name}
                   </Button>
                 ))}
-              </Card.Body>
+              </CardContent>
             </Card>
           )}
 
-          <div className="d-flex gap-2 flex-wrap">
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
             {me && !me.host && (
               <Button
-                variant={me.ready ? "outline-success" : "success"}
+                variant={me.ready ? "outlined" : "contained"}
+                color="success"
                 onClick={() => room.setReady(!me.ready)}
               >
                 {me.ready ? "Cancelar pronto" : "Estou pronto"}
@@ -148,20 +168,18 @@ const Lobby = ({ room }: LobbyProps) => {
             )}
             {room.isHost && (
               <>
-                <Button
-                  variant="outline-primary"
-                  onClick={() => setShowThemes(true)}
-                >
+                <Button variant="outlined" onClick={() => setShowThemes(true)}>
                   {state.themeId ? "Trocar quiz" : "Selecionar quiz"}
                 </Button>
                 <Button
-                  variant="outline-secondary"
+                  variant="outlined"
+                  color="secondary"
                   onClick={() => setShowConfig(true)}
                 >
                   Regras
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="contained"
                   disabled={!canStart}
                   onClick={room.start}
                 >
@@ -169,31 +187,32 @@ const Lobby = ({ room }: LobbyProps) => {
                 </Button>
               </>
             )}
-          </div>
+          </Box>
           {room.isHost && !canStart && (
-            <p className="text-white-50 small mt-2">
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.7)", mt: 1 }}
+            >
               {state.themeId == null
                 ? "Selecione um quiz para poder iniciar."
                 : "Aguardando todos os jogadores ficarem prontos."}
-            </p>
+            </Typography>
           )}
-        </Col>
+        </Box>
 
-        <Col lg={5}>
+        <Box>
           <RoomChat room={room} />
-        </Col>
-      </Row>
+        </Box>
+      </Box>
 
-      <Modal
-        show={showThemes}
-        onHide={() => setShowThemes(false)}
-        size="lg"
-        centered
+      <Dialog
+        open={showThemes}
+        onClose={() => setShowThemes(false)}
+        fullWidth
+        maxWidth="lg"
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Selecionar quiz</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
+        <DialogTitle>Selecionar quiz</DialogTitle>
+        <DialogContent>
           <ThemeTemplate
             path="/theme"
             title="Escolha o tema do quiz"
@@ -202,8 +221,8 @@ const Lobby = ({ room }: LobbyProps) => {
               setShowThemes(false);
             }}
           />
-        </Modal.Body>
-      </Modal>
+        </DialogContent>
+      </Dialog>
 
       {showConfig && (
         <RoomConfigForm

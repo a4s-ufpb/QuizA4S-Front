@@ -1,4 +1,5 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
+import { BsPersonCircle, BsTrashFill, BsPencilSquare } from "react-icons/bs";
 import ConfirmBox from "../confirmBox/ConfirmBox";
 import UpdateBox from "../updateBox/UpdateBox";
 import Loading from "../loading/Loading";
@@ -234,20 +235,18 @@ function UserTemplate({
       {users &&
         users.map((user) => (
           <div key={user.uuid} className="user-data">
-            <i className="bi bi-person-circle"></i>
+            <BsPersonCircle />
             <div className="user-info">
               <p>Nome: {user.name}</p>
               <p>Email: {user.email}</p>
             </div>
             <div className="user-action">
-              <i
-                className="bi bi-trash-fill"
+              <BsTrashFill
                 onClick={() => showConfirmBox(user.uuid, user.name, user.email)}
-              ></i>
-              <i
-                className="bi bi-pencil-square"
+              />
+              <BsPencilSquare
                 onClick={() => showUpdateBox(user.uuid, user.name, user.email)}
-              ></i>
+              />
             </div>
           </div>
         ))}

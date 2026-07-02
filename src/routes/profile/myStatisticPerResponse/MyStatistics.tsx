@@ -1,5 +1,19 @@
 import { useEffect, useState } from "react";
-import { Container, Form, Table, Row, Col } from "react-bootstrap";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Paper,
+  type SelectChangeEvent,
+} from "@mui/material";
 import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
 import { ThemeService } from "../../../service/ThemeService";
@@ -75,69 +89,66 @@ function MyStatistics() {
   }
 
   return (
-    <Container fluid className="py-4">
-      <Row className="mb-3 d-flex justify-content-center">
-        <Col md={6} lg={4}>
-          <Form.Group
-            controlId="themeSelect"
-            className="d-flex flex-column align-items-center justify-content-center"
+    <Box sx={{ py: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+        <FormControl sx={{ minWidth: 260 }}>
+          <InputLabel id="theme-select-label">Selecione um tema</InputLabel>
+          <Select
+            labelId="theme-select-label"
+            label="Selecione um tema"
+            value={selectedTheme}
+            onChange={(e: SelectChangeEvent) =>
+              searchStatistics(e.target.value)
+            }
           >
-            <Form.Label>Selecione um tema</Form.Label>
-            <Form.Select
-              name="theme"
-              value={selectedTheme}
-              onChange={(e) => searchStatistics(e.target.value)}
-            >
-              {themeNamesList &&
-                themeNamesList.map((theme) => (
-                  <option value={theme.name} key={theme.name}>
-                    {theme.name}
-                  </option>
-                ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <Table striped bordered hover responsive>
-            <thead>
-              <tr>
-                <th>Título da Questão</th>
-                <th>Total de Respostas</th>
-                <th>Respostas Certas</th>
-                <th>Respostas Erradas</th>
-                <th>Porcentagem de Certas</th>
-                <th>Porcentagem de Erradas</th>
-              </tr>
-            </thead>
-            <tbody>
-              {statistics &&
-                statistics.map((statistic) => (
-                  <tr key={statistic.questionId}>
-                    <td>{statistic.questionTitle}</td>
-                    <td>{statistic.totalOfAnswers}</td>
-                    <td>{statistic.totalOfCorrectAnswers}</td>
-                    <td>{statistic.totalOfIncorrectAnswers}</td>
-                    <td>{statistic.percentageOfAnswersCorrect.toFixed(1)}%</td>
-                    <td>
-                      {statistic.percentageOfAnswersIncorrect.toFixed(1)}%
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </Table>
-        </Col>
-      </Row>
+            {themeNamesList &&
+              themeNamesList.map((theme) => (
+                <MenuItem value={theme.name} key={theme.name}>
+                  {theme.name}
+                </MenuItem>
+              ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Título da Questão</TableCell>
+              <TableCell>Total de Respostas</TableCell>
+              <TableCell>Respostas Certas</TableCell>
+              <TableCell>Respostas Erradas</TableCell>
+              <TableCell>Porcentagem de Certas</TableCell>
+              <TableCell>Porcentagem de Erradas</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {statistics &&
+              statistics.map((statistic) => (
+                <TableRow key={statistic.questionId} hover>
+                  <TableCell>{statistic.questionTitle}</TableCell>
+                  <TableCell>{statistic.totalOfAnswers}</TableCell>
+                  <TableCell>{statistic.totalOfCorrectAnswers}</TableCell>
+                  <TableCell>{statistic.totalOfIncorrectAnswers}</TableCell>
+                  <TableCell>
+                    {statistic.percentageOfAnswersCorrect.toFixed(1)}%
+                  </TableCell>
+                  <TableCell>
+                    {statistic.percentageOfAnswersIncorrect.toFixed(1)}%
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
       {!loading && themeNamesList.length === 0 && (
-        <Row>
-          <Col>
-            <NotFoundComponent title="Nenhuma estatística encontrada" />
-          </Col>
-        </Row>
+        <NotFoundComponent title="Nenhuma estatística encontrada" />
       )}
+
       {loading && <Loading />}
-    </Container>
+    </Box>
   );
 }
 

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState, type MouseEvent } from "react";
-import { Container, Row, Col, Card } from "react-bootstrap";
+import { Box, Card, CardContent, CardMedia, Container, Typography } from "@mui/material";
 import Loading from "../loading/Loading";
 import SearchComponent from "../searchComponent/SearchComponent";
 import NotFoundComponent from "../notFound/NotFoundComponent";
@@ -54,7 +54,7 @@ const ThemeTemplate = ({
   }, [currentPage, path, themeName]);
 
   return (
-    <Container className="py-4">
+    <Container sx={{ py: 4 }}>
       <SearchComponent
         title={title}
         url={`${path}?page=${currentPage}&name=`}
@@ -65,48 +65,57 @@ const ThemeTemplate = ({
         setTotalPages={setTotalPages}
       />
 
-      <Row xs={1} sm={2} md={3} lg={4} className="g-4 mt-3">
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            md: "1fr 1fr 1fr",
+            lg: "1fr 1fr 1fr 1fr",
+          },
+          gap: 3,
+          mt: 3,
+        }}
+      >
         {themes &&
           themes.map((theme) => (
-            <Col key={theme.id}>
-              <Card
-                className="h-100 text-center shadow-sm border-0"
-                onClick={() => onClickFunction(theme)}
-                style={{
-                  cursor: "pointer",
-                  transition: "transform 0.3s ease-in-out",
+            <Card
+              key={theme.id}
+              elevation={2}
+              sx={{ height: "100%", textAlign: "center", cursor: "pointer" }}
+              onClick={() => onClickFunction(theme)}
+              style={{ transition: "transform 0.3s ease-in-out" }}
+              onMouseEnter={(e: MouseEvent<HTMLDivElement>) =>
+                (e.currentTarget.style.transform = "scale(1.1)")
+              }
+              onMouseLeave={(e: MouseEvent<HTMLDivElement>) =>
+                (e.currentTarget.style.transform = "scale(1)")
+              }
+            >
+              <CardMedia
+                component="img"
+                image={
+                  theme.imageUrl == null || theme.imageUrl === ""
+                    ? DEFAULT_IMG
+                    : theme.imageUrl
+                }
+                alt="theme-image"
+                sx={{
+                  width: "120px",
+                  height: "120px",
+                  objectFit: "cover",
+                  margin: "0 auto",
+                  borderRadius: "15px",
+                  p: 3,
                 }}
-                onMouseEnter={(e: MouseEvent<HTMLDivElement>) =>
-                  (e.currentTarget.style.transform = "scale(1.1)")
-                }
-                onMouseLeave={(e: MouseEvent<HTMLDivElement>) =>
-                  (e.currentTarget.style.transform = "scale(1)")
-                }
-              >
-                <Card.Img
-                  variant="top"
-                  src={
-                    theme.imageUrl == null || theme.imageUrl === ""
-                      ? DEFAULT_IMG
-                      : theme.imageUrl
-                  }
-                  alt="theme-image"
-                  className="p-3"
-                  style={{
-                    width: "120px",
-                    height: "120px",
-                    objectFit: "cover",
-                    margin: "0 auto",
-                    borderRadius: "15px",
-                  }}
-                />
-                <Card.Body>
-                  <Card.Text>{theme.name}</Card.Text>
-                </Card.Body>
-              </Card>
-            </Col>
+              />
+              <CardContent>
+                <Typography>{theme.name}</Typography>
+              </CardContent>
+            </Card>
           ))}
-      </Row>
+      </Box>
 
       {!loading && themes.length === 0 && (
         <NotFoundComponent title="Tema não encontrado!" />

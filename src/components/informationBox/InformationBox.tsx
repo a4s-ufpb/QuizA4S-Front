@@ -1,4 +1,11 @@
-import { Modal, Button } from "react-bootstrap";
+import {
+  Dialog,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+} from "@mui/material";
+import { BsCheckCircleFill, BsExclamationCircleFill } from "react-icons/bs";
 
 interface InformationBoxProps {
   text: string;
@@ -7,33 +14,37 @@ interface InformationBoxProps {
   color: string;
 }
 
+const ICONS_BY_NAME: Record<string, React.ComponentType<{ size?: string | number; color?: string }>> = {
+  check: BsCheckCircleFill,
+  exclamation: BsExclamationCircleFill,
+};
+
 const InformationBox = ({
   text,
   closeBox,
   icon,
   color,
 }: InformationBoxProps) => {
+  const Icon = ICONS_BY_NAME[icon] ?? BsExclamationCircleFill;
+
   return (
-    <Modal show={true} onHide={closeBox} centered>
-      <Modal.Body className="text-center">
-        <i
-          className={`bi bi-${icon}-circle-fill`}
-          style={{ fontSize: "3rem", color }}
-        ></i>
-        <h4 className="mt-3" style={{ color }}>
+    <Dialog open={true} onClose={closeBox} fullWidth maxWidth="xs">
+      <DialogContent sx={{ textAlign: "center" }}>
+        <Icon size="3rem" color={color} />
+        <Typography variant="h5" sx={{ mt: 2 }} style={{ color }}>
           {text}
-        </h4>
-      </Modal.Body>
-      <Modal.Footer>
+        </Typography>
+      </DialogContent>
+      <DialogActions>
         <Button
-          variant="primary"
+          variant="contained"
           onClick={closeBox}
           style={{ backgroundColor: color, borderColor: color }}
         >
           Ok
         </Button>
-      </Modal.Footer>
-    </Modal>
+      </DialogActions>
+    </Dialog>
   );
 };
 

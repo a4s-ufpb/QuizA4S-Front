@@ -1,5 +1,16 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { Modal, Button, ListGroup } from "react-bootstrap";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  IconButton,
+  List,
+  ListItem,
+  Typography,
+} from "@mui/material";
+import { BsPencilSquare } from "react-icons/bs";
 import UpdateBox from "../../components/updateBox/UpdateBox";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
@@ -97,42 +108,51 @@ const MyAlternative = ({
   }
 
   return (
-    <Modal
-      show={true}
-      onHide={() => setShowAlternatives(false)}
-      centered
-      size="lg"
+    <Dialog
+      open={true}
+      onClose={() => setShowAlternatives(false)}
+      fullWidth
+      maxWidth="md"
     >
-      <Modal.Header closeButton>
-        <Modal.Title>Alternativas</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <ListGroup>
+      <DialogTitle>Alternativas</DialogTitle>
+      <DialogContent>
+        <List>
           {alternatives &&
             alternatives.map((alt, index) => (
-              <ListGroup.Item
+              <ListItem
                 key={alt.id}
-                className="d-flex align-items-center gap-3"
-                variant={alt.correct ? "success" : undefined}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  bgcolor: alt.correct ? "rgba(46, 125, 50, 0.5)" : undefined,
+                  borderRadius: 1,
+                  mb: 1,
+                }}
               >
-                <span className="fw-bold">{alternativeList[index]}</span>
-                <span className="flex-grow-1">{alt.text}</span>
-                <Button
-                  variant="outline-warning"
-                  size="sm"
+                <Typography sx={{ fontWeight: "bold" }}>
+                  {alternativeList[index]}
+                </Typography>
+                <Typography sx={{ flexGrow: 1 }}>{alt.text}</Typography>
+                <IconButton
+                  size="small"
                   onClick={() => showUpdateBox(alt.text, alt.id ?? 0)}
                 >
-                  <i className="bi bi-pencil-square"></i>
-                </Button>
-              </ListGroup.Item>
+                  <BsPencilSquare />
+                </IconButton>
+              </ListItem>
             ))}
-        </ListGroup>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="danger" onClick={() => setShowAlternatives(false)}>
+        </List>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={() => setShowAlternatives(false)}
+        >
           Fechar
         </Button>
-      </Modal.Footer>
+      </DialogActions>
 
       {isUpdateBox && (
         <UpdateBox
@@ -154,7 +174,7 @@ const MyAlternative = ({
           closeBox={() => setInformationBox(false)}
         />
       )}
-    </Modal>
+    </Dialog>
   );
 };
 

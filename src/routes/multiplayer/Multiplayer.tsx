@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Card, Form, Button, Alert, Row, Col } from "react-bootstrap";
+import {
+  Box,
+  Container,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Alert,
+  Typography,
+} from "@mui/material";
 import { GameService } from "../../service/GameService";
 import { getGuestId, getGuestName, setGuestName } from "../../util/guest";
 import Loading from "../../components/loading/Loading";
@@ -63,56 +72,70 @@ const Multiplayer = () => {
   }
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-100">
-      <Card className="shadow-sm w-100" style={{ maxWidth: "460px" }}>
-        <Card.Body className="p-4">
-          <h1 className="text-center mb-4">Quiz Multiplayer</h1>
+    <Container
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+      }}
+    >
+      <Card elevation={3} sx={{ width: "100%", maxWidth: 460 }}>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h4" align="center" sx={{ mb: 3 }}>
+            Quiz Multiplayer
+          </Typography>
 
           {error && (
-            <Alert variant="danger" onClose={() => setError("")} dismissible>
+            <Alert severity="error" onClose={() => setError("")} sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
 
-          <Form.Group className="mb-4">
-            <Form.Label>Seu nome</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Como quer ser chamado?"
-              value={name}
-              maxLength={30}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </Form.Group>
+          <TextField
+            label="Seu nome"
+            placeholder="Como quer ser chamado?"
+            value={name}
+            slotProps={{ htmlInput: { maxLength: 30 } }}
+            onChange={(e) => setName(e.target.value)}
+            fullWidth
+            sx={{ mb: 3 }}
+          />
 
-          <div className="d-grid mb-4">
-            <Button variant="primary" size="lg" onClick={createRoom}>
+          <Box sx={{ display: "grid", mb: 3 }}>
+            <Button variant="contained" size="large" onClick={createRoom}>
               Criar sala
             </Button>
-          </div>
+          </Box>
 
-          <div className="text-center text-muted mb-3">ou entre em uma sala</div>
+          <Typography align="center" color="text.secondary" sx={{ mb: 2 }}>
+            ou entre em uma sala
+          </Typography>
 
-          <Row className="g-2">
-            <Col xs={7}>
-              <Form.Control
-                type="text"
-                placeholder="Código"
-                value={code}
-                maxLength={6}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                style={{ textTransform: "uppercase", letterSpacing: "2px" }}
-              />
-            </Col>
-            <Col xs={5} className="d-grid">
-              <Button variant="outline-primary" onClick={joinRoom}>
-                Entrar
-              </Button>
-            </Col>
-          </Row>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <TextField
+              placeholder="Código"
+              value={code}
+              slotProps={{
+                htmlInput: {
+                  maxLength: 6,
+                  style: { textTransform: "uppercase", letterSpacing: "2px" },
+                },
+              }}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              sx={{ flex: 7 }}
+            />
+            <Button
+              variant="outlined"
+              onClick={joinRoom}
+              sx={{ flex: 5 }}
+            >
+              Entrar
+            </Button>
+          </Box>
 
           {loading && <Loading />}
-        </Card.Body>
+        </CardContent>
       </Card>
     </Container>
   );

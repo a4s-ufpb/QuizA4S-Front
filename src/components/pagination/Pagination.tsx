@@ -1,5 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { Button, Container } from "react-bootstrap";
+import { Box, Button } from "@mui/material";
 
 interface PaginationProps {
   totalPages: number;
@@ -30,31 +30,38 @@ const Pagination = ({
     }
   }
 
+  const textColor = color || "white";
+
   return (
-    <Container
-      className={`d-flex justify-content-center align-items-center my-4 text-${
-        color || "white"
-      }`}
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        my: 4,
+        color: textColor,
+      }}
     >
       <Button
-        variant={`outline-${color || "white"}`}
-        className="me-2"
+        variant="outlined"
+        sx={{ mr: 2, color: textColor, borderColor: textColor }}
         onClick={() => alterPage("prev")}
         disabled={isFirstPage}
       >
         Anterior
       </Button>
-      <span className="mx-3 align-self-center">
+      <Box component="span" sx={{ mx: 3 }}>
         Página {currentPage + 1} de {totalPages}
-      </span>
+      </Box>
       <Button
-        variant={`outline-${color || "white"}`}
+        variant="outlined"
+        sx={{ color: textColor, borderColor: textColor }}
         onClick={() => alterPage("next")}
         disabled={isLastPage || totalPages === 0}
       >
         Próximo
       </Button>
-    </Container>
+    </Box>
   );
 };
 

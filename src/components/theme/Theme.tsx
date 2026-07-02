@@ -1,4 +1,5 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
+import { BsTrashFill, BsPencilSquare } from "react-icons/bs";
 import ConfirmBox from "../confirmBox/ConfirmBox";
 import UpdateBox from "../updateBox/UpdateBox";
 import Loading from "../loading/Loading";
@@ -181,18 +182,16 @@ const Theme = ({
               </button>
             </div>
             <div className="theme-action">
-              <i
-                className="bi bi-trash-fill"
+              <BsTrashFill
                 onClick={() =>
                   showConfirmBox(theme.id, theme.name, theme.imageUrl)
                 }
-              ></i>
-              <i
-                className="bi bi-pencil-square"
+              />
+              <BsPencilSquare
                 onClick={() =>
                   showUpdateBox(theme.id, theme.name, theme.imageUrl)
                 }
-              ></i>
+              />
             </div>
           </div>
         ))}

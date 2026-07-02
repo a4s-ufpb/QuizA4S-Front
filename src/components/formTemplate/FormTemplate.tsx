@@ -1,6 +1,15 @@
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Form, Button, Card, Container, Alert } from "react-bootstrap";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Container,
+  Alert,
+  TextField,
+  Typography,
+} from "@mui/material";
 import Loading from "../loading/Loading";
 import { AuthenticationContext } from "../../context/AuthenticationContext";
 import { useForm, type SubmitHandler } from "react-hook-form";
@@ -129,51 +138,60 @@ const FormTemplate = ({
   } = useForm<FormValues>({ resolver: yupResolver(resolverSchema) as any });
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-100">
-      <Card className="shadow-sm w-100" style={{ maxWidth: "400px" }}>
-        <Card.Body className="p-4">
-          <h1 className="text-center mb-4">{title}</h1>
+    <Container
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+      }}
+    >
+      <Card elevation={3} sx={{ width: "100%", maxWidth: 400 }}>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h4" align="center" sx={{ mb: 3 }}>
+            {title}
+          </Typography>
 
-          <Form onSubmit={onSubmit(handleSubmit)}>
+          <Box component="form" onSubmit={onSubmit(handleSubmit)}>
             {fields.map((field) => (
-              <Form.Group key={field.name} className="mb-3">
-                <Form.Label>{field.label}</Form.Label>
-                <Form.Control
-                  type={field.type}
-                  placeholder={field.placeholder}
-                  {...register(field.name as keyof FormValues)}
-                  isInvalid={!!errors[field.name as keyof FormValues]}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors[field.name as keyof FormValues]?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
+              <TextField
+                key={field.name}
+                type={field.type}
+                label={field.label}
+                placeholder={field.placeholder}
+                fullWidth
+                margin="normal"
+                error={!!errors[field.name as keyof FormValues]}
+                helperText={errors[field.name as keyof FormValues]?.message}
+                {...register(field.name as keyof FormValues)}
+              />
             ))}
 
             {loading && <Loading />}
 
             {activeInformationBox && (
-              <Alert variant="danger" onClose={closeInformationBox} dismissible>
+              <Alert severity="error" onClose={closeInformationBox} sx={{ mt: 2 }}>
                 {error}
               </Alert>
             )}
 
             <Button
-              variant="primary"
+              variant="contained"
               type="submit"
-              className="w-100 mb-3"
+              fullWidth
               disabled={loading}
+              sx={{ mt: 3, mb: 2 }}
             >
               {buttonText}
             </Button>
 
-            <div className="text-center">
-              <Link to={redirectLink} className="text-decoration-none">
+            <Box sx={{ textAlign: "center" }}>
+              <Link to={redirectLink} style={{ textDecoration: "none" }}>
                 {redirectText}
               </Link>
-            </div>
-          </Form>
-        </Card.Body>
+            </Box>
+          </Box>
+        </CardContent>
       </Card>
     </Container>
   );

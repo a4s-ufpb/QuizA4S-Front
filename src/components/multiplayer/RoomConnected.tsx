@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Container, Alert, Button } from "react-bootstrap";
+import { Box, Container, Alert, Button, Typography } from "@mui/material";
 import { useGameRoom } from "../../hooks/useGameRoom";
 import Loading from "../loading/Loading";
 import Lobby from "./Lobby";
@@ -16,26 +16,36 @@ const RoomConnected = ({ code }: RoomConnectedProps) => {
 
   if (room.kicked) {
     return (
-      <Container className="py-5 text-center">
-        <Alert variant="warning">Você foi removido da sala pelo líder.</Alert>
-        <Button onClick={() => navigate("/multiplayer")}>Voltar</Button>
+      <Container sx={{ py: 5, textAlign: "center" }}>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Você foi removido da sala pelo líder.
+        </Alert>
+        <Button variant="contained" onClick={() => navigate("/multiplayer")}>
+          Voltar
+        </Button>
       </Container>
     );
   }
 
   if (room.closed) {
     return (
-      <Container className="py-5 text-center">
-        <Alert variant="secondary">A sala foi encerrada.</Alert>
-        <Button onClick={() => navigate("/multiplayer")}>Voltar</Button>
+      <Container sx={{ py: 5, textAlign: "center" }}>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          A sala foi encerrada.
+        </Alert>
+        <Button variant="contained" onClick={() => navigate("/multiplayer")}>
+          Voltar
+        </Button>
       </Container>
     );
   }
 
   if (!room.state) {
     return (
-      <Container className="py-5 text-center">
-        <p className="text-muted">Conectando à sala {code}...</p>
+      <Container sx={{ py: 5, textAlign: "center" }}>
+        <Typography color="text.secondary">
+          Conectando à sala {code}...
+        </Typography>
         <Loading />
       </Container>
     );
@@ -46,11 +56,20 @@ const RoomConnected = ({ code }: RoomConnectedProps) => {
   return (
     <div className="mp-room">
       {room.error && (
-        <div className="position-fixed top-0 start-50 translate-middle-x mt-3" style={{ zIndex: 1080 }}>
-          <Alert variant="danger" onClose={room.clearError} dismissible>
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            mt: 3,
+            zIndex: 1080,
+          }}
+        >
+          <Alert severity="error" onClose={room.clearError}>
             {room.error}
           </Alert>
-        </div>
+        </Box>
       )}
 
       {status === "LOBBY" && <Lobby room={room} />}

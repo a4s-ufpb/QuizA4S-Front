@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Modal, Form, Button, InputGroup } from "react-bootstrap";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  Button,
+  InputAdornment,
+  Stack,
+} from "@mui/material";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
 import { useNavigate } from "react-router-dom";
@@ -87,58 +95,63 @@ const ThemeMenu = ({ setThemeMenu }: ThemeMenuProps) => {
   }
 
   return (
-    <Modal show={true} onHide={() => setThemeMenu(false)} centered size="lg">
-      <Modal.Header closeButton>
-        <Modal.Title>Criar tema</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form onSubmit={onSubmit(handleSubmit)}>
-          <Form.Group className="mb-3">
-            <Form.Label>Nome:</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Digite o nome do seu tema"
-              maxLength={70}
-              {...register("name")}
-              isInvalid={!!errors.name}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors?.name?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
+    <Dialog open={true} onClose={() => setThemeMenu(false)} fullWidth maxWidth="md">
+      <DialogTitle>Criar tema</DialogTitle>
+      <DialogContent>
+        <Stack
+          component="form"
+          onSubmit={onSubmit(handleSubmit)}
+          spacing={3}
+          sx={{ mt: 1 }}
+        >
+          <TextField
+            label="Nome"
+            placeholder="Digite o nome do seu tema"
+            slotProps={{ htmlInput: { maxLength: 70 } }}
+            error={!!errors.name}
+            helperText={errors?.name?.message}
+            fullWidth
+            {...register("name")}
+          />
 
-          <Form.Group className="mb-3">
-            <Form.Label>Imagem:</Form.Label>
-            <InputGroup>
-              <Form.Control
-                id="input-image-url"
-                type="text"
-                placeholder="Digite ou Pesquise a URL da imagem"
-                {...register("imageUrl")}
-                isInvalid={!!errors.imageUrl}
-              />
-              <Button
-                variant="outline-primary"
-                onClick={() => setSearchImage(true)}
-              >
-                Pesquisar Imagem
-              </Button>
-              <Form.Control.Feedback type="invalid">
-                {errors?.imageUrl?.message}
-              </Form.Control.Feedback>
-            </InputGroup>
-          </Form.Group>
+          <TextField
+            id="input-image-url"
+            label="Imagem"
+            placeholder="Digite ou Pesquise a URL da imagem"
+            error={!!errors.imageUrl}
+            helperText={errors?.imageUrl?.message}
+            fullWidth
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Button
+                      variant="outlined"
+                      onClick={() => setSearchImage(true)}
+                    >
+                      Pesquisar Imagem
+                    </Button>
+                  </InputAdornment>
+                ),
+              },
+            }}
+            {...register("imageUrl")}
+          />
 
-          <div className="d-flex justify-content-end gap-2">
-            <Button variant="danger" onClick={() => setThemeMenu(false)}>
+          <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => setThemeMenu(false)}
+            >
               Cancelar
             </Button>
-            <Button variant="primary" type="submit">
+            <Button variant="contained" type="submit">
               Criar
             </Button>
-          </div>
-        </Form>
-      </Modal.Body>
+          </Stack>
+        </Stack>
+      </DialogContent>
 
       {informationBox && (
         <InformationBox
@@ -157,7 +170,7 @@ const ThemeMenu = ({ setThemeMenu }: ThemeMenuProps) => {
           getUrlOfImage={getUrlOfImage}
         />
       )}
-    </Modal>
+    </Dialog>
   );
 };
 

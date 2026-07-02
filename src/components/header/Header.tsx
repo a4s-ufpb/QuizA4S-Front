@@ -1,5 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo-a4s.webp";
+import { BsList } from "react-icons/bs";
 
 import "./Header.css";
 import { useState } from "react";
@@ -64,11 +65,11 @@ const Header = ({ isAuth }: HeaderProps) => {
         )}
       </ul>
       {isAuth && (
-        <i className="bi bi-list profile" onClick={() => setMenu(true)}></i>
+        <BsList className="profile" onClick={() => setMenu(true)} />
       )}
 
       {!isAuth && (
-        <i className="bi bi-list menu-mobile" onClick={() => setMenu(true)}></i>
+        <BsList className="menu-mobile" onClick={() => setMenu(true)} />
       )}
 
       {menu && <Menu setMenu={setMenu} isAuth={isAuth} />}

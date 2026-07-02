@@ -1,5 +1,16 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { Modal, Button, Card, Row, Col } from "react-bootstrap";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Card,
+  CardContent,
+  Box,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import UpdateBox from "../../components/updateBox/UpdateBox";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
@@ -202,18 +213,22 @@ function QuestionBoxComponent({
   }
 
   return (
-    <Modal
-      show={true}
-      onHide={() => setQuestionBox(false)}
-      centered
-      size="lg"
-      dialogClassName="custom-modal"
+    <Dialog
+      open={true}
+      onClose={() => setQuestionBox(false)}
+      fullWidth
+      maxWidth="md"
     >
-      <Modal.Header closeButton>
-        <Modal.Title>{question?.title}</Modal.Title>
-      </Modal.Header>
-      <Modal.Body className="bg-gradient">
-        <Card className="mb-3 d-flex justify-content-center align-items-center border-0">
+      <DialogTitle>{question?.title}</DialogTitle>
+      <DialogContent sx={{ background: "linear-gradient(160deg, #f5f5f5 0%, #e0e0e0 100%)" }}>
+        <Box
+          sx={{
+            mb: 3,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <QuestionImageGallery
             images={
               getOrderedQuestionImages(question).length > 0
@@ -222,41 +237,51 @@ function QuestionBoxComponent({
             }
             className="question-box-image"
           />
-        </Card>
-        <Row className="g-3">
+        </Box>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+            gap: 2,
+          }}
+        >
           {question.alternatives &&
             question.alternatives.map((alternative, index) => (
-              <Col key={alternative.id} md={6}>
-                <Card
-                  className={
-                    alternative.correct ? "bg-success bg-opacity-50" : ""
-                  }
+              <Card
+                key={alternative.id}
+                sx={{
+                  bgcolor: alternative.correct
+                    ? "rgba(46, 125, 50, 0.5)"
+                    : undefined,
+                }}
+              >
+                <CardContent
+                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
                 >
-                  <Card.Body className="d-flex align-items-center">
-                    <span className="me-2 fw-bold">
-                      {alternativesList[index]}
-                    </span>
-                    <span className="flex-grow-1">{alternative.text}</span>
-                    <Button
-                      variant="link"
-                      onClick={() =>
-                        showUpdateAlternativeBox(
-                          alternative.text,
-                          alternative.id ?? 0
-                        )
-                      }
-                    >
-                      <BsPencilSquare />
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {alternativesList[index]}
+                  </Typography>
+                  <Typography sx={{ flexGrow: 1 }}>
+                    {alternative.text}
+                  </Typography>
+                  <IconButton
+                    onClick={() =>
+                      showUpdateAlternativeBox(
+                        alternative.text,
+                        alternative.id ?? 0
+                      )
+                    }
+                  >
+                    <BsPencilSquare />
+                  </IconButton>
+                </CardContent>
+              </Card>
             ))}
-        </Row>
-      </Modal.Body>
-      <Modal.Footer>
+        </Box>
+      </DialogContent>
+      <DialogActions>
         <Button
-          variant="primary"
+          variant="contained"
           onClick={() =>
             showUpdateQuestioneBox(
               question.id,
@@ -268,14 +293,15 @@ function QuestionBoxComponent({
           Editar Questão
         </Button>
         <Button
-          variant="danger"
+          variant="contained"
+          color="error"
           onClick={() =>
             showConfirmBox(question.id, question.title, question.imageUrl)
           }
         >
           Remover Questão
         </Button>
-      </Modal.Footer>
+      </DialogActions>
 
       {isUpdateAlternative && (
         <UpdateBox
@@ -317,7 +343,7 @@ function QuestionBoxComponent({
           onClickBtn2={() => setConfirmBox(false)}
         />
       )}
-    </Modal>
+    </Dialog>
   );
 }
 

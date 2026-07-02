@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
-import { Container, Row, Col, Card, Button, Nav } from "react-bootstrap";
-import { PersonCircle } from "react-bootstrap-icons";
+import {
+  Box,
+  Card,
+  CardContent,
+  Button,
+  Tabs,
+  Tab,
+  Typography,
+} from "@mui/material";
+import { BsPersonCircle } from "react-icons/bs";
 import MyTheme from "./myTheme/MyTheme";
 import MyResponse from "./myResponse/MyResponse";
 import Loading from "../../components/loading/Loading";
@@ -242,60 +250,71 @@ const Profile = () => {
   }
 
   return (
-    <Container fluid className="py-4 min-vh-100">
-      <Row className="g-4">
-        <Col lg={3} md={4} sm={12}>
-          <Card className="shadow-sm border-0">
-            <Card.Body className="text-center d-flex flex-column align-items-center gap-3">
-              <PersonCircle size={80} className="text-primary" />
-              <h5 className="mb-0">{name}</h5>
-              <p className="text-muted">{email}</p>
-              <Button
-                variant="outline-primary"
-                className="w-75 rounded-pill"
-                onClick={showUpdateBox}
-              >
-                Editar Perfil
-              </Button>
-              <Button
-                variant="outline-primary"
-                className="w-75 rounded-pill"
-                onClick={showPasswordBox}
-              >
-                Alterar Senha
-              </Button>
-              <Button
-                variant="danger"
-                className="w-75 rounded-pill"
-                onClick={showConfirmationBox}
-              >
-                Excluir Conta
-              </Button>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col lg={9} md={8} sm={12}>
-          <Card className="shadow-sm border-0">
-            <Card.Body>
-              <Nav
-                variant="tabs"
-                activeKey={String(currentItem)}
-                className="mb-3"
-                onSelect={(selectedKey) => setCurrentItem(Number(selectedKey))}
-              >
-                {buttons.map((button) => (
-                  <Nav.Item key={button.id}>
-                    <Nav.Link eventKey={String(button.index)}>
-                      {button.label}
-                    </Nav.Link>
-                  </Nav.Item>
-                ))}
-              </Nav>
-              <div>{componentsItens[currentItem]}</div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+    <Box sx={{ py: 4, minHeight: "100vh" }}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "3fr 9fr" },
+          gap: 3,
+        }}
+      >
+        <Card elevation={2}>
+          <CardContent
+            sx={{
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <BsPersonCircle size={80} color="#3f7fd6" />
+            <Typography variant="h6" sx={{ mb: 0 }}>
+              {name}
+            </Typography>
+            <Typography color="text.secondary">{email}</Typography>
+            <Button
+              variant="outlined"
+              sx={{ width: "75%", borderRadius: 50 }}
+              onClick={showUpdateBox}
+            >
+              Editar Perfil
+            </Button>
+            <Button
+              variant="outlined"
+              sx={{ width: "75%", borderRadius: 50 }}
+              onClick={showPasswordBox}
+            >
+              Alterar Senha
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              sx={{ width: "75%", borderRadius: 50 }}
+              onClick={showConfirmationBox}
+            >
+              Excluir Conta
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card elevation={2}>
+          <CardContent>
+            <Tabs
+              value={currentItem}
+              onChange={(_e, newValue) => setCurrentItem(newValue)}
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{ mb: 3 }}
+            >
+              {buttons.map((button) => (
+                <Tab key={button.id} label={button.label} />
+              ))}
+            </Tabs>
+            <div>{componentsItens[currentItem]}</div>
+          </CardContent>
+        </Card>
+      </Box>
 
       {loading && <Loading />}
       {informationBox && (
@@ -333,7 +352,7 @@ const Profile = () => {
           onClickCancel={() => setPasswordBox(false)}
         />
       )}
-    </Container>
+    </Box>
   );
 };
 

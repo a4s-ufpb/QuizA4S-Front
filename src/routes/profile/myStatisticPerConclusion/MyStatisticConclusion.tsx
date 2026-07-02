@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
-import { Container, Table, Row, Col } from "react-bootstrap";
+import {
+  Box,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Paper,
+} from "@mui/material";
 import FilterStatistic, {
   type StatisticFilterData,
 } from "../../../components/filterStatistic/FilterStatistic";
@@ -73,56 +82,48 @@ function MyStatisticConclusion() {
   };
 
   return (
-    <Container fluid className="py-4">
-      <Row className="mb-3">
-        <Col>
-          <FilterStatistic onFilter={handleFilter} />
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <Table striped bordered hover responsive>
-            <thead>
-              <tr>
-                <th>Usuário</th>
-                <th>Tema</th>
-                <th>Data</th>
-                <th>Porcentagem de Acertos</th>
-              </tr>
-            </thead>
-            <tbody>
-              {statisticList &&
-                statisticList.map((statistic) => (
-                  <tr key={statistic.id}>
-                    <td>{statistic.studentName}</td>
-                    <td>{statistic.themeName}</td>
-                    <td>{statistic.date}</td>
-                    <td>{statistic.percentagemOfHits.toFixed(1)}%</td>
-                  </tr>
-                ))}
-            </tbody>
-          </Table>
-        </Col>
-      </Row>
+    <Box sx={{ py: 4 }}>
+      <FilterStatistic onFilter={handleFilter} />
+
+      <TableContainer component={Paper} sx={{ mt: 3 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Usuário</TableCell>
+              <TableCell>Tema</TableCell>
+              <TableCell>Data</TableCell>
+              <TableCell>Porcentagem de Acertos</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {statisticList &&
+              statisticList.map((statistic) => (
+                <TableRow key={statistic.id} hover>
+                  <TableCell>{statistic.studentName}</TableCell>
+                  <TableCell>{statistic.themeName}</TableCell>
+                  <TableCell>{statistic.date}</TableCell>
+                  <TableCell>
+                    {statistic.percentagemOfHits.toFixed(1)}%
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
       {!loading && statisticList.length === 0 && (
-        <Row>
-          <Col>
-            <NotFoundComponent title="Nenhuma Estatística Encontrada" />
-          </Col>
-        </Row>
+        <NotFoundComponent title="Nenhuma Estatística Encontrada" />
       )}
-      <Row>
-        <Col>
-          <Pagination
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            totalPages={totalPages}
-            color={"dark"}
-          />
-        </Col>
-      </Row>
+
+      <Pagination
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
+        color={"dark"}
+      />
+
       {loading && <Loading />}
-    </Container>
+    </Box>
   );
 }
 
