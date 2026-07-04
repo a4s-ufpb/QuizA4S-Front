@@ -24,6 +24,18 @@ export function useTop10QuestionsByThemeQuery(
   });
 }
 
+// Versão leve (sem base64) usada pra jogar o quiz single-player.
+export function useTop10QuestionsForPlayQuery(
+  themeId: string | number,
+  enabled = true
+) {
+  return useQuery({
+    queryKey: queryKeys.questions.byThemeTop10ForPlay(themeId),
+    queryFn: () => questionService.find10QuestionsForPlay(themeId),
+    enabled: enabled && Boolean(themeId),
+  });
+}
+
 export function useQuestionsByCreatorQuery(
   themeId: number,
   page: number,
@@ -53,6 +65,19 @@ export function useAllQuestionsByThemeQuery(themeId: number, enabled = true) {
     queryKey: queryKeys.questions.byTheme(themeId),
     queryFn: () => questionService.findAllQuestionsByTheme(themeId),
     enabled: enabled && Boolean(themeId),
+  });
+}
+
+// Usada pelo multiplayer: o broadcast STOMP não manda mais base64 de imagem
+// (payload grande demais por questão/jogador). Cacheado por id da questão —
+// jogadores que já viram essa questão (replay/outra sala) reaproveitam o
+// cache em vez de baixar de novo.
+export function useQuestionImagesQuery(questionId: number, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.questions.images(questionId),
+    queryFn: () => questionService.findQuestionImages(questionId),
+    enabled: enabled && Boolean(questionId),
+    staleTime: Infinity,
   });
 }
 

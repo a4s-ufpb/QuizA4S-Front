@@ -52,12 +52,14 @@ export interface AlternativeView {
   text: string;
 }
 
+// Sem os base64 de imagem: o backend não manda mais isso no broadcast STOMP
+// (payload grande demais pra ir em toda questão, pra todo jogador). Quando
+// imagesOrder indica upload (IMAGE_1/IMAGE_2), o cliente busca via
+// useQuestionImagesQuery (GET /question/{id}/images).
 export interface QuestionView {
   id: number;
   title: string;
   imageUrl: string;
-  imageBase64One?: string;
-  imageBase64Two?: string;
   imagesOrder?: string;
   index: number;
   total: number;

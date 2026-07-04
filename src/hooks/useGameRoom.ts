@@ -69,7 +69,13 @@ export function useGameRoom(code: string, joinAvatar?: string): UseGameRoom {
       switch (event.type) {
         case "STATE": {
           const next = event.data as RoomState;
-          setState(next);
+          // Evita re-render de quem consome `state` (ex: a tela de pergunta)
+          // quando o broadcast não mudou nada de fato — o servidor manda
+          // STATE completo a cada ação de qualquer jogador (chat, ready,
+          // etc.), mesmo sem mudança relevante pra quem só olha a questão.
+          setState((prev) =>
+            prev && JSON.stringify(prev) === JSON.stringify(next) ? prev : next
+          );
           if (next.status === "LOBBY" || next.status === "FINISHED") {
             setQuestion(null);
           }

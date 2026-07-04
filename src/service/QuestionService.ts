@@ -1,5 +1,5 @@
 import { BaseService } from "./BaseService";
-import type { Page, Question } from "../types";
+import type { Page, Question, QuizQuestion } from "../types";
 
 export class QuestionService extends BaseService {
   insertQuestion(question: Partial<Question>, idTheme: number) {
@@ -12,6 +12,16 @@ export class QuestionService extends BaseService {
 
   findQuestionById(questionId: number) {
     return this.handleRequest<Question>("get", `/question/${questionId}`);
+  }
+
+  findQuestionImages(questionId: number) {
+    return this.handleRequest<{
+      id: number;
+      imageUrl?: string;
+      imageBase64One?: string;
+      imageBase64Two?: string;
+      imagesOrder?: string;
+    }>("get", `/question/${questionId}/images`);
   }
 
   removeQuestion(questionId: number) {
@@ -28,6 +38,13 @@ export class QuestionService extends BaseService {
 
   find10QuestionsByThemeId(themeId: string | number) {
     return this.handleRequest<Question[]>("get", `/question/quiz/${themeId}`);
+  }
+
+  find10QuestionsForPlay(themeId: string | number) {
+    return this.handleRequest<QuizQuestion[]>(
+      "get",
+      `/question/quiz/${themeId}/play`
+    );
   }
 
   findQuestionsByCreator(themeId: number, currentPage: number, title: string) {

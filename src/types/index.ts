@@ -46,6 +46,16 @@ export interface Alternative {
   correct: boolean;
 }
 
+// Questão pra jogar o quiz single-player, sem os base64 de imagem — a
+// imagem da questão atual é buscada sob demanda (ver useQuestionImagesQuery).
+export interface QuizQuestion {
+  id: number;
+  title: string;
+  imageUrl: string;
+  imagesOrder?: string;
+  alternatives: Alternative[];
+}
+
 export interface Question {
   id: number;
   title: string;

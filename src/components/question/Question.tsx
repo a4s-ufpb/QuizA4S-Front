@@ -56,7 +56,11 @@ const Question = ({
 
       {images.length > 0 && (
         <div className="question-image-area">
-          <QuestionImageGallery images={images} className="question-image" />
+          <QuestionImageGallery
+            key={questionId}
+            images={images}
+            className="question-image"
+          />
         </div>
       )}
 

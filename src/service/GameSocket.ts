@@ -18,6 +18,10 @@ export class GameSocket {
     const client = new Client({
       webSocketFactory: () => new SockJS(WS_URL),
       reconnectDelay: 3000,
+      // Sem heartbeat a queda de conexão só é percebida no próximo evento
+      // esperado — com isso, ambos os lados detectam em ~5s e reconectam.
+      heartbeatIncoming: 5000,
+      heartbeatOutgoing: 5000,
       onConnect: () => {
         client.subscribe(`/topic/room/${code}`, (message: IMessage) => {
           try {

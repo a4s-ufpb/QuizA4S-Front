@@ -5,11 +5,14 @@ import Question from "../../components/question/Question";
 import InformationBox from "../../components/informationBox/InformationBox";
 import Loading from "../../components/loading/Loading";
 import QuestionFinished from "../../components/quizFinished/QuizFinished";
-import { useTop10QuestionsByThemeQuery } from "../../query/useQuestionQueries";
+import {
+  useQuestionImagesQuery,
+  useTop10QuestionsForPlayQuery,
+} from "../../query/useQuestionQueries";
 import { useInsertResponseMutation } from "../../query/useResponseQueries";
 import FeedbackBox from "../../components/feedbackBox/FeedbackBox";
 import { getStoredUser } from "../../util/storage";
-import type { Question as QuestionModel } from "../../types";
+import type { QuizQuestion } from "../../types";
 
 import correctSoundFile from "../../assets/sounds/alternative-success.mp3";
 import errorSoundFile from "../../assets/sounds/alternative-error.mp3";
@@ -18,13 +21,15 @@ import errorSoundFile from "../../assets/sounds/alternative-error.mp3";
 import "./Quiz.css";
 
 const Quiz = () => {
-  // Audio files
-  const correctSound = new Audio(correctSoundFile);
-  const errorSound = new Audio(errorSoundFile);
+  // Instanciados uma única vez (não a cada render) via ref com lazy-init.
+  const correctSoundRef = useRef<HTMLAudioElement | null>(null);
+  const errorSoundRef = useRef<HTMLAudioElement | null>(null);
+  if (!correctSoundRef.current) correctSoundRef.current = new Audio(correctSoundFile);
+  if (!errorSoundRef.current) errorSoundRef.current = new Audio(errorSoundFile);
 
   const insertResponseMutation = useInsertResponseMutation();
 
-  const [questions, setQuestions] = useState<QuestionModel[]>([]);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
 
@@ -43,8 +48,20 @@ const Quiz = () => {
 
   const { id: themeId } = useParams();
 
-  const questionsQuery = useTop10QuestionsByThemeQuery(themeId ?? "");
+  const questionsQuery = useTop10QuestionsForPlayQuery(themeId ?? "");
   const loading = questionsQuery.isLoading;
+
+  const currentQuestion = questions[currentQuestionIndex];
+  // Só busca a imagem sob demanda se a questão tiver upload (URL simples já
+  // vem em imageUrl, sem precisar de outra request).
+  const needsImageFetch = Boolean(
+    currentQuestion?.imagesOrder?.includes("IMAGE_1") ||
+      currentQuestion?.imagesOrder?.includes("IMAGE_2")
+  );
+  const currentQuestionImagesQuery = useQuestionImagesQuery(
+    currentQuestion?.id ?? 0,
+    needsImageFetch
+  );
 
   useEffect(() => {
     if (!questionsQuery.data) return;
@@ -131,7 +148,7 @@ const Quiz = () => {
       setFeedbackMessage("Parabéns, você acertou!");
       setFeedbackColor("green");
       // Play correct sound
-      correctSound.play().catch((error) => {
+      correctSoundRef.current?.play().catch((error) => {
         console.error("Error playing correct sound:", error);
       });
     } else {
@@ -139,7 +156,7 @@ const Quiz = () => {
       setFeedbackMessage("Que pena, você errou!");
       setFeedbackColor("red");
       // Play error sound
-      errorSound.play().catch((error) => {
+      errorSoundRef.current?.play().catch((error) => {
         console.error("Error playing error sound:", error);
       });
     }
@@ -217,14 +234,21 @@ const Quiz = () => {
         {questions.length > 0 && (
           <>
             <Question
-              title={questions[currentQuestionIndex].title}
-              questionId={questions[currentQuestionIndex].id}
-              questionImg={questions[currentQuestionIndex].imageUrl}
-              imageBase64One={questions[currentQuestionIndex].imageBase64One}
-              imageBase64Two={questions[currentQuestionIndex].imageBase64Two}
-              imagesOrder={questions[currentQuestionIndex].imagesOrder}
-              creatorId={questions[currentQuestionIndex].creatorId}
-              alternatives={questions[currentQuestionIndex].alternatives}
+              title={currentQuestion.title}
+              questionId={currentQuestion.id}
+              questionImg={currentQuestion.imageUrl}
+              imageBase64One={
+                currentQuestionImagesQuery.data?.success
+                  ? currentQuestionImagesQuery.data.data.imageBase64One
+                  : undefined
+              }
+              imageBase64Two={
+                currentQuestionImagesQuery.data?.success
+                  ? currentQuestionImagesQuery.data.data.imageBase64Two
+                  : undefined
+              }
+              imagesOrder={currentQuestion.imagesOrder}
+              alternatives={currentQuestion.alternatives}
               onAnswerClick={
                 clickEnabled ? handleAnswerClick : () => console.log()
               }

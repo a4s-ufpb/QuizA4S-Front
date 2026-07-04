@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -10,8 +10,10 @@ import {
   Typography,
 } from "@mui/material";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
+import type { AlternativeView } from "../../types/game";
 import QuestionImageGallery from "../questionImageGallery/QuestionImageGallery";
 import FeedbackBox from "../feedbackBox/FeedbackBox";
+import { useQuestionImagesQuery } from "../../query/useQuestionQueries";
 import { getOrderedQuestionImages } from "../../util/questionImages";
 import type { Question as QuestionModel } from "../../types";
 import correctSoundFile from "../../assets/sounds/alternative-success.mp3";
@@ -30,6 +32,77 @@ const ANSWER_COLORS = [
 ] as const;
 
 const REVEAL_DURATION_MS = 2000;
+
+interface AlternativesGridProps {
+  alternatives: AlternativeView[];
+  selectedId: number | null;
+  revealing: boolean;
+  correctAlternativeId?: number | null;
+  inQuestion: boolean;
+  isSpectator: boolean;
+  onPick: (alternativeId: number) => void;
+}
+
+// Isolado + memoizado: broadcasts de estado que não mexem na questão atual
+// (chat, jogador ficando pronto, etc.) não devem re-renderizar os botões de
+// resposta — só o placar/lista de jogadores muda nesses casos.
+const AlternativesGrid = memo(function AlternativesGrid({
+  alternatives,
+  selectedId,
+  revealing,
+  correctAlternativeId,
+  inQuestion,
+  isSpectator,
+  onPick,
+}: AlternativesGridProps) {
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+        gap: 2,
+        flex: "0 0 auto",
+      }}
+    >
+      {alternatives.map((alt, i) => {
+        const isSelected = selectedId === alt.id;
+        const isCorrect = correctAlternativeId === alt.id;
+        const color: (typeof ANSWER_COLORS)[number] | "inherit" = isSelected
+          ? "inherit"
+          : ANSWER_COLORS[i % ANSWER_COLORS.length];
+        // Só a alternativa clicada recebe a animação (scale/shake),
+        // igual ao quiz single-player — as demais só mudam de cor.
+        const revealClass = revealing && isSelected
+          ? isCorrect
+            ? "correct-answer"
+            : "wrong-answer"
+          : "";
+        return (
+          <Button
+            key={alt.id}
+            variant="contained"
+            color={color === "inherit" ? undefined : color}
+            size="large"
+            className={`mp-answer-btn ${revealClass}`}
+            sx={{
+              justifyContent: "flex-start",
+              textAlign: "left",
+              py: 2,
+              ...(revealing &&
+                (isCorrect
+                  ? { bgcolor: "#5bcebf", color: "#fff" }
+                  : { bgcolor: "#d9434f", color: "#fff" })),
+            }}
+            disabled={selectedId != null || !inQuestion || isSpectator}
+            onClick={() => onPick(alt.id)}
+          >
+            {alt.text}
+          </Button>
+        );
+      })}
+    </Box>
+  );
+});
 
 const GamePlay = ({ room }: GamePlayProps) => {
   const { question, result, state } = room;
@@ -91,15 +164,41 @@ const GamePlay = ({ room }: GamePlayProps) => {
     [result]
   );
 
+  // O broadcast STOMP não traz mais base64 (só imageUrl/imagesOrder); quando
+  // imagesOrder indica upload (IMAGE_1/IMAGE_2), busca as imagens à parte
+  // (cacheado por questão — outra rodada/sala não baixa de novo).
+  const needsImageFetch = Boolean(
+    question?.imagesOrder?.includes("IMAGE_1") ||
+      question?.imagesOrder?.includes("IMAGE_2")
+  );
+  const imagesQuery = useQuestionImagesQuery(question?.id ?? 0, needsImageFetch);
+
   const questionImages = useMemo(() => {
     if (!question) return [];
+    const fetchedImages = imagesQuery.data?.success ? imagesQuery.data.data : null;
     return getOrderedQuestionImages({
       imageUrl: question.imageUrl,
-      imageBase64One: question.imageBase64One,
-      imageBase64Two: question.imageBase64Two,
+      imageBase64One: fetchedImages?.imageBase64One,
+      imageBase64Two: fetchedImages?.imageBase64Two,
       imagesOrder: question.imagesOrder,
     } as QuestionModel);
-  }, [question]);
+  }, [question, imagesQuery.data]);
+
+  const me = state!.players.find((p) => p.id === room.playerId);
+  const isTeamMode = state!.config.roomMode === "TEAM";
+  const isSpectator = isTeamMode && Boolean(me?.teamId) && !me?.captain;
+
+  // Identidade estável: broadcasts de estado não relacionados à questão
+  // (chat, outro jogador ficando pronto) não devem invalidar o memo do
+  // AlternativesGrid só porque essa função foi recriada.
+  const pick = useCallback(
+    (alternativeId: number) => {
+      if (selectedId != null || !inQuestion || isSpectator) return;
+      setSelectedId(alternativeId);
+      room.answer(alternativeId);
+    },
+    [selectedId, inQuestion, isSpectator, room]
+  );
 
   if (!question) {
     return (
@@ -109,16 +208,6 @@ const GamePlay = ({ room }: GamePlayProps) => {
         </Container>
       </div>
     );
-  }
-
-  const me = state!.players.find((p) => p.id === room.playerId);
-  const isTeamMode = state!.config.roomMode === "TEAM";
-  const isSpectator = isTeamMode && Boolean(me?.teamId) && !me?.captain;
-
-  function pick(alternativeId: number) {
-    if (selectedId != null || !inQuestion || isSpectator) return;
-    setSelectedId(alternativeId);
-    room.answer(alternativeId);
   }
 
   const showResult = state!.status === "BETWEEN" && result != null;
@@ -203,51 +292,15 @@ const GamePlay = ({ room }: GamePlayProps) => {
             </CardContent>
           </Card>
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-              gap: 2,
-              flex: "0 0 auto",
-            }}
-          >
-            {question.alternatives.map((alt, i) => {
-              const isSelected = selectedId === alt.id;
-              const isCorrect = result?.correctAlternativeId === alt.id;
-              const color: (typeof ANSWER_COLORS)[number] | "inherit" = isSelected
-                ? "inherit"
-                : ANSWER_COLORS[i % ANSWER_COLORS.length];
-              // Só a alternativa clicada recebe a animação (scale/shake),
-              // igual ao quiz single-player — as demais só mudam de cor.
-              const revealClass = revealing && isSelected
-                ? isCorrect
-                  ? "correct-answer"
-                  : "wrong-answer"
-                : "";
-              return (
-                <Button
-                  key={alt.id}
-                  variant="contained"
-                  color={color === "inherit" ? undefined : color}
-                  size="large"
-                  className={`mp-answer-btn ${revealClass}`}
-                  sx={{
-                    justifyContent: "flex-start",
-                    textAlign: "left",
-                    py: 2,
-                    ...(revealing &&
-                      (isCorrect
-                        ? { bgcolor: "#5bcebf", color: "#fff" }
-                        : { bgcolor: "#d9434f", color: "#fff" })),
-                  }}
-                  disabled={selectedId != null || !inQuestion || isSpectator}
-                  onClick={() => pick(alt.id)}
-                >
-                  {alt.text}
-                </Button>
-              );
-            })}
-          </Box>
+          <AlternativesGrid
+            alternatives={question.alternatives}
+            selectedId={selectedId}
+            revealing={revealing}
+            correctAlternativeId={result?.correctAlternativeId}
+            inQuestion={inQuestion}
+            isSpectator={isSpectator}
+            onPick={pick}
+          />
 
           {inQuestion && isSpectator && (
             <Typography align="center" color="text.secondary" sx={{ mt: 3 }}>
