@@ -83,6 +83,13 @@ const Quiz = () => {
     };
   }, []);
 
+  // Sai da tela cheia ao exibir o modal de pontuação final.
+  useEffect(() => {
+    if (quizFinished && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, [quizFinished]);
+
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
       containerRef.current?.requestFullscreen?.().catch(() => {});

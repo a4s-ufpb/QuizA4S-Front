@@ -20,6 +20,19 @@ export class StatisticService extends BaseService {
     );
   }
 
+  findAllStatisticByCreatorForChart(
+    creatorId: string,
+    studentName: string,
+    themeName: string,
+    startDate: string,
+    endDate: string
+  ) {
+    return this.handleRequest<Statistic[]>(
+      "get",
+      `/statistic/${creatorId}/chart?studentName=${studentName}&themeName=${themeName}&startDate=${startDate}&endDate=${endDate}`
+    );
+  }
+
   findDistinctThemeNameByCreatorId(creatorId: string) {
     return this.handleRequest<{ themeName: string }[]>(
       "get",

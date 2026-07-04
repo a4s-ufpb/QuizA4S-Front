@@ -6,6 +6,7 @@ import {
   Card,
   CardHeader,
   CardContent,
+  CardMedia,
   Button,
   Chip,
   List,
@@ -15,17 +16,25 @@ import {
   DialogContent,
   IconButton,
   Typography,
+  TextField,
+  Popover,
 } from "@mui/material";
 import {
   BsPersonFill,
   BsStarFill,
   BsXCircle,
   BsBoxArrowRight,
+  BsPeopleFill,
+  BsQuestionCircleFill,
+  BsClockFill,
+  BsPencilFill,
 } from "react-icons/bs";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
 import type { PlayerView } from "../../types/game";
+import { DEFAULT_IMG } from "../../vite-env";
 import ThemeTemplate from "../themeTemplate/ThemeTemplate";
 import ConfirmBox from "../confirmBox/ConfirmBox";
+import AvatarSelector from "./AvatarSelector";
 import RoomChat from "./RoomChat";
 import RoomConfigForm from "./RoomConfigForm";
 import "./multiplayer.css";
@@ -34,16 +43,63 @@ interface LobbyProps {
   room: UseGameRoom;
 }
 
+interface AvatarTarget {
+  anchorEl: HTMLElement;
+  onPick: (avatar: string) => void;
+}
+
+/** Popover com o seletor de avatar pra jogador/equipe. */
+function AvatarPicker({
+  target,
+  onClose,
+}: {
+  target: AvatarTarget | null;
+  onClose: () => void;
+}) {
+  return (
+    <Popover
+      open={Boolean(target)}
+      anchorEl={target?.anchorEl}
+      onClose={onClose}
+      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+    >
+      <Box sx={{ p: 1, maxWidth: 340 }}>
+        <AvatarSelector
+          value=""
+          onChange={(avatar) => {
+            target?.onPick(avatar);
+            onClose();
+          }}
+        />
+      </Box>
+    </Popover>
+  );
+}
+
 const Lobby = ({ room }: LobbyProps) => {
   const navigate = useNavigate();
   const [showThemes, setShowThemes] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [kickTarget, setKickTarget] = useState<PlayerView | null>(null);
+  const [newTeamName, setNewTeamName] = useState("");
+  const [avatarTarget, setAvatarTarget] = useState<AvatarTarget | null>(null);
 
   const state = room.state!;
   const me = state.players.find((p) => p.id === room.playerId);
   const isTeamMode = state.config.roomMode === "TEAM";
+  const maxPerTeam = state.config.maxPlayersPerTeam ?? null;
+
+  function teamPlayerCount(teamId: string) {
+    return state.players.filter((p) => p.teamId === teamId).length;
+  }
+
+  function submitNewTeam() {
+    const name = newTeamName.trim();
+    if (!name) return;
+    room.createTeam(name);
+    setNewTeamName("");
+  }
   const allReady = state.players.filter((p) => !p.host).every((p) => p.ready);
   const canStart = room.isHost && state.themeId != null && allReady;
 
@@ -54,34 +110,75 @@ const Lobby = ({ room }: LobbyProps) => {
 
   return (
     <Container sx={{ py: 4 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-        }}
+      {room.countdown != null && (
+        <div className="mp-countdown-overlay">
+          <span key={room.countdown} className="mp-countdown-number mp-pop">
+            {room.countdown}
+          </span>
+        </div>
+      )}
+      <Card
+        elevation={3}
+        className="mp-fade-in mp-room-info-card"
+        sx={{ mb: 3, overflow: "hidden" }}
       >
-        <Box>
-          <Typography variant="h5" sx={{ mb: 1, color: "#fff" }}>
-            Sala <span className="mp-code-chip">{state.code}</span>
-          </Typography>
-          <Box sx={{ color: "rgba(255,255,255,0.7)" }}>
-            Quiz: <strong>{state.themeName || "nenhum selecionado"}</strong> ·{" "}
-            {isTeamMode ? "Equipes" : "Individual"} ·{" "}
-            {state.config.questionCount} questões ·{" "}
-            {state.config.questionTimeSeconds}s
+        <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+          {state.themeId != null && (
+            <CardMedia
+              component="img"
+              image={state.themeImageUrl || DEFAULT_IMG}
+              alt="tema do quiz"
+              sx={{ width: 120, height: 120, objectFit: "cover" }}
+            />
+          )}
+          <Box sx={{ flexGrow: 1, p: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 1,
+              }}
+            >
+              <Typography variant="h5" sx={{ color: "#030303" }}>
+                Sala <span className="mp-code-chip">{state.code}</span>
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ color: "#fff", borderColor: "#fff" }}
+                onClick={() => setConfirmLeave(true)}
+              >
+                <BsBoxArrowRight style={{ marginRight: 4 }} /> Sair da sala
+              </Button>
+            </Box>
+            <Typography sx={{ color: "#fff", fontWeight: "bold", mt: 1, mb: 1.5 }}>
+              {state.themeName || "Nenhum quiz selecionado"}
+            </Typography>
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+              <Chip
+                icon={<BsPeopleFill />}
+                label={isTeamMode ? "Equipes" : "Individual"}
+                color="info"
+                size="small"
+              />
+              <Chip
+                icon={<BsQuestionCircleFill />}
+                label={`${state.config.questionCount} questões`}
+                color="secondary"
+                size="small"
+              />
+              <Chip
+                icon={<BsClockFill />}
+                label={`${state.config.questionTimeSeconds}s por questão`}
+                color="warning"
+                size="small"
+              />
+            </Box>
           </Box>
         </Box>
-        <Button
-          variant="outlined"
-          size="small"
-          sx={{ color: "#fff", borderColor: "#fff" }}
-          onClick={() => setConfirmLeave(true)}
-        >
-          <BsBoxArrowRight style={{ marginRight: 4 }} /> Sair da sala
-        </Button>
-      </Box>
+      </Card>
 
       <Box
         sx={{
@@ -100,7 +197,9 @@ const Lobby = ({ room }: LobbyProps) => {
                   className="mp-player-item"
                   sx={{ display: "flex", alignItems: "center", gap: 1 }}
                 >
-                  {p.host ? (
+                  {p.avatar ? (
+                    <span style={{ fontSize: "1.4em" }}>{p.avatar}</span>
+                  ) : p.host ? (
                     <BsStarFill color="orange" title="Líder" />
                   ) : (
                     <BsPersonFill color="gray" />
@@ -115,6 +214,12 @@ const Lobby = ({ room }: LobbyProps) => {
                         size="small"
                         sx={{ ml: 1 }}
                       />
+                    )}
+                    {isTeamMode && p.captain && (
+                      <Chip label="Capitão" color="warning" size="small" sx={{ ml: 1 }} />
+                    )}
+                    {isTeamMode && p.teamId && !p.captain && !p.host && (
+                      <Chip label="Espectador" size="small" sx={{ ml: 1 }} />
                     )}
                   </Box>
                   {!p.host &&
@@ -141,17 +246,80 @@ const Lobby = ({ room }: LobbyProps) => {
           {isTeamMode && me && !me.host && (
             <Card elevation={2} className="mp-fade-in" sx={{ mb: 3 }}>
               <CardHeader title="Escolha sua equipe" />
-              <CardContent sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                {state.teams.map((t) => (
-                  <Button
-                    key={t.id}
-                    variant={me.teamId === t.id ? "contained" : "outlined"}
-                    color="info"
-                    onClick={() => room.pickTeam(t.id)}
-                  >
-                    {t.name}
+              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  {state.teams.map((t) => {
+                    const count = teamPlayerCount(t.id);
+                    const isFull =
+                      maxPerTeam != null &&
+                      count >= maxPerTeam &&
+                      me.teamId !== t.id;
+                    return (
+                      <Box key={t.id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                        <Button
+                          variant={me.teamId === t.id ? "contained" : "outlined"}
+                          color="info"
+                          disabled={isFull}
+                          onClick={() => room.pickTeam(t.id)}
+                        >
+                          {t.avatar && <span style={{ marginRight: 6 }}>{t.avatar}</span>}
+                          {t.name}
+                          {maxPerTeam != null && ` (${count}/${maxPerTeam})`}
+                        </Button>
+                        {me.teamId === t.id && me.captain && (
+                          <IconButton
+                            size="small"
+                            title="Escolher avatar da equipe"
+                            onClick={(e) =>
+                              setAvatarTarget({
+                                anchorEl: e.currentTarget,
+                                onPick: (avatar) => room.setTeamAvatar(t.id, avatar),
+                              })
+                            }
+                          >
+                            <BsPencilFill size={14} />
+                          </IconButton>
+                        )}
+                      </Box>
+                    );
+                  })}
+                </Box>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <TextField
+                    size="small"
+                    placeholder="Nome da nova equipe"
+                    value={newTeamName}
+                    slotProps={{ htmlInput: { maxLength: 30 } }}
+                    onChange={(e) => setNewTeamName(e.target.value)}
+                    sx={{ flexGrow: 1 }}
+                  />
+                  <Button variant="contained" color="secondary" onClick={submitNewTeam}>
+                    Criar equipe
                   </Button>
-                ))}
+                </Box>
+
+                {me.captain && me.teamId && (
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      Você é o capitão — só você responde pela equipe. Pode passar o
+                      cargo pra outro membro:
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                      {state.players
+                        .filter((p) => p.teamId === me.teamId && p.id !== me.id)
+                        .map((p) => (
+                          <Button
+                            key={p.id}
+                            size="small"
+                            variant="outlined"
+                            onClick={() => room.transferCaptain(me.teamId!, p.id)}
+                          >
+                            Tornar {p.name} capitão
+                          </Button>
+                        ))}
+                    </Box>
+                  </Box>
+                )}
               </CardContent>
             </Card>
           )}
@@ -168,11 +336,11 @@ const Lobby = ({ room }: LobbyProps) => {
             )}
             {room.isHost && (
               <>
-                <Button variant="outlined" onClick={() => setShowThemes(true)}>
+                <Button variant="contained" color="primary" onClick={() => setShowThemes(true)}>
                   {state.themeId ? "Trocar quiz" : "Selecionar quiz"}
                 </Button>
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   color="secondary"
                   onClick={() => setShowConfig(true)}
                 >
@@ -180,6 +348,7 @@ const Lobby = ({ room }: LobbyProps) => {
                 </Button>
                 <Button
                   variant="contained"
+                  color="success"
                   disabled={!canStart}
                   onClick={room.start}
                 >
@@ -257,6 +426,8 @@ const Lobby = ({ room }: LobbyProps) => {
           onClickBtn2={() => setKickTarget(null)}
         />
       )}
+
+      <AvatarPicker target={avatarTarget} onClose={() => setAvatarTarget(null)} />
     </Container>
   );
 };

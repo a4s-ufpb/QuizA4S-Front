@@ -11,7 +11,6 @@ import {
   TableCell,
   Button,
   Box,
-  Typography,
 } from "@mui/material";
 import Loading from "../loading/Loading";
 import { useEffect, useState } from "react";
@@ -62,23 +61,10 @@ const Ranking = ({ navigatePath, setShowRanking }: RankingProps) => {
   return (
     <Dialog open={true} onClose={closeRanking} fullWidth maxWidth="md">
       <DialogTitle sx={{ bgcolor: "primary.main", color: "#fff" }}>
-        Ranking
+        Ranking — {themeName}
       </DialogTitle>
       <DialogContent sx={{ maxHeight: "60vh", overflowY: "auto" }}>
-        <Box>
-          <Typography
-            sx={{
-              textAlign: "center",
-              bgcolor: "primary.main",
-              color: "#fff",
-              borderRadius: 50,
-              px: 3,
-              py: 1,
-              mb: 3,
-            }}
-          >
-            Tema: {themeName}
-          </Typography>
+        <Box sx={{ mt: 2 }}>
           {ranking && ranking.length > 0 ? (
             <Table>
               <TableHead>

@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { BsPersonCircle } from "react-icons/bs";
 import MyTheme from "./myTheme/MyTheme";
+import MyOwnResponses from "./myOwnResponses/MyOwnResponses";
 import MyResponse from "./myResponse/MyResponse";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
@@ -54,6 +55,7 @@ const Profile = () => {
 
   const componentsItens = [
     <MyTheme key="my-theme" />,
+    <MyOwnResponses key="my-own-responses" />,
     <MyResponse key="my-response" />,
     <MyStatistics key="my-statistics" />,
     <MyStatisticConclusion key="my-statistic-conclusion" />,
@@ -62,18 +64,19 @@ const Profile = () => {
 
   const buttons = [
     { id: "btn-quiz", label: "Meus Temas", index: 0 },
-    { id: "btn-response", label: "Painel de Respostas", index: 1 },
+    { id: "btn-my-response", label: "Minhas Respostas", index: 1 },
+    { id: "btn-response", label: "Painel de Respostas", index: 2 },
     {
       id: "btn-statistic-response",
       label: "Estatísticas por Questão",
-      index: 2,
+      index: 3,
     },
     {
       id: "btn-statistic-conclusion",
       label: "Estatísticas por Conclusão",
-      index: 3,
+      index: 4,
     },
-    ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 4 }] : []),
+    ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 5 }] : []),
   ];
 
   useEffect(() => {
@@ -258,7 +261,7 @@ const Profile = () => {
           gap: 3,
         }}
       >
-        <Card elevation={2}>
+        <Card elevation={2} sx={{ alignSelf: "start", height: "fit-content" }}>
           <CardContent
             sx={{
               textAlign: "center",

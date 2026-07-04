@@ -1,5 +1,7 @@
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Container, Alert, Button, Typography } from "@mui/material";
+import { BsArrowsFullscreen, BsFullscreenExit } from "react-icons/bs";
 import { useGameRoom } from "../../hooks/useGameRoom";
 import Loading from "../loading/Loading";
 import Lobby from "./Lobby";
@@ -8,11 +10,53 @@ import ResultsView from "./ResultsView";
 
 interface RoomConnectedProps {
   code: string;
+  avatar?: string;
 }
 
-const RoomConnected = ({ code }: RoomConnectedProps) => {
-  const room = useGameRoom(code);
+const RoomConnected = ({ code, avatar }: RoomConnectedProps) => {
+  const room = useGameRoom(code, avatar);
   const navigate = useNavigate();
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    };
+  }, []);
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen?.().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  // Avisa antes de fechar/atualizar a aba: o jogador (ou equipe) perde a vaga e a pontuação.
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  // Entra em tela cheia automaticamente assim que a partida começa (igual ao quiz single-player).
+  const gameStartedRef = useRef(false);
+  useEffect(() => {
+    const status = room.state?.status;
+    if (!gameStartedRef.current && status && status !== "LOBBY") {
+      gameStartedRef.current = true;
+      containerRef.current?.requestFullscreen?.().catch(() => {});
+    }
+    if (status === "LOBBY") gameStartedRef.current = false;
+  }, [room.state?.status]);
 
   if (room.kicked) {
     return (
@@ -54,7 +98,21 @@ const RoomConnected = ({ code }: RoomConnectedProps) => {
   const { status } = room.state;
 
   return (
-    <div className="mp-room">
+    <div className="mp-room" ref={containerRef}>
+      <button
+        type="button"
+        className="mp-fullscreen-btn"
+        onClick={toggleFullscreen}
+        title={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+        aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+      >
+        {isFullscreen ? (
+          <BsFullscreenExit size={18} />
+        ) : (
+          <BsArrowsFullscreen size={18} />
+        )}
+      </button>
+
       {room.error && (
         <Box
           sx={{

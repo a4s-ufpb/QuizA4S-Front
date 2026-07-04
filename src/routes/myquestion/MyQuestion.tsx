@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import {
   Container,
   Box,
+  Breadcrumbs,
+  Link,
   Card,
   CardMedia,
   CardContent,
@@ -185,6 +187,18 @@ const MyQuestion = () => {
 
   return (
     <Container maxWidth={false} sx={{ py: 4, minHeight: "100vh" }}>
+      <Breadcrumbs sx={{ mb: 3 }}>
+        <Link
+          component="button"
+          underline="hover"
+          color="inherit"
+          onClick={() => navigate("/profile")}
+        >
+          Perfil
+        </Link>
+        <Typography color="text.primary">Minhas Questões</Typography>
+      </Breadcrumbs>
+
       <Card elevation={2} sx={{ mb: 4 }}>
         <CardContent sx={{ display: "flex", alignItems: "center", gap: 3 }}>
           <Box

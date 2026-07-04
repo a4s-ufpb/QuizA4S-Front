@@ -11,26 +11,47 @@ import {
   Typography,
 } from "@mui/material";
 import { getGuestName, setGuestName } from "../../util/guest";
+import { getStoredUser } from "../../util/storage";
+import AvatarSelector from "../../components/multiplayer/AvatarSelector";
 import RoomConnected from "../../components/multiplayer/RoomConnected";
 
 /**
- * Portão de nome + código. Só monta a conexão da sala depois que há um nome,
- * garantindo que jogadores convidados se identifiquem antes de entrar.
+ * Portão de nome + avatar. Só monta a conexão da sala depois que o jogador
+ * confirmou nome (se convidado) e escolheu um avatar — sempre exibido, mesmo
+ * entrando direto por link, garantindo estado consistente (ex.: botão de
+ * "pronto" no lobby) antes do `join` ser enviado.
  */
 const Room = () => {
   const { code } = useParams();
   const navigate = useNavigate();
-  const [name, setName] = useState(getGuestName());
-  const [ready, setReady] = useState(getGuestName().trim().length >= 2);
+
+  const loggedUser = getStoredUser();
+  const isLoggedIn = Boolean(
+    localStorage.getItem("token") && loggedUser?.name
+  );
+
+  const [name, setName] = useState(
+    isLoggedIn ? loggedUser.name : getGuestName()
+  );
+  const [avatar, setAvatar] = useState("");
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState("");
 
   if (!code) {
     navigate("/multiplayer");
     return null;
   }
 
-  function confirmName() {
-    if (name.trim().length < 2) return;
-    setGuestName(name.trim());
+  function confirmEntry() {
+    if (!isLoggedIn && name.trim().length < 2) {
+      setError("Digite um nome com pelo menos 2 caracteres.");
+      return;
+    }
+    if (!avatar) {
+      setError("Escolha um avatar para entrar na sala.");
+      return;
+    }
+    setGuestName(isLoggedIn ? loggedUser.name : name.trim());
     setReady(true);
   }
 
@@ -44,24 +65,41 @@ const Room = () => {
           minHeight: "100vh",
         }}
       >
-        <Card elevation={3} sx={{ width: "100%", maxWidth: 420 }}>
+        <Card elevation={3} sx={{ width: "100%", maxWidth: 460 }}>
           <CardContent sx={{ p: 4 }}>
             <Typography variant="h5" align="center" sx={{ mb: 3 }}>
               Entrar na sala {code}
             </Typography>
-            <Alert severity="info" sx={{ mb: 3 }}>
-              Escolha um nome para participar.
-            </Alert>
-            <TextField
-              label="Seu nome"
-              value={name}
-              slotProps={{ htmlInput: { maxLength: 30 } }}
-              onChange={(e) => setName(e.target.value)}
-              fullWidth
-              sx={{ mb: 3 }}
+
+            {error && (
+              <Alert severity="error" onClose={() => setError("")} sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+
+            {isLoggedIn ? (
+              <Typography align="center" sx={{ mb: 3 }}>
+                Jogando como <strong>{loggedUser.name}</strong>
+              </Typography>
+            ) : (
+              <TextField
+                label="Seu nome"
+                value={name}
+                slotProps={{ htmlInput: { maxLength: 30 } }}
+                onChange={(e) => setName(e.target.value)}
+                fullWidth
+                sx={{ mb: 3 }}
+              />
+            )}
+
+            <AvatarSelector
+              label="Escolha seu avatar"
+              value={avatar}
+              onChange={setAvatar}
             />
+
             <Box sx={{ display: "grid" }}>
-              <Button variant="contained" onClick={confirmName}>
+              <Button variant="contained" onClick={confirmEntry}>
                 Entrar
               </Button>
             </Box>
@@ -71,7 +109,7 @@ const Room = () => {
     );
   }
 
-  return <RoomConnected code={code} />;
+  return <RoomConnected code={code} avatar={avatar} />;
 };
 
 export default Room;

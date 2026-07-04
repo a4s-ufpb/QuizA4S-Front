@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Container,
@@ -6,11 +7,11 @@ import {
   Button,
   List,
   ListItem,
-  Chip,
   Box,
   Typography,
 } from "@mui/material";
-import { BsTrophyFill } from "react-icons/bs";
+import { BsTrophyFill, BsPersonFill } from "react-icons/bs";
+import confetti from "canvas-confetti";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
 import "./multiplayer.css";
 
@@ -18,7 +19,83 @@ interface ResultsViewProps {
   room: UseGameRoom;
 }
 
-/** Tela final: ranking dos jogadores (e das equipes no modo TEAM). */
+interface PodiumEntry {
+  id: string;
+  name: string;
+  avatar?: string | null;
+  score: number;
+  isMe?: boolean;
+}
+
+const PODIUM_ORDER = [1, 0, 2]; // 2º à esquerda, 1º ao centro, 3º à direita
+const PODIUM_HEIGHT: Record<number, number> = { 0: 190, 1: 145, 2: 115 };
+
+function Podium({ entries }: { entries: PodiumEntry[] }) {
+  const top3 = entries.slice(0, 3);
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
+        gap: 2,
+        mb: 4,
+      }}
+    >
+      {PODIUM_ORDER.filter((i) => top3[i]).map((i) => {
+        const entry = top3[i];
+        return (
+          <Box
+            key={entry.id}
+            className="mp-pop"
+            style={{ animationDelay: `${i * 120}ms` }}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              width: 140,
+            }}
+          >
+            <Box sx={{ fontSize: "2.6em", mb: 0.5 }}>
+              {entry.avatar || <BsPersonFill />}
+            </Box>
+            <Typography
+              sx={{
+                color: "#fff",
+                fontWeight: "bold",
+                textAlign: "center",
+                maxWidth: 130,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {entry.name}
+              {entry.isMe && " (você)"}
+            </Typography>
+            <Typography sx={{ color: "#fff", mb: 1 }}>{entry.score} pts</Typography>
+            <Box
+              className={`mp-podium-step mp-podium-${i + 1}`}
+              sx={{ height: PODIUM_HEIGHT[i], width: "100%" }}
+            >
+              <span className="mp-podium-rank">{i + 1}º</span>
+            </Box>
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
+
+function rankBadge(index: number) {
+  if (index >= 3) return <strong style={{ marginRight: 8 }}>{index + 1}º</strong>;
+  return (
+    <span className={`mp-rank-icon mp-rank-${index + 1}`}>{index + 1}</span>
+  );
+}
+
+/** Tela final: pódio (top 3) + ranking dos demais, com confete ao entrar. */
 const ResultsView = ({ room }: ResultsViewProps) => {
   const navigate = useNavigate();
   const state = room.state!;
@@ -29,32 +106,54 @@ const ResultsView = ({ room }: ResultsViewProps) => {
     .sort((a, b) => b.score - a.score);
   const teams = [...state.teams].sort((a, b) => b.score - a.score);
 
+  const podiumEntries: PodiumEntry[] = isTeam
+    ? teams.map((t) => ({ id: t.id, name: t.name, avatar: t.avatar, score: t.score }))
+    : players.map((p) => ({
+        id: p.id,
+        name: p.name,
+        avatar: p.avatar,
+        score: p.score,
+        isMe: p.id === room.playerId,
+      }));
+
+  useEffect(() => {
+    confetti({ particleCount: 120, spread: 90, origin: { y: 0.3 } });
+    const timeout = setTimeout(() => {
+      confetti({ particleCount: 80, angle: 60, spread: 70, origin: { x: 0 } });
+      confetti({ particleCount: 80, angle: 120, spread: 70, origin: { x: 1 } });
+    }, 250);
+    return () => clearTimeout(timeout);
+  }, []);
+
   return (
-    <Container sx={{ py: 5, maxWidth: "640px" }}>
-      <Box className="mp-pop" sx={{ textAlign: "center", mb: 4 }}>
+    <Container sx={{ py: 5 }}>
+      <Box className="mp-pop mp-final-scoreboard" sx={{ textAlign: "center", mb: 3 }}>
         <BsTrophyFill color="gold" size={56} />
         <Typography variant="h4" sx={{ mt: 2, color: "#fff" }}>
           Fim de jogo!
         </Typography>
       </Box>
 
-      {isTeam && (
-        <Card elevation={2} sx={{ mb: 4 }}>
+      <Podium entries={podiumEntries} />
+
+      {isTeam && teams.length > 0 && (
+        <Card elevation={2} className="mp-final-scoreboard" sx={{ mb: 4 }}>
           <CardHeader title="Equipes" />
           <List disablePadding>
             {teams.map((t, i) => (
               <ListItem
                 key={t.id}
+                className="mp-rank-item"
+                style={{ animationDelay: `${i * 80}ms` }}
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                 }}
               >
-                <span>
-                  {i === 0 && (
-                    <Chip label="1º" color="warning" size="small" sx={{ mr: 1 }} />
-                  )}
+                <span style={{ display: "flex", alignItems: "center" }}>
+                  {rankBadge(i)}
+                  {t.avatar && <span style={{ marginRight: 6 }}>{t.avatar}</span>}
                   {t.name}
                 </span>
                 <strong>{t.score}</strong>
@@ -64,30 +163,39 @@ const ResultsView = ({ room }: ResultsViewProps) => {
         </Card>
       )}
 
-      <Card elevation={2} sx={{ mb: 4 }}>
+      <Card elevation={2} className="mp-final-scoreboard" sx={{ mb: 4 }}>
         <CardHeader title="Jogadores" />
         <List disablePadding>
-          {players.map((p, i) => (
-            <ListItem
-              key={p.id}
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <span>
-                <strong style={{ marginRight: 8 }}>{i + 1}º</strong>
-                {p.name}
-                {p.id === room.playerId && " (você)"}
-              </span>
-              <strong>{p.score}</strong>
-            </ListItem>
-          ))}
+          {players.slice(isTeam ? 0 : 3).map((p, i) => {
+            const rank = isTeam ? i : i + 3;
+            return (
+              <ListItem
+                key={p.id}
+                className="mp-rank-item"
+                style={{ animationDelay: `${i * 80}ms` }}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center" }}>
+                  {rankBadge(rank)}
+                  {p.avatar && <span style={{ marginRight: 6 }}>{p.avatar}</span>}
+                  {p.name}
+                  {p.id === room.playerId && " (você)"}
+                </span>
+                <strong>{p.score}</strong>
+              </ListItem>
+            );
+          })}
         </List>
       </Card>
 
-      <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+      <Box
+        className="mp-final-scoreboard"
+        sx={{ display: "flex", gap: 1, justifyContent: "center", flexWrap: "wrap" }}
+      >
         <Button variant="outlined" color="secondary" onClick={() => navigate("/multiplayer")}>
           Sair
         </Button>

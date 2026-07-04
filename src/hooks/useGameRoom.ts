@@ -21,9 +21,15 @@ export interface UseGameRoom {
   kicked: boolean;
   closed: boolean;
   isHost: boolean;
+  /** Contagem regressiva (segundos) antes da 1ª questão da partida, sincronizada com o servidor. */
+  countdown: number | null;
   clearError: () => void;
   setReady: (ready: boolean) => void;
   pickTeam: (teamId: string) => void;
+  createTeam: (teamName: string) => void;
+  setAvatar: (avatar: string) => void;
+  setTeamAvatar: (teamId: string, avatar: string) => void;
+  transferCaptain: (teamId: string, newCaptainId: string) => void;
   kick: (targetId: string) => void;
   changeQuiz: (themeId: number) => void;
   updateConfig: (config: GameConfig) => void;
@@ -35,7 +41,7 @@ export interface UseGameRoom {
 }
 
 /** Gerencia a conexão STOMP e o estado de uma sala multiplayer. */
-export function useGameRoom(code: string): UseGameRoom {
+export function useGameRoom(code: string, joinAvatar?: string): UseGameRoom {
   const socketRef = useRef<GameSocket | null>(null);
   const playerId = getGuestId();
 
@@ -47,6 +53,7 @@ export function useGameRoom(code: string): UseGameRoom {
   const [error, setError] = useState("");
   const [kicked, setKicked] = useState(false);
   const [closed, setClosed] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   const handleEvent = useCallback(
     (event: GameEvent) => {
@@ -58,6 +65,7 @@ export function useGameRoom(code: string): UseGameRoom {
             setQuestion(null);
           }
           if (next.status === "LOBBY") setResult(null);
+          if (next.status === "IN_QUESTION") setCountdown(null);
           break;
         }
         case "QUESTION":
@@ -79,17 +87,36 @@ export function useGameRoom(code: string): UseGameRoom {
         case "ERROR":
           setError(String(event.data));
           break;
+        case "COUNTDOWN":
+          setCountdown(event.data as number);
+          break;
       }
     },
     [playerId]
   );
+
+  // Decrementa a contagem regressiva localmente, 1 segundo por vez, até sumir.
+  useEffect(() => {
+    if (countdown == null) return;
+    if (countdown <= 0) {
+      setCountdown(null);
+      return;
+    }
+    const timer = setTimeout(() => setCountdown((c) => (c ?? 1) - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown]);
 
   useEffect(() => {
     const socket = new GameSocket();
     socketRef.current = socket;
     socket.connect(code, handleEvent, () => {
       setConnected(true);
-      socket.send("join", { code, playerId, name: getGuestName() });
+      socket.send("join", {
+        code,
+        playerId,
+        name: getGuestName(),
+        avatar: joinAvatar,
+      });
     });
     return () => {
       socket.send("leave", { code, playerId });
@@ -115,9 +142,17 @@ export function useGameRoom(code: string): UseGameRoom {
     kicked,
     closed,
     isHost,
+    countdown,
     clearError: () => setError(""),
     setReady: (ready) => send("ready", { code, playerId, ready }),
     pickTeam: (teamId) => send("team", { code, playerId, teamId }),
+    createTeam: (teamName) =>
+      send("team/create", { code, playerId, teamName }),
+    setAvatar: (avatar) => send("avatar", { code, playerId, avatar }),
+    setTeamAvatar: (teamId, avatar) =>
+      send("team/avatar", { code, playerId, teamId, avatar }),
+    transferCaptain: (teamId, newCaptainId) =>
+      send("team/captain", { code, playerId, teamId, newCaptainId }),
     kick: (targetId) => send("kick", { code, hostId: playerId, targetId }),
     changeQuiz: (themeId) => send("change-quiz", { code, hostId: playerId, themeId }),
     updateConfig: (config) => send("config", { code, hostId: playerId, config }),

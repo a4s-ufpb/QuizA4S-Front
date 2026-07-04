@@ -65,11 +65,11 @@ const Header = ({ isAuth }: HeaderProps) => {
         )}
       </ul>
       {isAuth && (
-        <BsList className="profile" onClick={() => setMenu(true)} />
+        <BsList size={80} className="profile" onClick={() => setMenu(true)} />
       )}
 
       {!isAuth && (
-        <BsList className="menu-mobile" onClick={() => setMenu(true)} />
+        <BsList size={80} className="menu-mobile" onClick={() => setMenu(true)} />
       )}
 
       {menu && <Menu setMenu={setMenu} isAuth={isAuth} />}

@@ -88,17 +88,29 @@ export interface ResponseStatistic {
   percentageOfAnswersIncorrect: number;
 }
 
+export interface MySummary {
+  totalQuizzesFinished: number;
+  totalCorrectAnswers: number;
+  totalWrongAnswers: number;
+}
+
 export interface ResponseItem {
   id: number;
+  dateTime: string;
   user: User;
   question: {
     title: string;
+    imageUrl?: string;
+    imageBase64One?: string;
+    imageBase64Two?: string;
+    imagesOrder?: string;
     theme: { name: string };
   };
   alternative: {
     text: string;
     correct: boolean;
   };
+  questionAlternatives: Alternative[];
 }
 
 export interface AuthResponse {

@@ -8,7 +8,20 @@ import {
   TableRow,
   TableCell,
   Paper,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { BsTable, BsBarChartFill } from "react-icons/bs";
 import FilterStatistic, {
   type StatisticFilterData,
 } from "../../../components/filterStatistic/FilterStatistic";
@@ -19,6 +32,11 @@ import { StatisticService } from "../../../service/StatisticService";
 import { getStoredUser } from "../../../util/storage";
 import type { Statistic } from "../../../types";
 
+interface ThemeAverage {
+  themeName: string;
+  averageOfHits: number;
+}
+
 function MyStatisticConclusion() {
   const statisticService = new StatisticService();
 
@@ -26,6 +44,8 @@ function MyStatisticConclusion() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [view, setView] = useState<"table" | "chart">("table");
+  const [chartData, setChartData] = useState<ThemeAverage[]>([]);
 
   const [studentName, setStudentName] = useState("");
   const [themeName, setThemeName] = useState("");
@@ -35,6 +55,11 @@ function MyStatisticConclusion() {
   useEffect(() => {
     fetchData();
   }, [currentPage, studentName, themeName, startDate, endDate]);
+
+  useEffect(() => {
+    if (view === "chart") fetchChartData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, studentName, themeName, startDate, endDate]);
 
   async function fetchData() {
     const { uuid: creatorId } = getStoredUser();
@@ -67,6 +92,45 @@ function MyStatisticConclusion() {
     }
   }
 
+  async function fetchChartData() {
+    const { uuid: creatorId } = getStoredUser();
+    try {
+      setLoading(true);
+      const response = await statisticService.findAllStatisticByCreatorForChart(
+        creatorId,
+        studentName,
+        themeName,
+        startDate,
+        endDate
+      );
+
+      if (!response.success) {
+        setChartData([]);
+        return;
+      }
+
+      const totals = new Map<string, { sum: number; count: number }>();
+      response.data.forEach((stat) => {
+        const entry = totals.get(stat.themeName) ?? { sum: 0, count: 0 };
+        entry.sum += stat.percentagemOfHits;
+        entry.count += 1;
+        totals.set(stat.themeName, entry);
+      });
+
+      setChartData(
+        Array.from(totals.entries()).map(([name, { sum, count }]) => ({
+          themeName: name,
+          averageOfHits: Number((sum / count).toFixed(1)),
+        }))
+      );
+    } catch (error) {
+      setChartData([]);
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   // Função chamada pelo FilterStatistic para atualizar os filtros
   const handleFilter = ({
     studentName,
@@ -85,42 +149,83 @@ function MyStatisticConclusion() {
     <Box sx={{ py: 4 }}>
       <FilterStatistic onFilter={handleFilter} />
 
-      <TableContainer component={Paper} sx={{ mt: 3 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Usuário</TableCell>
-              <TableCell>Tema</TableCell>
-              <TableCell>Data</TableCell>
-              <TableCell>Porcentagem de Acertos</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {statisticList &&
-              statisticList.map((statistic) => (
-                <TableRow key={statistic.id} hover>
-                  <TableCell>{statistic.studentName}</TableCell>
-                  <TableCell>{statistic.themeName}</TableCell>
-                  <TableCell>{statistic.date}</TableCell>
-                  <TableCell>
-                    {statistic.percentagemOfHits.toFixed(1)}%
-                  </TableCell>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3, mb: 1 }}>
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={view}
+          onChange={(_e, newView) => newView && setView(newView)}
+        >
+          <ToggleButton value="table">
+            <BsTable style={{ marginRight: 6 }} /> Tabela
+          </ToggleButton>
+          <ToggleButton value="chart">
+            <BsBarChartFill style={{ marginRight: 6 }} /> Gráfico
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
+      {view === "table" ? (
+        <>
+          <TableContainer component={Paper} sx={{ width: "100%" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Usuário</TableCell>
+                  <TableCell>Tema</TableCell>
+                  <TableCell>Data</TableCell>
+                  <TableCell>Porcentagem de Acertos</TableCell>
                 </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              </TableHead>
+              <TableBody>
+                {statisticList &&
+                  statisticList.map((statistic) => (
+                    <TableRow key={statistic.id} hover>
+                      <TableCell>{statistic.studentName}</TableCell>
+                      <TableCell>{statistic.themeName}</TableCell>
+                      <TableCell>{statistic.date}</TableCell>
+                      <TableCell>
+                        {statistic.percentagemOfHits.toFixed(1)}%
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-      {!loading && statisticList.length === 0 && (
-        <NotFoundComponent title="Nenhuma Estatística Encontrada" />
+          {!loading && statisticList.length === 0 && (
+            <NotFoundComponent title="Nenhuma Estatística Encontrada" />
+          )}
+
+          <Pagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            color={"dark"}
+          />
+        </>
+      ) : (
+        <Paper sx={{ width: "100%", p: 2 }}>
+          <ResponsiveContainer width="100%" height={380}>
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="themeName" />
+              <YAxis allowDecimals={false} unit="%" />
+              <RechartsTooltip />
+              <Legend />
+              <Bar
+                dataKey="averageOfHits"
+                name="Média de Acertos (%)"
+                fill="#3f7fd6"
+              />
+            </BarChart>
+          </ResponsiveContainer>
+
+          {!loading && chartData.length === 0 && (
+            <NotFoundComponent title="Nenhuma Estatística Encontrada" />
+          )}
+        </Paper>
       )}
-
-      <Pagination
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        totalPages={totalPages}
-        color={"dark"}
-      />
 
       {loading && <Loading />}
     </Box>

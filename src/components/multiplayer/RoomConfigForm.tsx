@@ -14,17 +14,19 @@ import {
   Typography,
   type SelectChangeEvent,
 } from "@mui/material";
-import type {
-  AdvanceMode,
-  GameConfig,
-  RoomMode,
-  ScoringMode,
-} from "../../types/game";
+import type { AdvanceMode, GameConfig, ScoringMode } from "../../types/game";
 
 interface RoomConfigFormProps {
   config: GameConfig;
   onSave: (config: GameConfig) => void;
   onClose: () => void;
+}
+
+function formatTime(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return rest === 0 ? `${minutes}m` : `${minutes}m ${rest}s`;
 }
 
 /** Modal do líder para personalizar as regras da partida. */
@@ -40,23 +42,6 @@ const RoomConfigForm = ({ config, onSave, onClose }: RoomConfigFormProps) => {
       <DialogTitle>Regras da partida</DialogTitle>
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 1 }}>
-          <FormControl fullWidth>
-            <InputLabel id="room-mode-label">Modo</InputLabel>
-            <Select
-              labelId="room-mode-label"
-              label="Modo"
-              value={draft.roomMode}
-              onChange={(e: SelectChangeEvent) =>
-                update("roomMode", e.target.value as RoomMode)
-              }
-            >
-              <MenuItem value="INDIVIDUAL">
-                Individual (todos contra todos)
-              </MenuItem>
-              <MenuItem value="TEAM">Equipes</MenuItem>
-            </Select>
-          </FormControl>
-
           <FormControl fullWidth>
             <InputLabel id="scoring-mode-label">Pontuação</InputLabel>
             <Select
@@ -89,13 +74,15 @@ const RoomConfigForm = ({ config, onSave, onClose }: RoomConfigFormProps) => {
 
           <div>
             <Typography gutterBottom>
-              Tempo por questão: {draft.questionTimeSeconds}s
+              Tempo por questão: {formatTime(draft.questionTimeSeconds)}
             </Typography>
             <Slider
               min={5}
-              max={60}
+              max={300}
               step={5}
               value={draft.questionTimeSeconds}
+              valueLabelDisplay="auto"
+              valueLabelFormat={formatTime}
               onChange={(_e, value) =>
                 update("questionTimeSeconds", value as number)
               }

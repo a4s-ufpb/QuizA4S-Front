@@ -1,5 +1,10 @@
 import { BaseService } from "./BaseService";
-import type { Page, ResponseItem, ResponseStatistic } from "../types";
+import type {
+  MySummary,
+  Page,
+  ResponseItem,
+  ResponseStatistic,
+} from "../types";
 
 export class ResponseService extends BaseService {
   insertResponse(idUser: string, idQuestion: number, idAlternative: number) {
@@ -13,6 +18,25 @@ export class ResponseService extends BaseService {
     return this.handleRequest<Page<ResponseItem>>(
       "get",
       `/response/user?page=${currentPage}`
+    );
+  }
+
+  findMyResponses(
+    currentPage: number,
+    themeName: string,
+    startDate: string,
+    endDate: string
+  ) {
+    return this.handleRequest<Page<ResponseItem>>(
+      "get",
+      `/response/user?page=${currentPage}&theme=${themeName}&startDate=${startDate}&endDate=${endDate}`
+    );
+  }
+
+  findMySummary(themeName: string, startDate: string, endDate: string) {
+    return this.handleRequest<MySummary>(
+      "get",
+      `/response/user/summary?theme=${themeName}&startDate=${startDate}&endDate=${endDate}`
     );
   }
 
@@ -33,6 +57,18 @@ export class ResponseService extends BaseService {
     return this.handleRequest<Page<ResponseItem>>(
       "get",
       `/response/query?page=${currentPage}&username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}`
+    );
+  }
+
+  findResponsesByQuestionCreatorAndUsernameAndDateAndThemeNameForChart(
+    username: string,
+    themeName: string,
+    currentDate: string,
+    finalDate: string
+  ) {
+    return this.handleRequest<ResponseItem[]>(
+      "get",
+      `/response/query/chart?username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}`
     );
   }
 

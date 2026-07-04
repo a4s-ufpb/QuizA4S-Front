@@ -79,6 +79,7 @@ const FilterComponent = ({ onData }: FilterComponentProps) => {
         <Autocomplete
           freeSolo
           fullWidth
+          sx={{ flex: 1 }}
           options={usernamesList.map((data) => data.username)}
           inputValue={username}
           onInputChange={(_e, newValue) => setUsername(newValue)}
@@ -95,6 +96,7 @@ const FilterComponent = ({ onData }: FilterComponentProps) => {
         <Autocomplete
           freeSolo
           fullWidth
+          sx={{ flex: 2, minWidth: 280 }}
           options={themesList.map((data) => data.themeName)}
           inputValue={themeName}
           onInputChange={(_e, newValue) => setThemeName(newValue)}

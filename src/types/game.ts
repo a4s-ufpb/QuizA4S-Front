@@ -11,6 +11,7 @@ export interface GameConfig {
   advanceMode: AdvanceMode;
   questionTimeSeconds: number;
   questionCount: number;
+  maxPlayersPerTeam?: number | null;
 }
 
 export interface PlayerView {
@@ -20,12 +21,16 @@ export interface PlayerView {
   ready: boolean;
   teamId: string | null;
   score: number;
+  avatar?: string | null;
+  captain: boolean;
 }
 
 export interface TeamView {
   id: string;
   name: string;
   score: number;
+  avatar?: string | null;
+  captainId: string | null;
 }
 
 export interface RoomState {
@@ -33,6 +38,7 @@ export interface RoomState {
   hostId: string;
   themeId: number | null;
   themeName: string | null;
+  themeImageUrl: string | null;
   config: GameConfig;
   status: RoomStatus;
   players: PlayerView[];
@@ -50,11 +56,21 @@ export interface QuestionView {
   id: number;
   title: string;
   imageUrl: string;
+  imageBase64One?: string;
+  imageBase64Two?: string;
+  imagesOrder?: string;
   index: number;
   total: number;
   timeSeconds: number;
   startAt: number;
   alternatives: AlternativeView[];
+}
+
+export interface PlayerAnswerView {
+  playerId: string;
+  playerName: string;
+  answered: boolean;
+  correct: boolean;
 }
 
 export interface QuestionResult {
@@ -64,6 +80,7 @@ export interface QuestionResult {
   lastQuestion: boolean;
   scoreboard: PlayerView[];
   teamScoreboard: TeamView[];
+  answers: PlayerAnswerView[];
 }
 
 export interface ChatMessage {
@@ -80,7 +97,8 @@ export type GameEventType =
   | "CHAT"
   | "KICKED"
   | "ROOM_CLOSED"
-  | "ERROR";
+  | "ERROR"
+  | "COUNTDOWN";
 
 export interface GameEvent {
   type: GameEventType;
@@ -100,4 +118,5 @@ export const DEFAULT_GAME_CONFIG: GameConfig = {
   advanceMode: "HOST",
   questionTimeSeconds: 20,
   questionCount: 10,
+  maxPlayersPerTeam: null,
 };

@@ -1,4 +1,23 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Alert,
+  Avatar,
+  Box,
+  Breadcrumbs,
+  Button,
+  Card,
+  CardContent,
+  Container,
+  Divider,
+  IconButton,
+  Link as MuiLink,
+  Radio,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { BsTrash, BsChevronUp, BsChevronDown, BsXLg } from "react-icons/bs";
 import { DEFAULT_IMG } from "../../vite-env";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
@@ -7,7 +26,7 @@ import { AlternativeService } from "./../../service/AlternativeService";
 import SearchImage from "../../components/searchImageComponent/SearchImage";
 import QuestionListComponent from "../../components/questionListComponent/QuestionListComponent";
 import { getStoredTheme } from "../../util/storage";
-import type { Alternative, InformationData } from "../../types";
+import type { Alternative, InformationData, Question } from "../../types";
 import {
   ALL_IMAGE_SLOTS,
   MAX_IMAGE_SIZE_BYTES,
@@ -24,6 +43,7 @@ type AlternativeField = "text" | "correct";
 
 const MIN_ALTERNATIVES = 4;
 const MAX_ALTERNATIVES = 6;
+const ALTERNATIVE_LABELS = ["A", "B", "C", "D", "E", "F"];
 
 const IMAGE_SLOT_LABELS: Record<ImageSlotKey, string> = {
   URL: "Imagem por link",
@@ -43,6 +63,7 @@ function readFileAsDataUrl(file: File): Promise<string> {
 const CreateQuestions = () => {
   const questionService = new QuestionService();
   const alternativeService = new AlternativeService();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
@@ -84,10 +105,21 @@ const CreateQuestions = () => {
 
   const [callbackQuestions, setCallbackQuestions] = useState<object>({});
 
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(
+    null
+  );
+  const [originalAlternativeIds, setOriginalAlternativeIds] = useState<
+    number[]
+  >([]);
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    postQuestion();
+    if (editingQuestion) {
+      updateQuestionAndAlternatives();
+    } else {
+      postQuestion();
+    }
   };
 
   async function postQuestion() {
@@ -131,6 +163,47 @@ const CreateQuestions = () => {
     clearForm();
   }
 
+  async function updateQuestionAndAlternatives() {
+    if (!editingQuestion) return;
+
+    setLoading(true);
+    const presentSlots = imagesOrder.filter((slot) =>
+      Boolean(getQuestionImageBySlot(question, slot))
+    );
+
+    const questionResponse = await questionService.updateQuestion(
+      editingQuestion.id,
+      { ...question, imagesOrder: presentSlots.join(",") }
+    );
+
+    if (!questionResponse.success) {
+      activeInformationBox(true, questionResponse.message);
+      setLoading(false);
+      return;
+    }
+
+    const removedIds = originalAlternativeIds.filter(
+      (id) => !alternatives.some((alt) => alt.id === id)
+    );
+
+    await Promise.all([
+      ...alternatives.map((alt) =>
+        alt.id
+          ? alternativeService.updateAlternative(alt.id, {
+              text: alt.text,
+              correct: alt.correct,
+            })
+          : alternativeService.insertAlternative(editingQuestion.id, alt)
+      ),
+      ...removedIds.map((id) => alternativeService.removeAlternative(id)),
+    ]);
+
+    setLoading(false);
+    activeInformationBox(false, "Questão atualizada com sucesso!");
+    setCallbackQuestions({});
+    clearForm();
+  }
+
   async function removeQuestion(idQuestion: number) {
     setLoading(true);
     const questionResponse = await questionService.removeQuestion(idQuestion);
@@ -142,6 +215,52 @@ const CreateQuestions = () => {
     }
   }
 
+  function startEditingQuestion(questionToEdit: Question) {
+    setEditingQuestion(questionToEdit);
+    setQuestion({
+      title: questionToEdit.title,
+      imageUrl: questionToEdit.imageUrl ?? "",
+      imageBase64One: questionToEdit.imageBase64One ?? "",
+      imageBase64Two: questionToEdit.imageBase64Two ?? "",
+    });
+
+    const orderFromField = (questionToEdit.imagesOrder ?? "")
+      .split(",")
+      .map((slot) => slot.trim())
+      .filter((slot): slot is ImageSlotKey =>
+        ALL_IMAGE_SLOTS.includes(slot as ImageSlotKey)
+      );
+    const missingSlots = ALL_IMAGE_SLOTS.filter(
+      (slot) => !orderFromField.includes(slot)
+    );
+    setImagesOrder([...orderFromField, ...missingSlots]);
+
+    const questionAlternatives = questionToEdit.alternatives ?? [];
+    setAlternatives(
+      questionAlternatives.length > 0
+        ? questionAlternatives
+        : [
+            { text: "", correct: false },
+            { text: "", correct: false },
+            { text: "", correct: false },
+            { text: "", correct: false },
+          ]
+    );
+    setOriginalAlternativeIds(
+      questionAlternatives
+        .map((alt) => alt.id)
+        .filter((id): id is number => id != null)
+    );
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function stopEditing() {
+    setEditingQuestion(null);
+    setOriginalAlternativeIds([]);
+    clearForm();
+  }
+
   function clearForm() {
     setQuestion({
       title: "",
@@ -151,11 +270,12 @@ const CreateQuestions = () => {
     });
     setImagesOrder([...ALL_IMAGE_SLOTS]);
 
-    setAlternatives((prevAlternatives) =>
-      prevAlternatives
-        .slice(0, MIN_ALTERNATIVES)
-        .map(() => ({ text: "", correct: false }))
-    );
+    setAlternatives([
+      { text: "", correct: false },
+      { text: "", correct: false },
+      { text: "", correct: false },
+      { text: "", correct: false },
+    ]);
   }
 
   const changeQuestion = (field: QuestionField, data: string) => {
@@ -177,11 +297,24 @@ const CreateQuestions = () => {
     });
   };
 
+  function setCorrectAlternative(index: number) {
+    setAlternatives((prevAlternatives) =>
+      prevAlternatives.map((alt, i) => ({ ...alt, correct: i === index }))
+    );
+  }
+
   function addAlternative() {
     setAlternatives((prevAlternatives) => {
       if (prevAlternatives.length >= MAX_ALTERNATIVES) return prevAlternatives;
       return [...prevAlternatives, { text: "", correct: false }];
     });
+  }
+
+  function removeAlternative(index: number) {
+    if (index < MIN_ALTERNATIVES) return;
+    setAlternatives((prevAlternatives) =>
+      prevAlternatives.filter((_, i) => i !== index)
+    );
   }
 
   const { name: themeName, imageUrl: themeUrl } = getStoredTheme();
@@ -281,166 +414,225 @@ const CreateQuestions = () => {
 
   return (
     <div className="container-create-questions">
-      <QuestionListComponent callbackQuestions={callbackQuestions} />
+      <QuestionListComponent
+        callbackQuestions={callbackQuestions}
+        onEditQuestion={startEditingQuestion}
+      />
 
-      <div className="container-create-questions-header">
-        <div className="container-create-theme-info">
-          <img
-            src={themeUrl == null || themeUrl == "" ? DEFAULT_IMG : themeUrl}
-            alt="image-theme"
-            loading="lazy"
-          />
-          <span>{themeName}</span>
-        </div>
-        <div className="container-question-info">
-          <p>Crie no mínimo 5 questões para o seu Quiz</p>
-          <h2 className="create-questions-title">
-            Crie as Questões do seu Quiz
-          </h2>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="create-questions-form" id="form">
-        <div className="container-question">
-          <label className="data-question">
-            <span>Titulo:</span>
-            <textarea
-              name="title"
-              placeholder="Insira o título da questão"
-              value={question.title}
-              onChange={(e) => changeQuestion("title", e.target.value)}
-              maxLength={1500}
-              required
-            ></textarea>
-          </label>
-
-          <label className="data-question">
-            <span>URL:</span>
-            <input
-              type="text"
-              name="imageUrl"
-              placeholder="Pesquise a imagem na WEB ou insira a URL"
-              value={question.imageUrl}
-              onChange={(e) => changeQuestion("imageUrl", e.target.value)}
-              maxLength={255}
-            />
-          </label>
-
-          <div className="container-question-image-actions">
-            <button
-              type="button"
-              className="create-question-btn"
-              onClick={() => setSearchImage(true)}
-            >
-              Pesquisar Imagem na WEB
-            </button>
-
-            <label className="create-question-btn upload-images-btn">
-              Fazer upload de imagens (até 2)
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImagesUpload}
-                hidden
-              />
-            </label>
-          </div>
-          <p className="upload-images-hint">
-            Cada imagem enviada pode ter no máximo 2MB (total de 4MB). Você
-            pode combinar um link de imagem com até 2 uploads (3 imagens no
-            total).
-          </p>
-
-          {presentImageSlots.length > 0 && (
-            <div className="container-images-order">
-              <span>Ordem das imagens na tela do quiz:</span>
-              <div className="images-order-list">
-                {presentImageSlots.map((slot, index) => (
-                  <div key={slot} className="image-order-item">
-                    <img
-                      src={getQuestionImageBySlot(question, slot)}
-                      alt={IMAGE_SLOT_LABELS[slot]}
-                    />
-                    <span className="image-order-label">
-                      {index + 1}º - {IMAGE_SLOT_LABELS[slot]}
-                    </span>
-                    <div className="image-order-actions">
-                      <button
-                        type="button"
-                        disabled={index === 0}
-                        onClick={() => moveImage(slot, -1)}
-                      >
-                        ▲
-                      </button>
-                      <button
-                        type="button"
-                        disabled={index === presentImageSlots.length - 1}
-                        onClick={() => moveImage(slot, 1)}
-                      >
-                        ▼
-                      </button>
-                      <button
-                        type="button"
-                        className="image-order-remove"
-                        onClick={() => removeImage(slot)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="container-alternatives">
-          {Array.isArray(alternatives) &&
-            alternatives.map((alternative, index) => (
-              <div key={index} className="alternative">
-                <span>{`Alternativa ${index + 1}:`}</span>
-                <label className="alternative-data">
-                  <textarea
-                    placeholder="Digite o texto da alternativa"
-                    value={alternative.text}
-                    onChange={(e) =>
-                      changeAlternative(index, "text", e.target.value)
-                    }
-                    className="input-alternative-text"
-                    maxLength={500}
-                    required
-                  ></textarea>
-                  <input
-                    type="radio"
-                    name="alternative"
-                    id={`alt-${index + 1}`}
-                    checked={alternative.correct}
-                    onChange={(e) =>
-                      changeAlternative(index, "correct", e.target.checked)
-                    }
-                    className="input-alternative-check"
-                    required
-                  />
-                </label>
-              </div>
-            ))}
-        </div>
-
-        {alternatives.length < MAX_ALTERNATIVES && (
-          <button
+      <Container maxWidth="lg" sx={{ py: 3 }}>
+        <Breadcrumbs sx={{ mb: 2, "& .MuiBreadcrumbs-separator": { color: "#fff" } }}>
+          <MuiLink
+            component="button"
             type="button"
-            className="create-question-btn add-alternative-btn"
-            onClick={addAlternative}
+            underline="hover"
+            sx={{ color: "#fff" }}
+            onClick={() => navigate(-1)}
           >
-            Adicionar Alternativa
-          </button>
+            Voltar
+          </MuiLink>
+          <Typography sx={{ color: "#fff" }}>
+            Crie as Questões do seu Quiz
+          </Typography>
+        </Breadcrumbs>
+
+        <Stack direction="row" spacing={2} sx={{ alignItems: "center", mb: 2 }}>
+          <Avatar
+            src={themeUrl == null || themeUrl === "" ? DEFAULT_IMG : themeUrl}
+            alt="tema"
+            variant="rounded"
+            sx={{ width: 48, height: 48 }}
+          />
+          <Box>
+            <Typography variant="h6" sx={{ color: "#fff", lineHeight: 1.2 }}>
+              {themeName}
+            </Typography>
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.85)" }}>
+              Crie no mínimo 5 questões para o seu quiz
+            </Typography>
+          </Box>
+        </Stack>
+
+        {editingQuestion && (
+          <Alert
+            severity="info"
+            sx={{ mb: 2 }}
+            action={
+              <Button variant="contained" color="error" size="small" onClick={stopEditing}>
+                Parar de editar
+              </Button>
+            }
+          >
+            Editando questão: {editingQuestion.title}
+          </Alert>
         )}
 
-        <button type="submit" className="create-question-btn">
-          Criar Questão
-        </button>
-      </form>
+        <Card
+          component="form"
+          id="create-question-form"
+          onSubmit={handleSubmit}
+          elevation={3}
+        >
+          <CardContent>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                gap: 3,
+              }}
+            >
+              <Stack spacing={2}>
+                <TextField
+                  label="Título da questão"
+                  placeholder="Insira o título da questão"
+                  value={question.title}
+                  onChange={(e) => changeQuestion("title", e.target.value)}
+                  multiline
+                  minRows={2}
+                  maxRows={8}
+                  fullWidth
+                  required
+                  slotProps={{ htmlInput: { maxLength: 1500 } }}
+                />
+
+                <TextField
+                  label="URL da imagem"
+                  placeholder="Pesquise a imagem na WEB ou insira a URL"
+                  value={question.imageUrl}
+                  onChange={(e) => changeQuestion("imageUrl", e.target.value)}
+                  fullWidth
+                  slotProps={{ htmlInput: { maxLength: 255 } }}
+                />
+
+                <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }} useFlexGap>
+                  <Button variant="outlined" onClick={() => setSearchImage(true)}>
+                    Pesquisar imagem na web
+                  </Button>
+                  <Button variant="outlined" component="label">
+                    Fazer upload de imagens (até 2)
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImagesUpload}
+                      hidden
+                    />
+                  </Button>
+                </Stack>
+                <Typography variant="caption" color="text.secondary">
+                  Cada imagem enviada pode ter no máximo 2MB (total de 4MB). Você
+                  pode combinar um link de imagem com até 2 uploads (3 imagens no
+                  total).
+                </Typography>
+
+                {presentImageSlots.length > 0 && (
+                  <Box sx={{ bgcolor: "action.hover", borderRadius: 1, p: 1.5 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                      Ordem das imagens na tela do quiz
+                    </Typography>
+                    <Stack spacing={1}>
+                      {presentImageSlots.map((slot, index) => (
+                        <Stack
+                          key={slot}
+                          direction="row"
+                          spacing={1.5}
+                          sx={{ alignItems: "center" }}
+                        >
+                          <Avatar
+                            src={getQuestionImageBySlot(question, slot)}
+                            variant="rounded"
+                            sx={{ width: 48, height: 48 }}
+                          />
+                          <Typography variant="body2" sx={{ flexGrow: 1 }}>
+                            {index + 1}º - {IMAGE_SLOT_LABELS[slot]}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            disabled={index === 0}
+                            onClick={() => moveImage(slot, -1)}
+                          >
+                            <BsChevronUp />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            disabled={index === presentImageSlots.length - 1}
+                            onClick={() => moveImage(slot, 1)}
+                          >
+                            <BsChevronDown />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => removeImage(slot)}
+                          >
+                            <BsXLg />
+                          </IconButton>
+                        </Stack>
+                      ))}
+                    </Stack>
+                  </Box>
+                )}
+              </Stack>
+
+              <Box sx={{ display: { xs: "block", md: "flex" }, justifyContent: "center" }}>
+                <Divider orientation="vertical" flexItem sx={{ display: { xs: "none", md: "block" }, mr: 3 }} />
+                <Stack spacing={1.5} sx={{ width: "100%" }}>
+                  <Typography variant="subtitle1">Alternativas</Typography>
+
+                  {alternatives.map((alternative, index) => (
+                    <Stack key={index} direction="row" spacing={1} sx={{ alignItems: "flex-start" }}>
+                      <Avatar sx={{ width: 32, height: 32, mt: 1, color: "#fff", bgcolor: "primary.main" }}>
+                        {ALTERNATIVE_LABELS[index]}
+                      </Avatar>
+                      <TextField
+                        placeholder="Digite o texto da alternativa"
+                        value={alternative.text}
+                        onChange={(e) =>
+                          changeAlternative(index, "text", e.target.value)
+                        }
+                        multiline
+                        minRows={1}
+                        maxRows={6}
+                        fullWidth
+                        required
+                        slotProps={{ htmlInput: { maxLength: 500 } }}
+                      />
+                      <Radio
+                        checked={alternative.correct}
+                        onChange={() => setCorrectAlternative(index)}
+                        name="alternative"
+                        required
+                        title="Marcar como correta"
+                        sx={{ mt: 0.5 }}
+                      />
+                      {index >= MIN_ALTERNATIVES && (
+                        <IconButton
+                          size="small"
+                          color="error"
+                          title="Remover alternativa"
+                          onClick={() => removeAlternative(index)}
+                          sx={{ mt: 0.5 }}
+                        >
+                          <BsTrash />
+                        </IconButton>
+                      )}
+                    </Stack>
+                  ))}
+
+                  {alternatives.length < MAX_ALTERNATIVES && (
+                    <Button variant="outlined" onClick={addAlternative}>
+                      Adicionar Alternativa
+                    </Button>
+                  )}
+                </Stack>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+
+        <Button type="submit" form="create-question-form" variant="contained" size="large" fullWidth sx={{ mt: 2 }}>
+          {editingQuestion ? "Salvar Alterações" : "Criar Questão"}
+        </Button>
+      </Container>
 
       {loading && <Loading />}
       {informationBox && (

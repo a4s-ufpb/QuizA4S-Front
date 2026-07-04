@@ -85,6 +85,7 @@ const FilterStatistic = ({ onFilter }: FilterStatisticProps) => {
         <Autocomplete
           freeSolo
           fullWidth
+          sx={{ flex: 1 }}
           options={studentNameList.map((data) => data.studentName)}
           inputValue={studentName}
           onInputChange={(_e, newValue) => setStudentName(newValue)}
@@ -97,6 +98,7 @@ const FilterStatistic = ({ onFilter }: FilterStatisticProps) => {
         <Autocomplete
           freeSolo
           fullWidth
+          sx={{ flex: 2, minWidth: 280 }}
           options={themeNameList.map((data) => data.themeName)}
           inputValue={themeName}
           onInputChange={(_e, newValue) => setThemeName(newValue)}

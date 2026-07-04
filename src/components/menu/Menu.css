@@ -1,10 +1,10 @@
 .menu{
     width: 300px;
     height: 100%;
-    background-color: #fff;
+    background: linear-gradient(165deg, #eaf3ff 0%, #dbe9ff 100%);
     border-bottom-left-radius: 15px;
     border-top-left-radius: 15px;
-    box-shadow: inset 0px 0px 5px #000;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.25);
     position: fixed;
     right: 0;
     top: 0;
@@ -38,26 +38,78 @@
     color: red;
 }
 
+.menu-user-header{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4em;
+    padding: 16px 10px;
+    margin-bottom: 1.2em;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #3f7fd6 0%, #0055cc 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 85, 204, 0.35);
+}
+
+.menu-user-avatar{
+    font-size: 3em;
+}
+
+.menu-user-name{
+    font-size: 1.1em;
+    font-weight: bold;
+    word-wrap: break-word;
+    text-align: center;
+    max-width: 90%;
+}
+
 .container-btns{
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: .5em;
+    gap: .6em;
 }
 
 .container-btns button{
-    height: 40px;
+    height: 44px;
     cursor: pointer;
-    font-size: 1.1em;
-    border-radius: 5px;
+    font-size: 1.05em;
+    border-radius: 50px;
     background-color: #3498db;
     border: 2px solid #3498db;
     color: #fff;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out,
+        background-color 0.15s ease-in-out;
+}
+
+.container-btns button svg{
+    font-size: 1.2em;
 }
 
 .container-btns button:hover{
-    background-color: #3498dbb5;
+    background-color: #2a7fc9;
+    transform: scale(1.04);
+    box-shadow: 0 4px 14px rgba(52, 152, 219, 0.5);
+}
+
+.container-btns button:active{
+    transform: scale(0.98);
+}
+
+.container-btns .menu-btn-logout{
+    background-color: #d9434f;
+    border-color: #d9434f;
+}
+
+.container-btns .menu-btn-logout:hover{
+    background-color: #c2303c;
+    box-shadow: 0 4px 14px rgba(217, 67, 79, 0.5);
 }
 
 @media(max-width: 450px){

@@ -9,21 +9,43 @@ import {
   Button,
   Alert,
   Typography,
+  ToggleButtonGroup,
+  ToggleButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  type SelectChangeEvent,
 } from "@mui/material";
 import { GameService } from "../../service/GameService";
 import { getGuestId, getGuestName, setGuestName } from "../../util/guest";
+import { getStoredUser } from "../../util/storage";
 import Loading from "../../components/loading/Loading";
+import type { RoomMode } from "../../types/game";
 
 const Multiplayer = () => {
   const gameService = new GameService();
   const navigate = useNavigate();
 
-  const [name, setName] = useState(getGuestName());
+  const loggedUser = getStoredUser();
+  const isLoggedIn = Boolean(
+    localStorage.getItem("token") && loggedUser?.name
+  );
+
+  const [name, setName] = useState(
+    isLoggedIn ? loggedUser.name : getGuestName()
+  );
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [roomMode, setRoomMode] = useState<RoomMode>("INDIVIDUAL");
+  const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(4);
 
   function persistName(): boolean {
+    if (isLoggedIn) {
+      setGuestName(loggedUser.name);
+      return true;
+    }
     if (name.trim().length < 2) {
       setError("Digite um nome com pelo menos 2 caracteres.");
       return false;
@@ -40,6 +62,14 @@ const Multiplayer = () => {
     const response = await gameService.createRoom({
       hostId: getGuestId(),
       hostName: name.trim(),
+      config: {
+        roomMode,
+        scoringMode: "SPEED",
+        advanceMode: "HOST",
+        questionTimeSeconds: 20,
+        questionCount: 10,
+        maxPlayersPerTeam: roomMode === "TEAM" ? maxPlayersPerTeam : null,
+      },
     });
     setLoading(false);
 
@@ -92,15 +122,57 @@ const Multiplayer = () => {
             </Alert>
           )}
 
-          <TextField
-            label="Seu nome"
-            placeholder="Como quer ser chamado?"
-            value={name}
-            slotProps={{ htmlInput: { maxLength: 30 } }}
-            onChange={(e) => setName(e.target.value)}
+          {isLoggedIn ? (
+            <Typography align="center" sx={{ mb: 3 }}>
+              Jogando como <strong>{name}</strong>
+            </Typography>
+          ) : (
+            <TextField
+              label="Seu nome"
+              placeholder="Como quer ser chamado?"
+              value={name}
+              slotProps={{ htmlInput: { maxLength: 30 } }}
+              onChange={(e) => setName(e.target.value)}
+              fullWidth
+              sx={{ mb: 3 }}
+            />
+          )}
+
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Modo da sala
+          </Typography>
+          <ToggleButtonGroup
+            exclusive
             fullWidth
-            sx={{ mb: 3 }}
-          />
+            value={roomMode}
+            onChange={(_e, newMode) => newMode && setRoomMode(newMode)}
+            sx={{ mb: 2 }}
+          >
+            <ToggleButton value="INDIVIDUAL">Todos contra todos</ToggleButton>
+            <ToggleButton value="TEAM">Equipes</ToggleButton>
+          </ToggleButtonGroup>
+
+          {roomMode === "TEAM" && (
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <InputLabel id="team-size-label">
+                Jogadores por equipe
+              </InputLabel>
+              <Select
+                labelId="team-size-label"
+                label="Jogadores por equipe"
+                value={maxPlayersPerTeam}
+                onChange={(e: SelectChangeEvent<number>) =>
+                  setMaxPlayersPerTeam(Number(e.target.value))
+                }
+              >
+                {[2, 3, 4, 5].map((n) => (
+                  <MenuItem key={n} value={n}>
+                    {n}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
 
           <Box sx={{ display: "grid", mb: 3 }}>
             <Button variant="contained" size="large" onClick={createRoom}>

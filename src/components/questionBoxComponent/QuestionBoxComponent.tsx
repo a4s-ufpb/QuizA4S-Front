@@ -28,6 +28,7 @@ interface QuestionBoxComponentProps {
   question: Question;
   setCallback: Dispatch<SetStateAction<object>>;
   setQuestion: Dispatch<SetStateAction<Question>>;
+  onEditQuestion: (question: Question) => void;
 }
 
 function QuestionBoxComponent({
@@ -35,6 +36,7 @@ function QuestionBoxComponent({
   question,
   setCallback,
   setQuestion,
+  onEditQuestion,
 }: QuestionBoxComponentProps) {
   const alternativeService = new AlternativeService();
   const questionService = new QuestionService();
@@ -45,7 +47,6 @@ function QuestionBoxComponent({
 
   const [loading, setLoading] = useState(false);
   const [isUpdateAlternative, setUpdateBoxAlternative] = useState(false);
-  const [isUpdateQuestion, setUpdateBoxQuestion] = useState(false);
   const [isInformationBox, setInformationBox] = useState(false);
   const [isConfirmBox, setConfirmBox] = useState(false);
 
@@ -65,25 +66,6 @@ function QuestionBoxComponent({
     title: "",
     imageUrl: "",
   });
-
-  const questionInputs = [
-    {
-      label: "Novo título:",
-      type: "text",
-      placeholder: "Digite o título da questão",
-      value: newQuestion.title,
-      maxLength: 1500,
-      minLength: 4,
-    },
-    {
-      label: "URL da Imagem:",
-      type: "text",
-      placeholder: "Digite a url da imagem",
-      value: newQuestion.imageUrl,
-      maxLength: 255,
-      minLength: 0,
-    },
-  ];
 
   const [informationData, setInformationData] = useState<InformationData>({
     text: "",
@@ -114,18 +96,6 @@ function QuestionBoxComponent({
       case "Nova resposta:":
         setResponse(value);
         break;
-      case "Novo título:":
-        setNewQuestion((prevQuestion) => ({
-          ...prevQuestion,
-          title: value,
-        }));
-        break;
-      case "URL da Imagem:":
-        setNewQuestion((prevQuestion) => ({
-          ...prevQuestion,
-          imageUrl: value,
-        }));
-        break;
       default:
         return "";
     }
@@ -135,12 +105,6 @@ function QuestionBoxComponent({
     setResponse(text);
     setAlternativeId(id);
     setUpdateBoxAlternative(true);
-  }
-
-  function showUpdateQuestioneBox(id: number, title: string, imageUrl: string) {
-    const question = { id, title, imageUrl };
-    setNewQuestion(question);
-    setUpdateBoxQuestion(true);
   }
 
   function showConfirmBox(id: number, title: string, imageUrl: string) {
@@ -173,24 +137,9 @@ function QuestionBoxComponent({
     setLoading(false);
   }
 
-  async function updateQuestion() {
-    setLoading(true);
-    const response = await questionService.updateQuestion(
-      newQuestion.id,
-      newQuestion
-    );
-
-    if (!response.success) {
-      activeInformationBox(true, response.message);
-      setLoading(false);
-      return;
-    }
-
-    setCallback({});
-    setQuestion(response.data);
-    activeInformationBox(false, "Questão atualizada com sucesso!");
-    setUpdateBoxQuestion(false);
-    setLoading(false);
+  function editQuestion() {
+    setQuestionBox(false);
+    onEditQuestion(question);
   }
 
   async function removeQuestion() {
@@ -280,16 +229,7 @@ function QuestionBoxComponent({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button
-          variant="contained"
-          onClick={() =>
-            showUpdateQuestioneBox(
-              question.id,
-              question.title,
-              question.imageUrl
-            )
-          }
-        >
+        <Button variant="contained" onClick={editQuestion}>
           Editar Questão
         </Button>
         <Button
@@ -310,16 +250,6 @@ function QuestionBoxComponent({
           onChange={changeValue}
           onClickSave={updateAlternative}
           onClickCancel={() => setUpdateBoxAlternative(false)}
-        />
-      )}
-
-      {isUpdateQuestion && (
-        <UpdateBox
-          title="Atualizar Questão"
-          inputs={questionInputs}
-          onChange={changeValue}
-          onClickSave={updateQuestion}
-          onClickCancel={() => setUpdateBoxQuestion(false)}
         />
       )}
 
