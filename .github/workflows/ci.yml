@@ -29,7 +29,11 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build Docker Image
-      run: docker build -t ${{secrets.DOCKER_USERNAME}}/frontend-quiz .
+      run: |
+        docker build \
+          --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
+          --build-arg VITE_WS_URL=${{ secrets.VITE_WS_URL }} \
+          -t ${{secrets.DOCKER_USERNAME}}/frontend-quiz .
 
     - name: Push Image to Docker Hub
       run: docker push ${{secrets.DOCKER_USERNAME}}/frontend-quiz
