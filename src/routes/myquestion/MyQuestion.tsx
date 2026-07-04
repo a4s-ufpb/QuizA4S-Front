@@ -22,24 +22,27 @@ import UpdateBox from "../../components/updateBox/UpdateBox";
 import NotFoundComponent from "../../components/notFound/NotFoundComponent";
 import MyAlternative from "./MyAlternative";
 import { DEFAULT_IMG } from "../../vite-env";
-import { QuestionService } from "./../../service/QuestionService";
+import {
+  useQuestionsByCreatorQuery,
+  useRemoveQuestionMutation,
+  useUpdateQuestionMutation,
+} from "../../query/useQuestionQueries";
 import { useNavigate } from "react-router-dom";
 import { getStoredTheme } from "../../util/storage";
 import type { Alternative, InformationData, Question } from "../../types";
 
 const MyQuestion = () => {
-  const questionService = new QuestionService();
+  const removeQuestionMutation = useRemoveQuestionMutation();
+  const updateQuestionMutation = useUpdateQuestionMutation();
   const navigate = useNavigate();
   const { id: themeId, name: themeName, imageUrl: themeUrl } = getStoredTheme();
 
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isConfirmBox, setConfirmBox] = useState(false);
   const [isUpdateBox, setUpdateBox] = useState(false);
   const [isInformationBox, setInformationBox] = useState(false);
-  const [callBack, setCallBack] = useState<object>({});
   const [informationData, setInformationData] = useState<InformationData>({
     text: "",
     icon: "exclamation",
@@ -80,26 +83,23 @@ const MyQuestion = () => {
     setQuestionTitle(propsQuestionTitle);
   }
 
+  const questionsQuery = useQuestionsByCreatorQuery(
+    themeId,
+    currentPage,
+    questionTitle
+  );
+  const loading = questionsQuery.isLoading;
+
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      const response = await questionService.findQuestionsByCreator(
-        themeId,
-        currentPage,
-        questionTitle
-      );
-      setLoading(false);
+    if (!questionsQuery.data) return;
 
-      if (!response.success) {
-        activeInformationBox(true, response.message);
-        return;
-      }
-      setTotalPages(response.data.totalPages);
-      setQuestions(response.data.content);
+    if (!questionsQuery.data.success) {
+      activeInformationBox(true, questionsQuery.data.message);
+      return;
     }
-
-    fetchData();
-  }, [currentPage, callBack, questionTitle]);
+    setTotalPages(questionsQuery.data.data.totalPages);
+    setQuestions(questionsQuery.data.data.content);
+  }, [questionsQuery.data]);
 
   function changeValue(value: string, label: string) {
     switch (label) {
@@ -127,9 +127,7 @@ const MyQuestion = () => {
   }
 
   async function removeQuestion() {
-    setLoading(true);
-    const response = await questionService.removeQuestion(questionId);
-    setLoading(false);
+    const response = await removeQuestionMutation.mutateAsync(questionId);
 
     if (!response.success) {
       activeInformationBox(true, response.message);
@@ -137,24 +135,20 @@ const MyQuestion = () => {
     }
 
     activeInformationBox(false, "Questão removida com sucesso!");
-    setCallBack({});
     setConfirmBox(false);
   }
 
   async function updateQuestion() {
-    setLoading(true);
-    const response = await questionService.updateQuestion(
+    const response = await updateQuestionMutation.mutateAsync({
       questionId,
-      newQuestion
-    );
-    setLoading(false);
+      questionUpdate: newQuestion,
+    });
     if (!response.success) {
       activeInformationBox(true, response.message);
       return;
     }
 
     activeInformationBox(false, "Questão atualizada com sucesso");
-    setCallBack({});
     setUpdateBox(false);
   }
 
@@ -358,7 +352,6 @@ const MyQuestion = () => {
           alternatives={alternatives}
           setAlternatives={setAlternatives}
           setShowAlternatives={setShowAlternatives}
-          setCallBack={setCallBack}
         />
       )}
 

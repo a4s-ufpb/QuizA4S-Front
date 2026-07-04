@@ -6,7 +6,7 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
-import { UserService } from "../service/UserService";
+import { useFindUserQuery } from "../query/useUserQueries";
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -28,33 +28,28 @@ export const AuthenticationProvider = ({
   children,
 }: AuthenticationProviderProps) => {
   const [isAuthenticated, setAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const userService = new UserService();
 
   const token = localStorage.getItem("token");
 
+  const findUserQuery = useFindUserQuery(Boolean(token));
+  const loading = findUserQuery.isLoading;
+
   useEffect(() => {
-    async function checkToken() {
-      setLoading(true);
-      const response = await userService.findUser();
+    if (!token) {
+      setAuthenticated(false);
+      return;
+    }
+    if (!findUserQuery.data) return;
 
-      if (!response.success) {
-        localStorage.clear();
-        setAuthenticated(false);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(false);
-      const userDetails = response.data;
-      localStorage.setItem("user", JSON.stringify(userDetails));
-
-      setAuthenticated(true);
+    if (!findUserQuery.data.success) {
+      localStorage.clear();
+      setAuthenticated(false);
+      return;
     }
 
-    checkToken();
-  }, [token]);
+    localStorage.setItem("user", JSON.stringify(findUserQuery.data.data));
+    setAuthenticated(true);
+  }, [findUserQuery.data, token]);
 
   return (
     <AuthenticationContext.Provider

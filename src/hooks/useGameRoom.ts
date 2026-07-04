@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GameSocket } from "../service/GameSocket";
+import { useInsertMultiplayerResponsesMutation } from "../query/useResponseQueries";
 import { getGuestId, getGuestName } from "../util/guest";
+import { getStoredUser } from "../util/storage";
 import type {
   ChatMessage,
   GameConfig,
@@ -54,6 +56,13 @@ export function useGameRoom(code: string, joinAvatar?: string): UseGameRoom {
   const [kicked, setKicked] = useState(false);
   const [closed, setClosed] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const insertMultiplayerResponsesMutation = useInsertMultiplayerResponsesMutation();
+
+  // Buffer local das respostas do usuário logado no modo todos-contra-todos:
+  // são salvas em uma única request ao final da partida (evita 1 request por
+  // questão, melhor performance para o servidor e para a rede do jogador).
+  const answersBufferRef = useRef<{ questionId: number; alternativeId: number }[]>([]);
+  const answersSubmittedRef = useRef(false);
 
   const handleEvent = useCallback(
     (event: GameEvent) => {
@@ -64,8 +73,22 @@ export function useGameRoom(code: string, joinAvatar?: string): UseGameRoom {
           if (next.status === "LOBBY" || next.status === "FINISHED") {
             setQuestion(null);
           }
-          if (next.status === "LOBBY") setResult(null);
+          if (next.status === "LOBBY") {
+            setResult(null);
+            answersBufferRef.current = [];
+            answersSubmittedRef.current = false;
+          }
           if (next.status === "IN_QUESTION") setCountdown(null);
+          if (
+            next.status === "FINISHED" &&
+            next.config.roomMode === "INDIVIDUAL" &&
+            !answersSubmittedRef.current &&
+            answersBufferRef.current.length > 0 &&
+            getStoredUser().uuid
+          ) {
+            answersSubmittedRef.current = true;
+            insertMultiplayerResponsesMutation.mutate(answersBufferRef.current);
+          }
           break;
         }
         case "QUESTION":
@@ -92,7 +115,7 @@ export function useGameRoom(code: string, joinAvatar?: string): UseGameRoom {
           break;
       }
     },
-    [playerId]
+    [playerId, insertMultiplayerResponsesMutation]
   );
 
   // Decrementa a contagem regressiva localmente, 1 segundo por vez, até sumir.
@@ -158,7 +181,19 @@ export function useGameRoom(code: string, joinAvatar?: string): UseGameRoom {
     updateConfig: (config) => send("config", { code, hostId: playerId, config }),
     sendChat: (content) => send("chat", { code, playerId, content }),
     start: () => send("start", { code, hostId: playerId }),
-    answer: (alternativeId) => send("answer", { code, playerId, alternativeId }),
+    answer: (alternativeId) => {
+      if (
+        question &&
+        state?.config.roomMode === "INDIVIDUAL" &&
+        getStoredUser().uuid
+      ) {
+        answersBufferRef.current.push({
+          questionId: question.id,
+          alternativeId,
+        });
+      }
+      send("answer", { code, playerId, alternativeId });
+    },
     next: () => send("next", { code, hostId: playerId }),
     leave: () => send("leave", { code, playerId }),
   };

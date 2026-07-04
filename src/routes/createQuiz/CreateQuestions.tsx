@@ -29,8 +29,17 @@ import {
 import { DEFAULT_IMG } from "../../vite-env";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
-import { QuestionService } from "../../service/QuestionService";
-import { AlternativeService } from "./../../service/AlternativeService";
+import {
+  useInsertQuestionMutation,
+  useRemoveQuestionMutation,
+  useUpdateQuestionMutation,
+} from "../../query/useQuestionQueries";
+import {
+  useInsertAllAlternativesMutation,
+  useInsertAlternativeMutation,
+  useRemoveAlternativeMutation,
+  useUpdateAlternativeMutation,
+} from "../../query/useAlternativeQueries";
 import SearchImage from "../../components/searchImageComponent/SearchImage";
 import QuestionListComponent from "../../components/questionListComponent/QuestionListComponent";
 import { getStoredTheme } from "../../util/storage";
@@ -79,8 +88,13 @@ function isValidImageUrl(url: string): boolean {
 }
 
 const CreateQuestions = () => {
-  const questionService = new QuestionService();
-  const alternativeService = new AlternativeService();
+  const insertQuestionMutation = useInsertQuestionMutation();
+  const updateQuestionMutation = useUpdateQuestionMutation();
+  const removeQuestionMutation = useRemoveQuestionMutation();
+  const insertAllAlternativesMutation = useInsertAllAlternativesMutation();
+  const insertAlternativeMutation = useInsertAlternativeMutation();
+  const updateAlternativeMutation = useUpdateAlternativeMutation();
+  const removeAlternativeMutation = useRemoveAlternativeMutation();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
@@ -129,8 +143,6 @@ const CreateQuestions = () => {
     { text: "", correct: false },
   ]);
 
-  const [callbackQuestions, setCallbackQuestions] = useState<object>({});
-
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(
     null
   );
@@ -159,10 +171,10 @@ const CreateQuestions = () => {
       Boolean(getQuestionImageBySlot(question, slot))
     );
 
-    const questionResponse = await questionService.insertQuestion(
-      { ...question, imagesOrder: presentSlots.join(",") },
-      idTheme
-    );
+    const questionResponse = await insertQuestionMutation.mutateAsync({
+      question: { ...question, imagesOrder: presentSlots.join(",") },
+      idTheme,
+    });
     setLoading(false);
 
     if (!questionResponse.success) {
@@ -176,10 +188,10 @@ const CreateQuestions = () => {
 
   async function postAllAltervatives(idQuestion: number) {
     setLoading(true);
-    const alternativeResponse = await alternativeService.insertAllAlternatives(
+    const alternativeResponse = await insertAllAlternativesMutation.mutateAsync({
       idQuestion,
-      alternatives
-    );
+      alternatives,
+    });
     setLoading(false);
 
     if (!alternativeResponse.success) {
@@ -190,7 +202,6 @@ const CreateQuestions = () => {
     }
 
     activeInformationBox(false, "Questão criada com sucesso!");
-    setCallbackQuestions({}); // Atualiza a lista de alternativas em tempo real
     clearForm();
   }
 
@@ -202,10 +213,10 @@ const CreateQuestions = () => {
       Boolean(getQuestionImageBySlot(question, slot))
     );
 
-    const questionResponse = await questionService.updateQuestion(
-      editingQuestion.id,
-      { ...question, imagesOrder: presentSlots.join(",") }
-    );
+    const questionResponse = await updateQuestionMutation.mutateAsync({
+      questionId: editingQuestion.id,
+      questionUpdate: { ...question, imagesOrder: presentSlots.join(",") },
+    });
 
     if (!questionResponse.success) {
       activeInformationBox(true, questionResponse.message);
@@ -220,24 +231,26 @@ const CreateQuestions = () => {
     await Promise.all([
       ...alternatives.map((alt) =>
         alt.id
-          ? alternativeService.updateAlternative(alt.id, {
-              text: alt.text,
-              correct: alt.correct,
+          ? updateAlternativeMutation.mutateAsync({
+              alternativeId: alt.id,
+              alternativeUpdate: { text: alt.text, correct: alt.correct },
             })
-          : alternativeService.insertAlternative(editingQuestion.id, alt)
+          : insertAlternativeMutation.mutateAsync({
+              idQuestion: editingQuestion.id,
+              alternative: alt,
+            })
       ),
-      ...removedIds.map((id) => alternativeService.removeAlternative(id)),
+      ...removedIds.map((id) => removeAlternativeMutation.mutateAsync(id)),
     ]);
 
     setLoading(false);
     activeInformationBox(false, "Questão atualizada com sucesso!");
-    setCallbackQuestions({});
     clearForm();
   }
 
   async function removeQuestion(idQuestion: number) {
     setLoading(true);
-    const questionResponse = await questionService.removeQuestion(idQuestion);
+    const questionResponse = await removeQuestionMutation.mutateAsync(idQuestion);
     setLoading(false);
 
     if (!questionResponse.success) {
@@ -466,10 +479,7 @@ const CreateQuestions = () => {
 
   return (
     <div className="container-create-questions">
-      <QuestionListComponent
-        callbackQuestions={callbackQuestions}
-        onEditQuestion={startEditingQuestion}
-      />
+      <QuestionListComponent onEditQuestion={startEditingQuestion} />
 
       <Container maxWidth="lg" sx={{ py: 3 }}>
         <Breadcrumbs sx={{ mb: 2, "& .MuiBreadcrumbs-separator": { color: "#fff" } }}>

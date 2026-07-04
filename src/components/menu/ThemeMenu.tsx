@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { object, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { ThemeService } from "../../service/ThemeService";
+import { useInsertThemeMutation } from "../../query/useThemeQueries";
 import SearchImage from "../searchImageComponent/SearchImage";
 import type { InformationData, Theme } from "../../types";
 
@@ -28,10 +28,9 @@ interface ThemeFormData {
 }
 
 const ThemeMenu = ({ setThemeMenu }: ThemeMenuProps) => {
-  const themeService = new ThemeService();
+  const insertThemeMutation = useInsertThemeMutation();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
   const [searchImage, setSearchImage] = useState(false);
   const [informationData, setInformationData] = useState<InformationData>({
@@ -67,17 +66,14 @@ const ThemeMenu = ({ setThemeMenu }: ThemeMenuProps) => {
       "input-image-url"
     ) as HTMLInputElement;
     themeRequest.imageUrl = inputImageUrl.value;
-    setLoading(true);
 
-    const response = await themeService.insertTheme(themeRequest);
+    const response = await insertThemeMutation.mutateAsync(themeRequest);
     if (response.success) {
       activateInformationBox(false, "Tema criado com sucesso");
       navigateCreateQuestion(response.data);
     } else {
       activateInformationBox(true, response.message);
     }
-
-    setLoading(false);
   };
 
   function activateInformationBox(isError: boolean, message: string) {
@@ -162,7 +158,7 @@ const ThemeMenu = ({ setThemeMenu }: ThemeMenuProps) => {
         />
       )}
 
-      {loading && <Loading />}
+      {insertThemeMutation.isPending && <Loading />}
 
       {searchImage && (
         <SearchImage

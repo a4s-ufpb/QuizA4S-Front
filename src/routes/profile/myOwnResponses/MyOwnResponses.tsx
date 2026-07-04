@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Card,
@@ -14,6 +14,7 @@ import {
   TableRow,
   TableCell,
   Paper,
+  MenuItem,
 } from "@mui/material";
 import {
   BsTrophyFill,
@@ -23,57 +24,43 @@ import {
 import Pagination from "../../../components/pagination/Pagination";
 import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
-import { ResponseService } from "../../../service/ResponseService";
-import type { MySummary, ResponseItem } from "../../../types";
+import {
+  useMyResponsesQuery,
+  useMySummaryQuery,
+} from "../../../query/useResponseQueries";
+import type { GameMode } from "../../../types";
 
 const MyOwnResponses = () => {
-  const responseService = new ResponseService();
-
-  const [responses, setResponses] = useState<ResponseItem[]>([]);
-  const [summary, setSummary] = useState<MySummary>({
-    totalQuizzesFinished: 0,
-    totalCorrectAnswers: 0,
-    totalWrongAnswers: 0,
-  });
-  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
 
   const [themeName, setThemeName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [gameMode, setGameMode] = useState<GameMode>("SINGLE_PLAYER");
 
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
+  const responsesQuery = useMyResponsesQuery(
+    currentPage,
+    themeName,
+    startDate,
+    endDate,
+    gameMode
+  );
+  const summaryQuery = useMySummaryQuery(themeName, startDate, endDate, gameMode);
 
-      const [responsesResult, summaryResult] = await Promise.all([
-        responseService.findMyResponses(
-          currentPage,
-          themeName,
-          startDate,
-          endDate
-        ),
-        responseService.findMySummary(themeName, startDate, endDate),
-      ]);
-
-      setLoading(false);
-
-      if (!responsesResult.success) {
-        setResponses([]);
-        setTotalPages(0);
-      } else {
-        setResponses(responsesResult.data.content);
-        setTotalPages(responsesResult.data.totalPages);
-      }
-
-      if (summaryResult.success) {
-        setSummary(summaryResult.data);
-      }
-    }
-
-    fetchData();
-  }, [currentPage, themeName, startDate, endDate]);
+  const loading = responsesQuery.isLoading || summaryQuery.isLoading;
+  const responses = responsesQuery.data?.success
+    ? responsesQuery.data.data.content
+    : [];
+  const totalPages = responsesQuery.data?.success
+    ? responsesQuery.data.data.totalPages
+    : 0;
+  const summary = summaryQuery.data?.success
+    ? summaryQuery.data.data
+    : {
+        totalQuizzesFinished: 0,
+        totalCorrectAnswers: 0,
+        totalWrongAnswers: 0,
+      };
 
   function applyFilter() {
     setCurrentPage(0);
@@ -82,6 +69,17 @@ const MyOwnResponses = () => {
   return (
     <Box sx={{ py: 4 }}>
       <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 3 }}>
+        <TextField
+          select
+          label="Modo de jogo"
+          value={gameMode}
+          onChange={(e) => setGameMode(e.target.value as GameMode)}
+          sx={{ minWidth: 180 }}
+          fullWidth
+        >
+          <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
+          <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
+        </TextField>
         <TextField
           label="Tema"
           placeholder="Filtrar por tema"

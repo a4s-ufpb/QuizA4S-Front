@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Box,
   TableContainer,
@@ -28,9 +28,11 @@ import FilterStatistic, {
 import Pagination from "../../../components/pagination/Pagination";
 import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
-import { StatisticService } from "../../../service/StatisticService";
+import {
+  useAllStatisticByCreatorForChartQuery,
+  useAllStatisticByCreatorQuery,
+} from "../../../query/useStatisticQueries";
 import { getStoredUser } from "../../../util/storage";
-import type { Statistic } from "../../../types";
 
 interface ThemeAverage {
   themeName: string;
@@ -38,98 +40,57 @@ interface ThemeAverage {
 }
 
 function MyStatisticConclusion() {
-  const statisticService = new StatisticService();
-
-  const [statisticList, setStatisticList] = useState<Statistic[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [view, setView] = useState<"table" | "chart">("table");
-  const [chartData, setChartData] = useState<ThemeAverage[]>([]);
 
   const [studentName, setStudentName] = useState("");
   const [themeName, setThemeName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, studentName, themeName, startDate, endDate]);
+  const { uuid: creatorId } = getStoredUser();
 
-  useEffect(() => {
-    if (view === "chart") fetchChartData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, studentName, themeName, startDate, endDate]);
+  const statisticQuery = useAllStatisticByCreatorQuery(
+    currentPage,
+    creatorId,
+    studentName,
+    themeName,
+    startDate,
+    endDate
+  );
+  const chartQuery = useAllStatisticByCreatorForChartQuery(
+    creatorId,
+    studentName,
+    themeName,
+    startDate,
+    endDate,
+    view === "chart"
+  );
 
-  async function fetchData() {
-    const { uuid: creatorId } = getStoredUser();
-    try {
-      setLoading(true);
-      const statisticResponse =
-        await statisticService.findAllStatisticByCreator(
-          currentPage,
-          creatorId,
-          studentName,
-          themeName,
-          startDate,
-          endDate
-        );
+  const loading = statisticQuery.isLoading || chartQuery.isLoading;
+  const statisticList = statisticQuery.data?.success
+    ? statisticQuery.data.data.content
+    : [];
+  const totalPages = statisticQuery.data?.success
+    ? statisticQuery.data.data.totalPages
+    : 0;
 
-      if (!statisticResponse.success) {
-        alert("Tente novamente mais tarde!");
-        setCurrentPage(0);
-        setTotalPages(0);
-        setStatisticList([]);
-      } else {
-        setStatisticList(statisticResponse.data.content);
-        setTotalPages(statisticResponse.data.totalPages);
-      }
-    } catch (error) {
-      setStatisticList([]);
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const chartData = useMemo<ThemeAverage[]>(() => {
+    if (!chartQuery.data?.success) return [];
 
-  async function fetchChartData() {
-    const { uuid: creatorId } = getStoredUser();
-    try {
-      setLoading(true);
-      const response = await statisticService.findAllStatisticByCreatorForChart(
-        creatorId,
-        studentName,
-        themeName,
-        startDate,
-        endDate
-      );
+    const totals = new Map<string, { sum: number; count: number }>();
+    chartQuery.data.data.forEach((stat) => {
+      const entry = totals.get(stat.themeName) ?? { sum: 0, count: 0 };
+      entry.sum += stat.percentagemOfHits;
+      entry.count += 1;
+      totals.set(stat.themeName, entry);
+    });
 
-      if (!response.success) {
-        setChartData([]);
-        return;
-      }
-
-      const totals = new Map<string, { sum: number; count: number }>();
-      response.data.forEach((stat) => {
-        const entry = totals.get(stat.themeName) ?? { sum: 0, count: 0 };
-        entry.sum += stat.percentagemOfHits;
-        entry.count += 1;
-        totals.set(stat.themeName, entry);
-      });
-
-      setChartData(
-        Array.from(totals.entries()).map(([name, { sum, count }]) => ({
-          themeName: name,
-          averageOfHits: Number((sum / count).toFixed(1)),
-        }))
-      );
-    } catch (error) {
-      setChartData([]);
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }
+    return Array.from(totals.entries()).map(([name, { sum, count }]) => ({
+      themeName: name,
+      averageOfHits: Number((sum / count).toFixed(1)),
+    }));
+  }, [chartQuery.data]);
 
   // Função chamada pelo FilterStatistic para atualizar os filtros
   const handleFilter = ({

@@ -1,19 +1,35 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { BsPersonCircle, BsTrashFill, BsPencilSquare } from "react-icons/bs";
+import {
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Paper,
+  IconButton,
+  Select,
+  MenuItem,
+  type SelectChangeEvent,
+} from "@mui/material";
+import { BsTrashFill, BsPencilSquare } from "react-icons/bs";
 import ConfirmBox from "../confirmBox/ConfirmBox";
 import UpdateBox from "../updateBox/UpdateBox";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
-import { UserService } from "../../service/UserService";
+import {
+  useRemoveUserMutation,
+  useUpdatePasswordMutation,
+  useUpdateUserMutation,
+  useUpdateUserRoleMutation,
+} from "../../query/useUserQueries";
 
-import "./UserTemplate.css";
-import type { InformationData, User } from "../../types";
+import type { InformationData, Role, User } from "../../types";
 
 interface UserTemplateProps {
   users: User[];
   setUsers: Dispatch<SetStateAction<User[]>>;
   setCurrentPage: Dispatch<SetStateAction<number>>;
-  setCallBack: Dispatch<SetStateAction<object>>;
 }
 
 interface PasswordValidation {
@@ -21,19 +37,21 @@ interface PasswordValidation {
   message: string;
 }
 
-function UserTemplate({
-  users,
-  setUsers,
-  setCurrentPage,
-  setCallBack,
-}: UserTemplateProps) {
-  const userService = new UserService();
+function UserTemplate({ users, setUsers, setCurrentPage }: UserTemplateProps) {
+  const removeUserMutation = useRemoveUserMutation();
+  const updateUserRoleMutation = useUpdateUserRoleMutation();
+  const updateUserMutation = useUpdateUserMutation();
+  const updatePasswordMutation = useUpdatePasswordMutation();
 
   const [isConfirmBox, setConfirmBox] = useState(false);
   const [isUpdateBox, setUpdateBox] = useState(false);
   const [isInformationBox, setInformationBox] = useState(false);
 
-  const [loading, setLoading] = useState(false);
+  const loading =
+    removeUserMutation.isPending ||
+    updateUserRoleMutation.isPending ||
+    updateUserMutation.isPending ||
+    updatePasswordMutation.isPending;
 
   const [informationData, setInformationData] = useState<InformationData>({
     text: "",
@@ -97,9 +115,10 @@ function UserTemplate({
   }
 
   async function removeUser() {
-    setLoading(true);
-    const response = await userService.removeUser(userId, true);
-    setLoading(false);
+    const response = await removeUserMutation.mutateAsync({
+      userId,
+      isAdmin: true,
+    });
 
     if (!response.success) {
       activeInformationBox(true, response.message);
@@ -110,6 +129,19 @@ function UserTemplate({
     setCurrentPage(0);
     activeInformationBox(false, "Usuário removido com sucesso!");
     setConfirmBox(false);
+  }
+
+  async function changeRole(id: string, role: Role) {
+    const response = await updateUserRoleMutation.mutateAsync({ userId: id, role });
+
+    if (!response.success) {
+      activeInformationBox(true, response.message);
+      return;
+    }
+
+    setUsers((prevUsers) =>
+      prevUsers.map((user) => (user.uuid === id ? { ...user, role } : user))
+    );
   }
 
   const newUser = {
@@ -123,9 +155,11 @@ function UserTemplate({
   };
 
   async function updateUser() {
-    setLoading(true);
     try {
-      const responseUserUpdate = await userService.updateUser(userId, newUser);
+      const responseUserUpdate = await updateUserMutation.mutateAsync({
+        userId,
+        userUpdate: newUser,
+      });
 
       if (!responseUserUpdate.success) {
         activeInformationBox(true, responseUserUpdate.message);
@@ -145,10 +179,10 @@ function UserTemplate({
           return;
         }
 
-        responseUserPassword = await userService.updatePassword(
+        responseUserPassword = await updatePasswordMutation.mutateAsync({
           userId,
-          userPassword
-        );
+          userPassword,
+        });
 
         if (!responseUserPassword.success) {
           activeInformationBox(true, responseUserPassword.message);
@@ -157,12 +191,9 @@ function UserTemplate({
       }
 
       activeInformationBox(false, "Usuário atualizado com sucesso");
-      setCallBack({});
       setUpdateBox(false);
     } catch (error) {
       activeInformationBox(true, "Erro ao atualizar usuário. Tente novamente.");
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -231,25 +262,55 @@ function UserTemplate({
   }
 
   return (
-    <div className="container-users">
-      {users &&
-        users.map((user) => (
-          <div key={user.uuid} className="user-data">
-            <BsPersonCircle />
-            <div className="user-info">
-              <p>Nome: {user.name}</p>
-              <p>Email: {user.email}</p>
-            </div>
-            <div className="user-action">
-              <BsTrashFill
-                onClick={() => showConfirmBox(user.uuid, user.name, user.email)}
-              />
-              <BsPencilSquare
-                onClick={() => showUpdateBox(user.uuid, user.name, user.email)}
-              />
-            </div>
-          </div>
-        ))}
+    <TableContainer component={Paper} sx={{ width: "100%", mt: 3 }}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Nome</TableCell>
+            <TableCell>Email</TableCell>
+            <TableCell>Cargo</TableCell>
+            <TableCell align="center">Ações</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {users &&
+            users.map((user) => (
+              <TableRow key={user.uuid} hover>
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>
+                  <Select
+                    size="small"
+                    value={user.role ?? "USER"}
+                    onChange={(e: SelectChangeEvent) =>
+                      changeRole(user.uuid, e.target.value as Role)
+                    }
+                    sx={{ minWidth: 130 }}
+                  >
+                    <MenuItem value="ADMIN">ADMIN</MenuItem>
+                    <MenuItem value="USER">USUÁRIO</MenuItem>
+                  </Select>
+                </TableCell>
+                <TableCell align="center">
+                  <IconButton
+                    color="primary"
+                    onClick={() => showUpdateBox(user.uuid, user.name, user.email)}
+                    title="Editar usuário"
+                  >
+                    <BsPencilSquare />
+                  </IconButton>
+                  <IconButton
+                    color="error"
+                    onClick={() => showConfirmBox(user.uuid, user.name, user.email)}
+                    title="Remover usuário"
+                  >
+                    <BsTrashFill />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+        </TableBody>
+      </Table>
 
       {isConfirmBox && (
         <ConfirmBox
@@ -279,7 +340,7 @@ function UserTemplate({
       )}
 
       {loading && <Loading />}
-    </div>
+    </TableContainer>
   );
 }
 

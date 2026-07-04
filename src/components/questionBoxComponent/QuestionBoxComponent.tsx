@@ -14,8 +14,8 @@ import {
 import UpdateBox from "../../components/updateBox/UpdateBox";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
-import { AlternativeService } from "../../service/AlternativeService";
-import { QuestionService } from "../../service/QuestionService";
+import { useUpdateAlternativeMutation } from "../../query/useAlternativeQueries";
+import { useRemoveQuestionMutation } from "../../query/useQuestionQueries";
 import { BsPencilSquare } from "react-icons/bs";
 import ConfirmBox from "../confirmBox/ConfirmBox";
 import { DEFAULT_IMG } from "../../vite-env";
@@ -26,7 +26,6 @@ import { getOrderedQuestionImages } from "../../util/questionImages";
 interface QuestionBoxComponentProps {
   setQuestionBox: Dispatch<SetStateAction<boolean>>;
   question: Question;
-  setCallback: Dispatch<SetStateAction<object>>;
   setQuestion: Dispatch<SetStateAction<Question>>;
   onEditQuestion: (question: Question) => void;
 }
@@ -34,18 +33,17 @@ interface QuestionBoxComponentProps {
 function QuestionBoxComponent({
   setQuestionBox,
   question,
-  setCallback,
   setQuestion,
   onEditQuestion,
 }: QuestionBoxComponentProps) {
-  const alternativeService = new AlternativeService();
-  const questionService = new QuestionService();
+  const updateAlternativeMutation = useUpdateAlternativeMutation();
+  const removeQuestionMutation = useRemoveQuestionMutation();
   const alternativesList = ["A", "B", "C", "D", "E", "F"];
 
   const [newResponse, setResponse] = useState("");
   const [alternativeId, setAlternativeId] = useState(0);
 
-  const [loading, setLoading] = useState(false);
+  const loading = updateAlternativeMutation.isPending || removeQuestionMutation.isPending;
   const [isUpdateAlternative, setUpdateBoxAlternative] = useState(false);
   const [isInformationBox, setInformationBox] = useState(false);
   const [isConfirmBox, setConfirmBox] = useState(false);
@@ -114,14 +112,13 @@ function QuestionBoxComponent({
   }
 
   async function updateAlternative() {
-    setLoading(true);
-    const response = await alternativeService.updateAlternative(alternativeId, {
-      text: newResponse,
+    const response = await updateAlternativeMutation.mutateAsync({
+      alternativeId,
+      alternativeUpdate: { text: newResponse },
     });
 
     if (!response.success) {
       activeInformationBox(true, response.message);
-      setLoading(false);
       return;
     }
 
@@ -131,10 +128,8 @@ function QuestionBoxComponent({
         alt.id === alternativeId ? { ...alt, text: response.data.text } : alt
       ),
     }));
-    setCallback({});
     activeInformationBox(false, "Alternativa atualizada com sucesso!");
     setUpdateBoxAlternative(false);
-    setLoading(false);
   }
 
   function editQuestion() {
@@ -143,16 +138,13 @@ function QuestionBoxComponent({
   }
 
   async function removeQuestion() {
-    setLoading(true);
-    const response = await questionService.removeQuestion(newQuestion.id);
-    setLoading(false);
+    const response = await removeQuestionMutation.mutateAsync(newQuestion.id);
 
     if (!response.success) {
       activeInformationBox(true, response.message);
       return;
     }
 
-    setCallback({});
     activeInformationBox(false, "Questão removida com sucesso!");
     setConfirmBox(false);
 
@@ -166,7 +158,7 @@ function QuestionBoxComponent({
       open={true}
       onClose={() => setQuestionBox(false)}
       fullWidth
-      maxWidth="md"
+      maxWidth="lg"
     >
       <DialogTitle>{question?.title}</DialogTitle>
       <DialogContent sx={{ background: "linear-gradient(160deg, #f5f5f5 0%, #e0e0e0 100%)" }}>

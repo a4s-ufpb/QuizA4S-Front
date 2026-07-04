@@ -1,5 +1,5 @@
 import { BaseService } from "./BaseService";
-import type { AuthResponse, Page, User } from "../types";
+import type { AuthResponse, Page, Role, User } from "../types";
 
 interface UserPasswordRequest {
   newPassword: string;
@@ -45,6 +45,10 @@ export class UserService extends BaseService {
 
   updateUser(userId: string, userUpdate: Partial<User>) {
     return this.handleRequest<User>("patch", `/user/${userId}`, userUpdate);
+  }
+
+  updateUserRole(userId: string, role: Role) {
+    return this.handleRequest<User>("patch", `/user/role/${userId}`, { role });
   }
 
   updatePassword(userId: string, userPassword: UserPasswordRequest) {

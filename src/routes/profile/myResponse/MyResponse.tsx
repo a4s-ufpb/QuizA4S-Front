@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Box,
   TableContainer,
@@ -18,6 +18,8 @@ import {
   Typography,
   ToggleButtonGroup,
   ToggleButton,
+  TextField,
+  MenuItem,
 } from "@mui/material";
 import {
   BarChart,
@@ -41,20 +43,18 @@ import {
   BsTable,
   BsBarChartFill,
 } from "react-icons/bs";
-import { ResponseService } from "../../../service/ResponseService";
+import {
+  useResponsesQueryChartQuery,
+  useResponsesQueryFilterQuery,
+} from "../../../query/useResponseQueries";
 import QuestionImageGallery from "../../../components/questionImageGallery/QuestionImageGallery";
 import { getOrderedQuestionImages } from "../../../util/questionImages";
-import type { Question, ResponseItem } from "../../../types";
+import type { GameMode, Question, ResponseItem } from "../../../types";
 
 const ALTERNATIVE_LABELS = ["A", "B", "C", "D", "E", "F"];
 
 const MyResponse = () => {
-  const responseService = new ResponseService();
-
-  const [responses, setResponses] = useState<ResponseItem[]>([]);
-  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const [selectedResponse, setSelectedResponse] = useState<ResponseItem | null>(
     null
   );
@@ -64,78 +64,53 @@ const MyResponse = () => {
   const [username, setUsername] = useState("");
   const [themeName, setThemeName] = useState("");
   const [view, setView] = useState<"table" | "chart">("table");
-  const [chartData, setChartData] = useState<
-    { questionTitle: string; totalCorrect: number; totalWrong: number }[]
-  >([]);
+  const [gameMode, setGameMode] = useState<GameMode>("SINGLE_PLAYER");
 
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
+  const responsesQuery = useResponsesQueryFilterQuery(
+    currentPage,
+    username,
+    themeName,
+    currentDate,
+    finalDate,
+    gameMode
+  );
+  const chartQuery = useResponsesQueryChartQuery(
+    username,
+    themeName,
+    currentDate,
+    finalDate,
+    gameMode,
+    view === "chart"
+  );
 
-      const response =
-        await responseService.findResponsesByQuestionCreatorAndUsernameAndDateAndThemeName(
-          currentPage,
-          username,
-          themeName,
-          currentDate,
-          finalDate
-        );
-      setLoading(false);
-      if (!response.success) {
-        setResponses([]);
-        setTotalPages(0);
-        setCurrentPage(0);
-        return;
-      }
+  const loading = responsesQuery.isLoading || chartQuery.isLoading;
+  const responses = responsesQuery.data?.success
+    ? responsesQuery.data.data.content
+    : [];
+  const totalPages = responsesQuery.data?.success
+    ? responsesQuery.data.data.totalPages
+    : 0;
 
-      setResponses(response.data.content);
-      setTotalPages(response.data.totalPages);
-    }
+  const chartData = useMemo(() => {
+    if (!chartQuery.data?.success) return [];
 
-    fetchData();
-  }, [currentPage, currentDate, finalDate, username, themeName]);
+    const totals = new Map<string, { correct: number; wrong: number }>();
+    chartQuery.data.data.forEach((item) => {
+      const entry = totals.get(item.question.title) ?? {
+        correct: 0,
+        wrong: 0,
+      };
+      if (item.alternative.correct) entry.correct += 1;
+      else entry.wrong += 1;
+      totals.set(item.question.title, entry);
+    });
 
-  useEffect(() => {
-    if (view !== "chart") return;
-
-    async function fetchChartData() {
-      setLoading(true);
-      const response =
-        await responseService.findResponsesByQuestionCreatorAndUsernameAndDateAndThemeNameForChart(
-          username,
-          themeName,
-          currentDate,
-          finalDate
-        );
-      setLoading(false);
-
-      if (!response.success) {
-        setChartData([]);
-        return;
-      }
-
-      const totals = new Map<string, { correct: number; wrong: number }>();
-      response.data.forEach((item) => {
-        const entry = totals.get(item.question.title) ?? {
-          correct: 0,
-          wrong: 0,
-        };
-        if (item.alternative.correct) entry.correct += 1;
-        else entry.wrong += 1;
-        totals.set(item.question.title, entry);
-      });
-
-      setChartData(
-        Array.from(totals.entries()).map(([questionTitle, { correct, wrong }]) => ({
-          questionTitle,
-          totalCorrect: correct,
-          totalWrong: wrong,
-        }))
-      );
-    }
-
-    fetchChartData();
-  }, [view, username, themeName, currentDate, finalDate]);
+    return Array.from(totals.entries()).map(([questionTitle, { correct, wrong }]) => ({
+      questionTitle,
+      totalCorrect: correct,
+      totalWrong: wrong,
+    }));
+  }, [chartQuery.data]);
 
   // Altera o estados dos parâmetros para realizar a pesquisa
   function changeData(propsData: ResponseFilterData) {
@@ -150,7 +125,28 @@ const MyResponse = () => {
     <Box sx={{ py: 4 }}>
       <FilterComponent onData={changeData} />
 
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3, mb: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 2,
+          mt: 3,
+          mb: 1,
+        }}
+      >
+        <TextField
+          select
+          size="small"
+          label="Modo de jogo"
+          value={gameMode}
+          onChange={(e) => setGameMode(e.target.value as GameMode)}
+          sx={{ minWidth: 180 }}
+        >
+          <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
+          <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
+        </TextField>
         <ToggleButtonGroup
           size="small"
           exclusive

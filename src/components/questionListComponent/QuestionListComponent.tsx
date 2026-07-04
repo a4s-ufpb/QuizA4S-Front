@@ -4,7 +4,7 @@ import {
   BsCheckCircleFill,
 } from "react-icons/bs";
 import QuestionBoxComponent from "../questionBoxComponent/QuestionBoxComponent";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Box,
   Card,
@@ -16,88 +16,29 @@ import {
   Typography,
 } from "@mui/material";
 import { DEFAULT_IMG } from "../../vite-env";
-import { QuestionService } from "../../service/QuestionService";
-import InformationBox from "../informationBox/InformationBox";
+import { useAllQuestionsByThemeQuery } from "../../query/useQuestionQueries";
 import Loading from "../loading/Loading";
 import { getStoredTheme } from "../../util/storage";
 import { getOrderedQuestionImages } from "../../util/questionImages";
-import type { InformationData, Question } from "../../types";
+import type { Question } from "../../types";
 
 interface QuestionListComponentProps {
-  callbackQuestions: object;
   onEditQuestion: (question: Question) => void;
 }
 
 const SIDEBAR_WIDTH = 240;
 const SIDEBAR_COLLAPSED_WIDTH = 40;
 
-function QuestionListComponent({
-  callbackQuestions,
-  onEditQuestion,
-}: QuestionListComponentProps) {
+function QuestionListComponent({ onEditQuestion }: QuestionListComponentProps) {
   const [showQuestionBox, setQuestionBox] = useState(false);
   const [questionData, setQuestionData] = useState<Question>({} as Question);
   const [isOpen, setIsOpen] = useState(true);
 
-  const [questions, setQuestions] = useState<Question[]>([]);
-
   const idTheme = getStoredTheme().id;
 
-  const [loading, setLoading] = useState(false);
-  const [informationBox, setInformationBox] = useState(false);
-  const [informationBoxData, setInformationBoxData] = useState<InformationData>(
-    {
-      text: "",
-      color: "red",
-      icon: "exclamation",
-    }
-  );
-
-  const questionService = new QuestionService();
-
-  const [callback, setCallback] = useState<object>({});
-
-  useEffect(() => {
-    fetchData();
-  }, [callback, callbackQuestions]);
-
-  async function fetchData() {
-    try {
-      setLoading(true);
-      const questionResponse =
-        await questionService.findAllQuestionsByTheme(idTheme);
-
-      if (!questionResponse.success) {
-        activeInformationBox(true, questionResponse.message);
-        return;
-      }
-
-      setQuestions(questionResponse.data);
-    } catch (error) {
-      setQuestions([]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function activeInformationBox(isFail: boolean, message: string) {
-    if (isFail) {
-      setInformationBoxData((prevData) => {
-        return {
-          ...prevData,
-          text: message,
-          color: "red",
-          icon: "exclamation",
-        };
-      });
-      setInformationBox(true);
-    } else {
-      setInformationBoxData((prevData) => {
-        return { ...prevData, text: message, color: "green", icon: "check" };
-      });
-      setInformationBox(true);
-    }
-  }
+  const questionsQuery = useAllQuestionsByThemeQuery(idTheme);
+  const loading = questionsQuery.isLoading;
+  const questions = questionsQuery.data?.success ? questionsQuery.data.data : [];
 
   function activeQuestionBox(question: Question) {
     setQuestionData(question);
@@ -189,17 +130,7 @@ function QuestionListComponent({
           setQuestionBox={setQuestionBox}
           question={questionData}
           setQuestion={setQuestionData}
-          setCallback={setCallback}
           onEditQuestion={onEditQuestion}
-        />
-      )}
-
-      {informationBox && (
-        <InformationBox
-          closeBox={() => setInformationBox(false)}
-          color={informationBoxData.color}
-          text={informationBoxData.text}
-          icon={informationBoxData.icon}
         />
       )}
     </Box>

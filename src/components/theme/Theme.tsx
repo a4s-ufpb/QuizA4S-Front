@@ -6,7 +6,10 @@ import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
 import { DEFAULT_IMG } from "../../vite-env";
 import { useNavigate } from "react-router-dom";
-import { ThemeService } from "../../service/ThemeService";
+import {
+  useRemoveThemeMutation,
+  useUpdateThemeMutation,
+} from "../../query/useThemeQueries";
 
 import "./Theme.css";
 import NotFoundComponent from "../notFound/NotFoundComponent";
@@ -16,20 +19,15 @@ interface ThemeProps {
   themes: ThemeModel[];
   setThemes: Dispatch<SetStateAction<ThemeModel[]>>;
   setCurrentPage: Dispatch<SetStateAction<number>>;
-  setCallBack: Dispatch<SetStateAction<object>>;
 }
 
-const Theme = ({
-  themes,
-  setThemes,
-  setCurrentPage,
-  setCallBack,
-}: ThemeProps) => {
-  const themeService = new ThemeService();
+const Theme = ({ themes, setThemes, setCurrentPage }: ThemeProps) => {
+  const removeThemeMutation = useRemoveThemeMutation();
+  const updateThemeMutation = useUpdateThemeMutation();
 
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
+  const loading = removeThemeMutation.isPending || updateThemeMutation.isPending;
 
   const [isConfirmBox, setConfirmBox] = useState(false);
   const [isUpdateBox, setUpdateBox] = useState(false);
@@ -79,9 +77,7 @@ const Theme = ({
   }
 
   async function removeTheme() {
-    setLoading(true);
-    const response = await themeService.removeTheme(themeId);
-    setLoading(false);
+    const response = await removeThemeMutation.mutateAsync(themeId);
 
     if (!response.success) {
       activeInformationBox(true, response.message);
@@ -100,9 +96,10 @@ const Theme = ({
   };
 
   async function updateTheme() {
-    setLoading(true);
-    const response = await themeService.updateTheme(themeId, newTheme);
-    setLoading(false);
+    const response = await updateThemeMutation.mutateAsync({
+      themeId,
+      themeUpdate: newTheme,
+    });
 
     if (!response.success) {
       activeInformationBox(true, response.message);
@@ -110,7 +107,6 @@ const Theme = ({
     }
 
     activeInformationBox(false, "Tema atualizado com sucesso");
-    setCallBack({});
     setUpdateBox(false);
   }
 

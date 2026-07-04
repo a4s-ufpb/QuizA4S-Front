@@ -30,93 +30,71 @@ import {
 import { BsTable, BsBarChartFill } from "react-icons/bs";
 import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
-import { ThemeService } from "../../../service/ThemeService";
-import { ResponseService } from "../../../service/ResponseService";
-import { UserService } from "../../../service/UserService";
+import { useResponsesStatisticsQuery } from "../../../query/useResponseQueries";
+import { useIsAdminQuery } from "../../../query/useUserQueries";
+import {
+  useAllThemesQuery,
+  useThemesByCreatorQuery,
+} from "../../../query/useThemeQueries";
 import { getStoredUser } from "../../../util/storage";
-import type { ResponseStatistic, Theme } from "../../../types";
+import type { GameMode } from "../../../types";
 
 function MyStatistics() {
-  const themeService = new ThemeService();
-  const responseService = new ResponseService();
-  const userService = new UserService();
-
-  const [loading, setLoading] = useState(false);
-  const [themeNamesList, setThemeNamesList] = useState<Theme[]>([]);
-  const [statistics, setStatistics] = useState<ResponseStatistic[]>([]);
   const [selectedTheme, setSelectedTheme] = useState("");
   const [view, setView] = useState<"table" | "chart">("table");
-  const [fetchError, setFetchError] = useState(false);
+  const [gameMode, setGameMode] = useState<GameMode>("SINGLE_PLAYER");
 
   const { uuid: userId } = getStoredUser();
 
-  async function fetchData() {
-    setLoading(true);
+  const isAdminQuery = useIsAdminQuery(userId);
+  const isAdmin = isAdminQuery.data?.data.isAdmin ?? false;
+  const isAdminKnown = isAdminQuery.isSuccess;
 
-    try {
-      const validateUser = await userService.validateIfUserIsAdmin(userId);
-      const isAdmin = validateUser.data.isAdmin;
-
-      const fetchThemes = isAdmin
-        ? themeService.findAllThemes("", 0)
-        : themeService.findThemesByCreator("", 0);
-
-      const response = await fetchThemes;
-
-      const themes = response.data.content || [];
-      setThemeNamesList(themes);
-
-      if (themes.length > 0) {
-        const firstThemeName = themes[0].name;
-        setSelectedTheme(firstThemeName);
-        searchStatistics(firstThemeName);
-      }
-    } catch (error) {
-      setThemeNamesList([]);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const allThemesQuery = useAllThemesQuery("", 0, isAdminKnown && isAdmin);
+  const creatorThemesQuery = useThemesByCreatorQuery(
+    "",
+    0,
+    isAdminKnown && !isAdmin
+  );
+  const themesQuery = isAdmin ? allThemesQuery : creatorThemesQuery;
+  const themeNamesList = themesQuery.data?.success
+    ? themesQuery.data.data.content || []
+    : [];
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  async function searchStatistics(nameOfTheme: string) {
-    if (nameOfTheme === "") {
-      setStatistics([]);
-      return;
+    if (themeNamesList.length > 0 && !selectedTheme) {
+      setSelectedTheme(themeNamesList[0].name);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [themeNamesList]);
 
-    setLoading(true);
-    setFetchError(false);
-    const response = await responseService.findResponsesStatistics(
-      nameOfTheme,
-      userId
-    );
-    setLoading(false);
-
-    if (!response.success) {
-      setFetchError(true);
-      return;
-    }
-
-    setStatistics(response.data);
-    setSelectedTheme(nameOfTheme);
-  }
+  const statisticsQuery = useResponsesStatisticsQuery(
+    selectedTheme,
+    userId,
+    gameMode
+  );
+  const loading = statisticsQuery.isLoading;
+  const fetchError = statisticsQuery.isSuccess && !statisticsQuery.data.success;
+  const statistics = statisticsQuery.data?.success ? statisticsQuery.data.data : [];
 
   return (
     <Box sx={{ py: 4 }}>
-      <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 2,
+          flexWrap: "wrap",
+          mb: 3,
+        }}
+      >
         <FormControl sx={{ minWidth: 260 }}>
           <InputLabel id="theme-select-label">Selecione um tema</InputLabel>
           <Select
             labelId="theme-select-label"
             label="Selecione um tema"
             value={selectedTheme}
-            onChange={(e: SelectChangeEvent) =>
-              searchStatistics(e.target.value)
-            }
+            onChange={(e: SelectChangeEvent) => setSelectedTheme(e.target.value)}
           >
             {themeNamesList &&
               themeNamesList.map((theme) => (
@@ -126,10 +104,25 @@ function MyStatistics() {
               ))}
           </Select>
         </FormControl>
+
+        <FormControl sx={{ minWidth: 180 }}>
+          <InputLabel id="game-mode-select-label">Modo de jogo</InputLabel>
+          <Select
+            labelId="game-mode-select-label"
+            label="Modo de jogo"
+            value={gameMode}
+            onChange={(e: SelectChangeEvent) =>
+              setGameMode(e.target.value as GameMode)
+            }
+          >
+            <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
+            <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
+          </Select>
+        </FormControl>
       </Box>
 
       {fetchError && (
-        <Alert severity="error" onClose={() => setFetchError(false)} sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
           Não foi possível carregar as estatísticas. Tente novamente mais tarde.
         </Alert>
       )}
@@ -206,11 +199,11 @@ function MyStatistics() {
         </Paper>
       )}
 
-      {!loading && themeNamesList.length === 0 && (
+      {!loading && !themesQuery.isLoading && themeNamesList.length === 0 && (
         <NotFoundComponent title="Nenhuma estatística encontrada" />
       )}
 
-      {loading && <Loading />}
+      {(loading || themesQuery.isLoading || isAdminQuery.isLoading) && <Loading />}
     </Box>
   );
 }

@@ -14,27 +14,25 @@ import { BsPencilSquare } from "react-icons/bs";
 import UpdateBox from "../../components/updateBox/UpdateBox";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
-import { AlternativeService } from "./../../service/AlternativeService";
+import { useUpdateAlternativeMutation } from "../../query/useAlternativeQueries";
 import type { Alternative, InformationData } from "../../types";
 
 interface MyAlternativeProps {
   alternatives: Alternative[];
   setShowAlternatives: (value: boolean) => void;
-  setCallBack: Dispatch<SetStateAction<object>>;
   setAlternatives: Dispatch<SetStateAction<Alternative[]>>;
 }
 
 const MyAlternative = ({
   alternatives,
   setShowAlternatives,
-  setCallBack,
   setAlternatives,
 }: MyAlternativeProps) => {
-  const alternativeService = new AlternativeService();
+  const updateAlternativeMutation = useUpdateAlternativeMutation();
   const alternativeList = ["A", "B", "C", "D", "E", "F"];
   const [newResponse, setResponse] = useState("");
   const [alternativeId, setAlternativeId] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const loading = updateAlternativeMutation.isPending;
   const [isUpdateBox, setUpdateBox] = useState(false);
   const [isInformationBox, setInformationBox] = useState(false);
   const [informationData, setInformationData] = useState<InformationData>({
@@ -85,11 +83,10 @@ const MyAlternative = ({
   }
 
   async function updateAlternative() {
-    setLoading(true);
-    const response = await alternativeService.updateAlternative(alternativeId, {
-      text: newResponse,
+    const response = await updateAlternativeMutation.mutateAsync({
+      alternativeId,
+      alternativeUpdate: { text: newResponse },
     });
-    setLoading(false);
 
     if (!response.success) {
       activeInformationBox(true, response.message);
@@ -102,7 +99,6 @@ const MyAlternative = ({
       )
     );
 
-    setCallBack({});
     activeInformationBox(false, "Alternativa atualizada com sucesso!");
     setUpdateBox(false);
   }

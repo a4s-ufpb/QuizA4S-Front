@@ -3,11 +3,11 @@ import Loading from "../loading/Loading";
 import Ranking from "../ranking/Ranking";
 import ConfirmBox from "../confirmBox/ConfirmBox";
 import "./QuizFinished.css";
-import { ScoreService } from "./../../service/ScoreService";
+import { useInsertScoreMutation } from "../../query/useScoreQueries";
 import { useNavigate } from "react-router-dom";
 import InformationBox from "../informationBox/InformationBox";
 import { HIT_VALUE, REDUCE_VALUE } from "../../vite-env";
-import { StatisticService } from "../../service/StatisticService";
+import { useInsertStatisticMutation } from "../../query/useStatisticQueries";
 import { getStoredTheme, getStoredUser } from "../../util/storage";
 import type { ScoreRequest, StatisticRequest } from "../../types";
 
@@ -24,8 +24,8 @@ const QuizFinished = ({
   score,
   time,
 }: QuizFinishedProps) => {
-  const scoreService = new ScoreService();
-  const statisticService = new StatisticService();
+  const insertScoreMutation = useInsertScoreMutation();
+  const insertStatisticMutation = useInsertStatisticMutation();
 
   const [loading, setLoading] = useState(false);
   const [confirmBox, setConfirmBox] = useState(false);
@@ -55,7 +55,7 @@ const QuizFinished = ({
     try {
       setLoading(true);
 
-      statisticService.insertStatistic(statistic);
+      insertStatisticMutation.mutate(statistic);
     } catch (error) {
       console.error(error);
       setInformationBox(true);
@@ -90,11 +90,11 @@ const QuizFinished = ({
     setConfirmBox(false);
 
     setLoading(true);
-    const scoreResponse = await scoreService.insertScore(
-      scoreRequest,
+    const scoreResponse = await insertScoreMutation.mutateAsync({
+      score: scoreRequest,
       userId,
-      themeId
-    );
+      themeId,
+    });
     setLoading(false);
 
     if (scoreResponse.success) {

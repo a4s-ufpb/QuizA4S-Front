@@ -5,8 +5,8 @@ import Question from "../../components/question/Question";
 import InformationBox from "../../components/informationBox/InformationBox";
 import Loading from "../../components/loading/Loading";
 import QuestionFinished from "../../components/quizFinished/QuizFinished";
-import { QuestionService } from "../../service/QuestionService";
-import { ResponseService } from "../../service/ResponseService";
+import { useTop10QuestionsByThemeQuery } from "../../query/useQuestionQueries";
+import { useInsertResponseMutation } from "../../query/useResponseQueries";
 import FeedbackBox from "../../components/feedbackBox/FeedbackBox";
 import { getStoredUser } from "../../util/storage";
 import type { Question as QuestionModel } from "../../types";
@@ -22,11 +22,9 @@ const Quiz = () => {
   const correctSound = new Audio(correctSoundFile);
   const errorSound = new Audio(errorSoundFile);
 
-  const questionService = new QuestionService();
-  const responseService = new ResponseService();
+  const insertResponseMutation = useInsertResponseMutation();
 
   const [questions, setQuestions] = useState<QuestionModel[]>([]);
-  const [loading, setLoading] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
 
@@ -45,34 +43,29 @@ const Quiz = () => {
 
   const { id: themeId } = useParams();
 
+  const questionsQuery = useTop10QuestionsByThemeQuery(themeId ?? "");
+  const loading = questionsQuery.isLoading;
+
   useEffect(() => {
-    setLoading(true);
+    if (!questionsQuery.data) return;
 
-    const questionResponse = questionService.find10QuestionsByThemeId(
-      themeId ?? ""
-    );
+    if (!questionsQuery.data.success) {
+      setTextAlert(questionsQuery.data.message);
+      setInformationAlert(true);
+      return;
+    }
 
-    questionResponse.then((response) => {
-      if (!response.success) {
-        setTextAlert(response.message);
-        setInformationAlert(true);
-        return;
-      }
+    setQuestions(questionsQuery.data.data);
 
-      setQuestions(response.data);
-
-      if (response.data.length < 5) {
-        setTextAlert("Cadastre no mínimo 5 questões para jogar esse quiz");
-        setInformationAlert(true);
-      } else {
-        // Tenta iniciar em tela cheia (pode ser bloqueado sem gesto do usuário;
-        // nesse caso o botão no canto superior esquerdo permite ativar).
-        containerRef.current?.requestFullscreen?.().catch(() => {});
-      }
-
-      setLoading(false);
-    });
-  }, [themeId]);
+    if (questionsQuery.data.data.length < 5) {
+      setTextAlert("Cadastre no mínimo 5 questões para jogar esse quiz");
+      setInformationAlert(true);
+    } else {
+      // Tenta iniciar em tela cheia (pode ser bloqueado sem gesto do usuário;
+      // nesse caso o botão no canto superior esquerdo permite ativar).
+      containerRef.current?.requestFullscreen?.().catch(() => {});
+    }
+  }, [questionsQuery.data]);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -179,11 +172,11 @@ const Quiz = () => {
     questionId: number,
     alternativeId: number
   ) {
-    const response = await responseService.insertResponse(
-      uuid,
-      questionId,
-      alternativeId
-    );
+    const response = await insertResponseMutation.mutateAsync({
+      idUser: uuid,
+      idQuestion: questionId,
+      idAlternative: alternativeId,
+    });
     if (!response.success) {
       console.log("Usuário está jogando sem salvar suas respostas");
     }

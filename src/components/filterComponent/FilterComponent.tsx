@@ -8,7 +8,10 @@ import {
   Stack,
 } from "@mui/material";
 import { BsCalendar } from "react-icons/bs";
-import { ResponseService } from "../../service/ResponseService";
+import {
+  useThemeNamesByCreatorQuery,
+  useUsernamesByCreatorQuery,
+} from "../../query/useResponseQueries";
 import { getStoredUser } from "../../util/storage";
 import "./FilterComponent.css";
 
@@ -28,11 +31,19 @@ const FilterComponent = ({ onData }: FilterComponentProps) => {
   const [finalDate, setFinalDate] = useState("");
   const [username, setUsername] = useState("");
   const [themeName, setThemeName] = useState("");
-  const [usernamesList, setUsernameList] = useState<{ username: string }[]>([]);
-  const [themesList, setThemesList] = useState<{ themeName: string }[]>([]);
   const [showFilterPerDate, setFilterPerDate] = useState(false);
 
-  const responseService = new ResponseService();
+  const { uuid: creatorId } = getStoredUser();
+  // Cacheados pelo React Query: buscados uma vez (ao ganhar foco) e
+  // reaproveitados nas próximas aberturas do autocomplete.
+  const usernamesQuery = useUsernamesByCreatorQuery(creatorId);
+  const themeNamesQuery = useThemeNamesByCreatorQuery(creatorId);
+  const usernamesList = usernamesQuery.data?.success
+    ? usernamesQuery.data.data || []
+    : [];
+  const themesList = themeNamesQuery.data?.success
+    ? themeNamesQuery.data.data || []
+    : [];
 
   const handleFilter = () => {
     onData({
@@ -51,28 +62,6 @@ const FilterComponent = ({ onData }: FilterComponentProps) => {
     onData({ currentDate: "", finalDate: "", username: "", themeName: "" });
   };
 
-  const fetchUsernames = async () => {
-    const { uuid: creatorId } = getStoredUser();
-
-    const response = await responseService.findUsernamesByCreator(creatorId);
-    if (response.success) {
-      setUsernameList(response.data || []);
-    } else {
-      console.error(response.message);
-    }
-  };
-
-  const fetchThemeNames = async () => {
-    const { uuid: creatorId } = getStoredUser();
-
-    const response = await responseService.findThemeNamesByCreator(creatorId);
-    if (response.success) {
-      setThemesList(response.data || []);
-    } else {
-      console.error(response.message);
-    }
-  };
-
   return (
     <div className="filter-container">
       <Stack direction={{ xs: "column", md: "row" }} spacing={3}>
@@ -83,7 +72,7 @@ const FilterComponent = ({ onData }: FilterComponentProps) => {
           options={usernamesList.map((data) => data.username)}
           inputValue={username}
           onInputChange={(_e, newValue) => setUsername(newValue)}
-          onFocus={fetchUsernames}
+          onFocus={() => usernamesQuery.refetch()}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -100,7 +89,7 @@ const FilterComponent = ({ onData }: FilterComponentProps) => {
           options={themesList.map((data) => data.themeName)}
           inputValue={themeName}
           onInputChange={(_e, newValue) => setThemeName(newValue)}
-          onFocus={fetchThemeNames}
+          onFocus={() => themeNamesQuery.refetch()}
           renderInput={(params) => (
             <TextField {...params} label="Tema" placeholder="Digite o nome do tema" />
           )}

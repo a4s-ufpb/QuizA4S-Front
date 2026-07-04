@@ -23,11 +23,16 @@ export interface Page<T> {
   totalPages: number;
 }
 
+export type Role = "ADMIN" | "USER";
+
 export interface User {
   uuid: string;
   name: string;
   email: string;
+  role?: Role;
 }
+
+export type GameMode = "SINGLE_PLAYER" | "MULTIPLAYER";
 
 export interface Theme {
   id: number;

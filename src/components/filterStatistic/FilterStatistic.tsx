@@ -8,7 +8,10 @@ import {
   Stack,
 } from "@mui/material";
 import { BsCalendar } from "react-icons/bs";
-import { StatisticService } from "../../service/StatisticService";
+import {
+  useDistinctStudentNameByCreatorIdQuery,
+  useDistinctThemeNameByCreatorIdQuery,
+} from "../../query/useStatisticQueries";
 import { getStoredUser } from "../../util/storage";
 import "./FilterStatistic.css";
 
@@ -28,15 +31,17 @@ const FilterStatistic = ({ onFilter }: FilterStatisticProps) => {
   const [themeName, setThemeName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [studentNameList, setStudentNameList] = useState<
-    { studentName: string }[]
-  >([]);
-  const [themeNameList, setThemeNameList] = useState<{ themeName: string }[]>(
-    []
-  );
   const [showFilterPerDate, setFilterPerDate] = useState(false);
 
-  const statisticService = new StatisticService();
+  const { uuid: creatorId } = getStoredUser();
+  const studentNamesQuery = useDistinctStudentNameByCreatorIdQuery(creatorId);
+  const themeNamesQuery = useDistinctThemeNameByCreatorIdQuery(creatorId);
+  const studentNameList = studentNamesQuery.data?.success
+    ? studentNamesQuery.data.data || []
+    : [];
+  const themeNameList = themeNamesQuery.data?.success
+    ? themeNamesQuery.data.data || []
+    : [];
 
   const handleFilter = () => {
     onFilter({
@@ -55,30 +60,6 @@ const FilterStatistic = ({ onFilter }: FilterStatisticProps) => {
     onFilter({ studentName: "", themeName: "", startDate: "", endDate: "" });
   };
 
-  const fetchDistinctStudentNames = async () => {
-    const { uuid: creatorId } = getStoredUser();
-
-    const response =
-      await statisticService.findDistinctStudentNameByCreatorId(creatorId);
-    if (response.success) {
-      setStudentNameList(response.data || []);
-    } else {
-      console.error(response.message);
-    }
-  };
-
-  const fetchDistinctThemeNames = async () => {
-    const { uuid: creatorId } = getStoredUser();
-
-    const response =
-      await statisticService.findDistinctThemeNameByCreatorId(creatorId);
-    if (response.success) {
-      setThemeNameList(response.data || []);
-    } else {
-      console.error(response.message);
-    }
-  };
-
   return (
     <div className="filter-container">
       <Stack direction={{ xs: "column", md: "row" }} spacing={3}>
@@ -89,7 +70,7 @@ const FilterStatistic = ({ onFilter }: FilterStatisticProps) => {
           options={studentNameList.map((data) => data.studentName)}
           inputValue={studentName}
           onInputChange={(_e, newValue) => setStudentName(newValue)}
-          onFocus={fetchDistinctStudentNames}
+          onFocus={() => studentNamesQuery.refetch()}
           renderInput={(params) => (
             <TextField {...params} label="Usuário" placeholder="Nome do Usuário" />
           )}
@@ -102,7 +83,7 @@ const FilterStatistic = ({ onFilter }: FilterStatisticProps) => {
           options={themeNameList.map((data) => data.themeName)}
           inputValue={themeName}
           onInputChange={(_e, newValue) => setThemeName(newValue)}
-          onFocus={fetchDistinctThemeNames}
+          onFocus={() => themeNamesQuery.refetch()}
           renderInput={(params) => (
             <TextField {...params} label="Tema" placeholder="Tema" />
           )}

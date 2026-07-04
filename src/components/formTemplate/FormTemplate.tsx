@@ -15,7 +15,10 @@ import { AuthenticationContext } from "../../context/AuthenticationContext";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { object, string } from "yup";
-import { UserService } from "../../service/UserService";
+import {
+  useLoginUserMutation,
+  useRegisterUserMutation,
+} from "../../query/useUserQueries";
 import type { ApiResult, AuthResponse, FormField } from "../../types";
 
 interface FormTemplateProps {
@@ -47,7 +50,8 @@ const FormTemplate = ({
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setAuthenticated } = useContext(AuthenticationContext);
-  const userService = new UserService();
+  const registerUserMutation = useRegisterUserMutation();
+  const loginUserMutation = useLoginUserMutation();
 
   const handleSubmit: SubmitHandler<FormValues> = async (formData) => {
     if (isInvalidPassword(formData)) return;
@@ -56,17 +60,17 @@ const FormTemplate = ({
 
     let response: ApiResult<AuthResponse>;
     if (isRegister) {
-      response = (await userService.registerUser(
+      response = (await registerUserMutation.mutateAsync(
         formData
       )) as unknown as ApiResult<AuthResponse>;
       if (response.success) {
-        response = await userService.loginUser({
+        response = await loginUserMutation.mutateAsync({
           email: formData.email,
           password: formData.password,
         });
       }
     } else {
-      response = await userService.loginUser(formData);
+      response = await loginUserMutation.mutateAsync(formData);
     }
 
     handleResponse(response);

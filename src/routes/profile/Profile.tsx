@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Card,
@@ -18,10 +18,15 @@ import ConfirmBox from "../../components/confirmBox/ConfirmBox";
 import UpdateBox from "../../components/updateBox/UpdateBox";
 import MyStatistics from "./myStatisticPerResponse/MyStatistics";
 import MyStatisticConclusion from "./myStatisticPerConclusion/MyStatisticConclusion";
-import { UserService } from "./../../service/UserService";
 import { useNavigate } from "react-router-dom";
 import Users from "./users/Users";
 import { getStoredUser } from "../../util/storage";
+import {
+  useIsAdminQuery,
+  useRemoveUserMutation,
+  useUpdatePasswordMutation,
+  useUpdateUserMutation,
+} from "../../query/useUserQueries";
 import type { InformationData } from "../../types";
 
 interface PasswordValidation {
@@ -31,7 +36,9 @@ interface PasswordValidation {
 
 const Profile = () => {
   const { uuid, name, email } = getStoredUser();
-  const userService = new UserService();
+  const updateUserMutation = useUpdateUserMutation();
+  const removeUserMutation = useRemoveUserMutation();
+  const updatePasswordMutation = useUpdatePasswordMutation();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
@@ -44,7 +51,8 @@ const Profile = () => {
     icon: "",
     color: "",
   });
-  const [isAdmin, setIsAdmin] = useState(false);
+  const isAdminQuery = useIsAdminQuery(uuid);
+  const isAdmin = isAdminQuery.data?.data.isAdmin ?? false;
   const [currentItem, setCurrentItem] = useState(0);
 
   const confirmBoxData = {
@@ -78,16 +86,6 @@ const Profile = () => {
     },
     ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 5 }] : []),
   ];
-
-  useEffect(() => {
-    async function verifyUserAdmin() {
-      const response = await userService.validateIfUserIsAdmin(uuid);
-      if (response.data.isAdmin) {
-        setIsAdmin(true);
-      }
-    }
-    verifyUserAdmin();
-  }, []);
 
   const [newName, setNewName] = useState("");
   const updateBoxData = {
@@ -152,7 +150,10 @@ const Profile = () => {
 
   async function updateAccount() {
     setLoading(true);
-    const response = await userService.updateUser(uuid, userUpdate);
+    const response = await updateUserMutation.mutateAsync({
+      userId: uuid,
+      userUpdate,
+    });
     if (!response.success) {
       activeInformationBox(true, response.message);
       setLoading(false);
@@ -169,7 +170,7 @@ const Profile = () => {
 
   async function removeAccount() {
     setLoading(true);
-    const response = await userService.removeUser(uuid);
+    const response = await removeUserMutation.mutateAsync({ userId: uuid });
     setLoading(false);
     if (!response.success) {
       setInformationData((prevData) => ({
@@ -188,7 +189,10 @@ const Profile = () => {
       return;
     }
     setLoading(true);
-    const response = await userService.updatePassword(uuid, userPassword);
+    const response = await updatePasswordMutation.mutateAsync({
+      userId: uuid,
+      userPassword,
+    });
     if (!response.success) {
       activeInformationBox(true, response.message);
       setLoading(false);

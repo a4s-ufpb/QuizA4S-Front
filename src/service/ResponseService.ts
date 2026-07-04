@@ -1,5 +1,6 @@
 import { BaseService } from "./BaseService";
 import type {
+  GameMode,
   MySummary,
   Page,
   ResponseItem,
@@ -14,6 +15,16 @@ export class ResponseService extends BaseService {
     );
   }
 
+  insertMultiplayerResponses(
+    items: { questionId: number; alternativeId: number }[]
+  ) {
+    return this.handleRequest<ResponseItem[]>(
+      "post",
+      "/response/multiplayer/batch",
+      items
+    );
+  }
+
   findResponsesByUser(currentPage: number) {
     return this.handleRequest<Page<ResponseItem>>(
       "get",
@@ -25,18 +36,24 @@ export class ResponseService extends BaseService {
     currentPage: number,
     themeName: string,
     startDate: string,
-    endDate: string
+    endDate: string,
+    gameMode: GameMode = "SINGLE_PLAYER"
   ) {
     return this.handleRequest<Page<ResponseItem>>(
       "get",
-      `/response/user?page=${currentPage}&theme=${themeName}&startDate=${startDate}&endDate=${endDate}`
+      `/response/user?page=${currentPage}&theme=${themeName}&startDate=${startDate}&endDate=${endDate}&gameMode=${gameMode}`
     );
   }
 
-  findMySummary(themeName: string, startDate: string, endDate: string) {
+  findMySummary(
+    themeName: string,
+    startDate: string,
+    endDate: string,
+    gameMode: GameMode = "SINGLE_PLAYER"
+  ) {
     return this.handleRequest<MySummary>(
       "get",
-      `/response/user/summary?theme=${themeName}&startDate=${startDate}&endDate=${endDate}`
+      `/response/user/summary?theme=${themeName}&startDate=${startDate}&endDate=${endDate}&gameMode=${gameMode}`
     );
   }
 
@@ -52,11 +69,12 @@ export class ResponseService extends BaseService {
     username: string,
     themeName: string,
     currentDate: string,
-    finalDate: string
+    finalDate: string,
+    gameMode: GameMode = "SINGLE_PLAYER"
   ) {
     return this.handleRequest<Page<ResponseItem>>(
       "get",
-      `/response/query?page=${currentPage}&username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}`
+      `/response/query?page=${currentPage}&username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}&gameMode=${gameMode}`
     );
   }
 
@@ -64,18 +82,23 @@ export class ResponseService extends BaseService {
     username: string,
     themeName: string,
     currentDate: string,
-    finalDate: string
+    finalDate: string,
+    gameMode: GameMode = "SINGLE_PLAYER"
   ) {
     return this.handleRequest<ResponseItem[]>(
       "get",
-      `/response/query/chart?username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}`
+      `/response/query/chart?username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}&gameMode=${gameMode}`
     );
   }
 
-  findResponsesStatistics(themeName: string, userId: string) {
+  findResponsesStatistics(
+    themeName: string,
+    userId: string,
+    gameMode: GameMode = "SINGLE_PLAYER"
+  ) {
     return this.handleRequest<ResponseStatistic[]>(
       "get",
-      `/response/statistic/${themeName}/${userId}`
+      `/response/statistic/${themeName}/${userId}?gameMode=${gameMode}`
     );
   }
 

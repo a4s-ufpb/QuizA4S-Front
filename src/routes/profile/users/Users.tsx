@@ -1,64 +1,46 @@
 import { useEffect, useState } from "react";
-import { UserService } from "../../../service/UserService";
+import { Box } from "@mui/material";
+import { useAllUsersQuery } from "../../../query/useUserQueries";
 import Loading from "../../../components/loading/Loading";
 import Pagination from "../../../components/pagination/Pagination";
 import SearchComponent from "../../../components/searchComponent/SearchComponent";
 
-import "./Users.css";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
 import UserTemplate from "../../../components/userTemplate/UserTemplate";
 import { getStoredUser } from "../../../util/storage";
 import type { User } from "../../../types";
 
 function Users() {
-  const userService = new UserService();
-  const [users, setUsers] = useState<User[]>([]);
-
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [callBack, setCallBack] = useState<object>({});
-
-  const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
 
   const [userName, setUserName] = useState("");
 
   const { uuid: userId } = getStoredUser();
 
-  async function fetchData() {
-    try {
-      setLoading(true);
-      const response = await userService.findAllUsers(
-        userId,
-        currentPage,
-        userName
-      );
+  const usersQuery = useAllUsersQuery(userId, currentPage, userName);
+  const loading = usersQuery.isLoading;
 
-      if (!response.success) {
-        setUsers([]);
-        setTotalPages(0);
-        return;
-      }
+  useEffect(() => {
+    if (!usersQuery.data) return;
 
-      setUsers(response.data.content);
-      setTotalPages(response.data.totalPages);
-    } catch (error) {
+    if (!usersQuery.data.success) {
       setUsers([]);
       setTotalPages(0);
-    } finally {
-      setLoading(false);
+      return;
     }
-  }
+
+    setUsers(usersQuery.data.data.content);
+    setTotalPages(usersQuery.data.data.totalPages);
+  }, [usersQuery.data]);
 
   function changeName(propsChangeName: string) {
     setUserName(propsChangeName);
   }
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, callBack]);
-
   return (
-    <div className="container-external-users">
+    <Box sx={{ py: 4 }}>
       <SearchComponent
         title=""
         placeholder="Digite o nome de um usuário"
@@ -73,7 +55,6 @@ function Users() {
         users={users}
         setUsers={setUsers}
         setCurrentPage={setCurrentPage}
-        setCallBack={setCallBack}
       />
 
       <Pagination
@@ -87,7 +68,7 @@ function Users() {
       {!loading && users.length == 0 && (
         <NotFoundComponent title="Nenhum usuário cadastrado" />
       )}
-    </div>
+    </Box>
   );
 }
 

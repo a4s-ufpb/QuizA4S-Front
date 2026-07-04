@@ -13,11 +13,9 @@ import {
   Box,
 } from "@mui/material";
 import Loading from "../loading/Loading";
-import { useEffect, useState } from "react";
-import { ScoreService } from "../../service/ScoreService";
+import { useRankingByThemeQuery } from "../../query/useScoreQueries";
 import NotFoundComponent from "../notFound/NotFoundComponent";
 import { getStoredTheme } from "../../util/storage";
-import type { Score } from "../../types";
 import "./Ranking.css";
 
 interface RankingProps {
@@ -26,32 +24,14 @@ interface RankingProps {
 }
 
 const Ranking = ({ navigatePath, setShowRanking }: RankingProps) => {
-  const scoreService = new ScoreService();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
 
-  const { name: themeName } = getStoredTheme();
+  const { id: themeId, name: themeName } = getStoredTheme();
 
-  const [ranking, setRanking] = useState<Score[]>([]);
-  const [isNotFound, setNotFound] = useState(false);
-
-  useEffect(() => {
-    async function fetchData() {
-      const { id: themeId } = getStoredTheme();
-
-      setLoading(true);
-      const response = await scoreService.findRankingByTheme(themeId);
-      setLoading(false);
-
-      if (!response.success) {
-        setNotFound(true);
-        return;
-      }
-
-      setRanking(response.data);
-    }
-    fetchData();
-  }, []);
+  const rankingQuery = useRankingByThemeQuery(themeId);
+  const loading = rankingQuery.isLoading;
+  const ranking = rankingQuery.data?.success ? rankingQuery.data.data : [];
+  const isNotFound = rankingQuery.isSuccess && !rankingQuery.data.success;
 
   function closeRanking() {
     setShowRanking(false); // muda o estado do ranking

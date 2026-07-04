@@ -3,25 +3,21 @@ import Pagination from "../../../components/pagination/Pagination";
 import Theme from "../../../components/theme/Theme";
 import Loading from "../../../components/loading/Loading";
 import SearchComponent from "../../../components/searchComponent/SearchComponent";
-import { ThemeService } from "../../../service/ThemeService";
-import { UserService } from "../../../service/UserService";
+import { useIsAdminQuery } from "../../../query/useUserQueries";
+import {
+  useAllThemesQuery,
+  useThemesByCreatorQuery,
+} from "../../../query/useThemeQueries";
 import { getStoredUser } from "../../../util/storage";
 import type { Theme as ThemeModel } from "../../../types";
 
 import "./MyTheme.css";
 
 const MyTheme = () => {
-  const themeService = new ThemeService();
-  const userService = new UserService();
-
-  const [loading, setLoading] = useState(false);
-
+  const [currentPage, setCurrentPage] = useState(0);
+  const [themeName, setThemeName] = useState("");
   const [themes, setThemes] = useState<ThemeModel[]>([]);
   const [totalPages, setTotalPages] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [callBack, setCallBack] = useState<object>({});
-
-  const [themeName, setThemeName] = useState("");
 
   function changeName(propsThemeName: string) {
     setThemeName(propsThemeName);
@@ -29,41 +25,35 @@ const MyTheme = () => {
 
   const { uuid: userId } = getStoredUser();
 
-  async function fetchData() {
-    setLoading(true);
+  const isAdminQuery = useIsAdminQuery(userId);
+  const isAdmin = isAdminQuery.data?.data.isAdmin ?? false;
+  const isAdminKnown = isAdminQuery.isSuccess;
 
-    try {
-      const validateUser = await userService.validateIfUserIsAdmin(userId);
-      const isAdmin = validateUser.data.isAdmin;
+  const allThemesQuery = useAllThemesQuery(
+    themeName,
+    currentPage,
+    isAdminKnown && isAdmin
+  );
+  const creatorThemesQuery = useThemesByCreatorQuery(
+    themeName,
+    currentPage,
+    isAdminKnown && !isAdmin
+  );
 
-      const fetchThemes = isAdmin
-        ? themeService.findAllThemes(themeName, currentPage)
-        : themeService.findThemesByCreator(themeName, currentPage);
+  const activeQuery = isAdmin ? allThemesQuery : creatorThemesQuery;
+  const loading = isAdminQuery.isLoading || activeQuery.isLoading;
 
-      const response = await fetchThemes;
-
-      if (!response.success) {
-        handleNoThemes();
-        return;
-      }
-
-      setTotalPages(response.data.totalPages || 0);
-      setThemes(response.data.content || []);
-    } catch (error) {
-      handleNoThemes();
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handleNoThemes() {
-    setTotalPages(0);
-    setThemes([]);
-  }
-
+  // A busca em texto (SearchComponent) já traz o resultado pronto da API e
+  // sobrescreve `themes` diretamente; fora isso, `themes` reflete a query.
   useEffect(() => {
-    fetchData();
-  }, [currentPage, callBack]);
+    if (activeQuery.data?.success) {
+      setThemes(activeQuery.data.data.content || []);
+      setTotalPages(activeQuery.data.data.totalPages || 0);
+    } else if (activeQuery.data && !activeQuery.data.success) {
+      setThemes([]);
+      setTotalPages(0);
+    }
+  }, [activeQuery.data]);
 
   return (
     <div className="container-my-theme">
@@ -76,12 +66,7 @@ const MyTheme = () => {
         onSearch={changeName}
       />
 
-      <Theme
-        themes={themes}
-        setThemes={setThemes}
-        setCurrentPage={setCurrentPage}
-        setCallBack={setCallBack}
-      />
+      <Theme themes={themes} setThemes={setThemes} setCurrentPage={setCurrentPage} />
 
       <Pagination
         totalPages={totalPages}
