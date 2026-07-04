@@ -128,13 +128,16 @@ const GamePlay = ({ room }: GamePlayProps) => {
   return (
     <div className="mp-quiz-external">
       {feedback && <FeedbackBox title={feedback.message} color={feedback.color} />}
-      <Container sx={{ py: 4 }}>
+      <Container
+        sx={{ py: 4, display: "flex", flexDirection: "column", minHeight: "100dvh" }}
+      >
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           mb: 2,
+          flex: "0 0 auto",
         }}
       >
         <Typography color="text.secondary">
@@ -150,7 +153,7 @@ const GamePlay = ({ room }: GamePlayProps) => {
         <LinearProgress
           variant="determinate"
           value={(remaining / question.timeSeconds) * 100}
-          sx={{ mb: 3 }}
+          sx={{ mb: 3, flex: "0 0 auto" }}
         />
       )}
 
@@ -160,12 +163,37 @@ const GamePlay = ({ room }: GamePlayProps) => {
             key={question.index}
             elevation={2}
             className="mp-fade-in mp-question-card"
-            sx={{ mb: 4 }}
+            sx={{
+              mb: 3,
+              flex: questionImages.length > 0 ? 1 : "0 0 auto",
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+            }}
           >
-            <CardContent sx={{ textAlign: "center" }}>
-              <Typography variant="h5">{question.title}</Typography>
+            <CardContent
+              sx={{
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
+                minHeight: 0,
+                width: "100%",
+              }}
+            >
+              <Typography variant="h5" sx={{ flex: "0 0 auto" }}>
+                {question.title}
+              </Typography>
               {questionImages.length > 0 && (
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                <Box
+                  sx={{
+                    flex: 1,
+                    minHeight: 0,
+                    display: "flex",
+                    justifyContent: "center",
+                    mt: 2,
+                  }}
+                >
                   <QuestionImageGallery
                     images={questionImages}
                     className="question-image"
@@ -180,6 +208,7 @@ const GamePlay = ({ room }: GamePlayProps) => {
               display: "grid",
               gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
               gap: 2,
+              flex: "0 0 auto",
             }}
           >
             {question.alternatives.map((alt, i) => {

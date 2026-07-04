@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Alert,
@@ -12,12 +12,20 @@ import {
   Divider,
   IconButton,
   Link as MuiLink,
+  Modal,
   Radio,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
-import { BsTrash, BsChevronUp, BsChevronDown, BsXLg } from "react-icons/bs";
+import {
+  BsTrash,
+  BsChevronUp,
+  BsChevronDown,
+  BsXLg,
+  BsCloudUpload,
+  BsEye,
+} from "react-icons/bs";
 import { DEFAULT_IMG } from "../../vite-env";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
@@ -60,6 +68,16 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
+function isValidImageUrl(url: string): boolean {
+  if (!url) return true;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 const CreateQuestions = () => {
   const questionService = new QuestionService();
   const alternativeService = new AlternativeService();
@@ -96,6 +114,14 @@ const CreateQuestions = () => {
     ...ALL_IMAGE_SLOTS,
   ]);
 
+  const [uploadedFileNames, setUploadedFileNames] = useState<{
+    IMAGE_1?: string;
+    IMAGE_2?: string;
+  }>({});
+
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+
   const [alternatives, setAlternatives] = useState<Alternative[]>([
     { text: "", correct: false },
     { text: "", correct: false },
@@ -114,6 +140,11 @@ const CreateQuestions = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!isValidImageUrl(question.imageUrl)) {
+      activeInformationBox(true, "Insira uma URL de imagem válida");
+      return;
+    }
 
     if (editingQuestion) {
       updateQuestionAndAlternatives();
@@ -234,6 +265,7 @@ const CreateQuestions = () => {
       (slot) => !orderFromField.includes(slot)
     );
     setImagesOrder([...orderFromField, ...missingSlots]);
+    setUploadedFileNames({});
 
     const questionAlternatives = questionToEdit.alternatives ?? [];
     setAlternatives(
@@ -269,6 +301,7 @@ const CreateQuestions = () => {
       imageBase64Two: "",
     });
     setImagesOrder([...ALL_IMAGE_SLOTS]);
+    setUploadedFileNames({});
 
     setAlternatives([
       { text: "", correct: false },
@@ -324,9 +357,8 @@ const CreateQuestions = () => {
     setSearchImage(false);
   }
 
-  async function handleImagesUpload(e: ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []).slice(0, MAX_UPLOAD_IMAGES);
-    e.target.value = "";
+  async function processImageFiles(fileList: File[]) {
+    const files = fileList.slice(0, MAX_UPLOAD_IMAGES);
 
     if (files.length === 0) return;
 
@@ -352,6 +384,25 @@ const CreateQuestions = () => {
       imageBase64One: dataUrls[0] ?? "",
       imageBase64Two: dataUrls[1] ?? "",
     }));
+    setUploadedFileNames({
+      IMAGE_1: files[0]?.name,
+      IMAGE_2: files[1]?.name,
+    });
+  }
+
+  function handleImagesUpload(e: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    processImageFiles(files);
+  }
+
+  function handleImagesDrop(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDraggingOver(false);
+    const files = Array.from(e.dataTransfer.files ?? []).filter((file) =>
+      file.type.startsWith("image/")
+    );
+    processImageFiles(files);
   }
 
   function removeImage(slot: ImageSlotKey) {
@@ -364,6 +415,7 @@ const CreateQuestions = () => {
       ...prevQuestion,
       [slot === "IMAGE_1" ? "imageBase64One" : "imageBase64Two"]: "",
     }));
+    setUploadedFileNames((prev) => ({ ...prev, [slot]: undefined }));
   }
 
   function moveImage(slot: ImageSlotKey, direction: -1 | 1) {
@@ -500,14 +552,44 @@ const CreateQuestions = () => {
                   value={question.imageUrl}
                   onChange={(e) => changeQuestion("imageUrl", e.target.value)}
                   fullWidth
+                  error={!isValidImageUrl(question.imageUrl)}
+                  helperText={
+                    isValidImageUrl(question.imageUrl)
+                      ? " "
+                      : "Insira uma URL válida (ex: https://exemplo.com/imagem.png)"
+                  }
                   slotProps={{ htmlInput: { maxLength: 255 } }}
                 />
 
-                <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }} useFlexGap>
-                  <Button variant="outlined" onClick={() => setSearchImage(true)}>
-                    Pesquisar imagem na web
-                  </Button>
-                  <Button variant="outlined" component="label">
+                <Button variant="outlined" onClick={() => setSearchImage(true)}>
+                  Pesquisar imagem na web
+                </Button>
+
+                <Box
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDraggingOver(true);
+                  }}
+                  onDragLeave={() => setIsDraggingOver(false)}
+                  onDrop={handleImagesDrop}
+                  sx={{
+                    border: "2px dashed",
+                    borderColor: isDraggingOver ? "primary.main" : "divider",
+                    borderRadius: 2,
+                    p: 2,
+                    textAlign: "center",
+                    bgcolor: isDraggingOver ? "action.hover" : "transparent",
+                    transition: "background-color 0.15s ease, border-color 0.15s ease",
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Arraste e solte imagens aqui ou faça upload
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<BsCloudUpload />}
+                  >
                     Fazer upload de imagens (até 2)
                     <input
                       type="file"
@@ -517,7 +599,8 @@ const CreateQuestions = () => {
                       hidden
                     />
                   </Button>
-                </Stack>
+                </Box>
+
                 <Typography variant="caption" color="text.secondary">
                   Cada imagem enviada pode ter no máximo 2MB (total de 4MB). Você
                   pode combinar um link de imagem com até 2 uploads (3 imagens no
@@ -530,44 +613,68 @@ const CreateQuestions = () => {
                       Ordem das imagens na tela do quiz
                     </Typography>
                     <Stack spacing={1}>
-                      {presentImageSlots.map((slot, index) => (
-                        <Stack
-                          key={slot}
-                          direction="row"
-                          spacing={1.5}
-                          sx={{ alignItems: "center" }}
-                        >
-                          <Avatar
-                            src={getQuestionImageBySlot(question, slot)}
-                            variant="rounded"
-                            sx={{ width: 48, height: 48 }}
-                          />
-                          <Typography variant="body2" sx={{ flexGrow: 1 }}>
-                            {index + 1}º - {IMAGE_SLOT_LABELS[slot]}
-                          </Typography>
-                          <IconButton
-                            size="small"
-                            disabled={index === 0}
-                            onClick={() => moveImage(slot, -1)}
+                      {presentImageSlots.map((slot, index) => {
+                        const imageSrc = getQuestionImageBySlot(question, slot);
+                        const label =
+                          slot === "URL"
+                            ? IMAGE_SLOT_LABELS[slot]
+                            : uploadedFileNames[slot] ?? IMAGE_SLOT_LABELS[slot];
+                        return (
+                          <Stack
+                            key={slot}
+                            direction="row"
+                            spacing={1.5}
+                            sx={{ alignItems: "center" }}
                           >
-                            <BsChevronUp />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            disabled={index === presentImageSlots.length - 1}
-                            onClick={() => moveImage(slot, 1)}
-                          >
-                            <BsChevronDown />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => removeImage(slot)}
-                          >
-                            <BsXLg />
-                          </IconButton>
-                        </Stack>
-                      ))}
+                            <Avatar
+                              src={imageSrc}
+                              variant="rounded"
+                              sx={{ width: 48, height: 48 }}
+                            />
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                flexGrow: 1,
+                                minWidth: 0,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                              title={label}
+                            >
+                              {index + 1}º - {label}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              disabled={index === 0}
+                              onClick={() => moveImage(slot, -1)}
+                            >
+                              <BsChevronUp />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              disabled={index === presentImageSlots.length - 1}
+                              onClick={() => moveImage(slot, 1)}
+                            >
+                              <BsChevronDown />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => imageSrc && setPreviewImage(imageSrc)}
+                              title="Visualizar imagem"
+                            >
+                              <BsEye />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => removeImage(slot)}
+                            >
+                              <BsXLg />
+                            </IconButton>
+                          </Stack>
+                        );
+                      })}
                     </Stack>
                   </Box>
                 )}
@@ -649,6 +756,34 @@ const CreateQuestions = () => {
           getUrlOfImage={getUrlOfImage}
         />
       )}
+      <Modal open={Boolean(previewImage)} onClose={() => setPreviewImage(null)}>
+        <Box
+          onClick={() => setPreviewImage(null)}
+          sx={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            outline: "none",
+          }}
+        >
+          {previewImage && (
+            <Box
+              component="img"
+              src={previewImage}
+              alt="Pré-visualização"
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                maxWidth: "90vw",
+                maxHeight: "85vh",
+                objectFit: "contain",
+                borderRadius: 2,
+              }}
+            />
+          )}
+        </Box>
+      </Modal>
     </div>
   );
 };

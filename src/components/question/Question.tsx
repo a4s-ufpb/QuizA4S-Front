@@ -47,13 +47,18 @@ const Question = ({
 
   return (
     <div className="question">
-      <div className="question-header">
+      <div className={`question-header ${images.length === 0 ? "grow" : ""}`}>
         <p className="question-number">
           Questão {currentQuestion} de {lastQuestion}
         </p>
         <h1 className="question-title">{title}</h1>
-        <QuestionImageGallery images={images} className="question-image" />
       </div>
+
+      {images.length > 0 && (
+        <div className="question-image-area">
+          <QuestionImageGallery images={images} className="question-image" />
+        </div>
+      )}
 
       <ul className="alternatives">
         {alternatives &&
