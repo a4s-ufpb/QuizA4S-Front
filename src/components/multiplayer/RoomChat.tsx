@@ -41,7 +41,15 @@ const RoomChat = ({ room }: RoomChatProps) => {
   }
 
   return (
-    <Card elevation={2} sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <Card
+      elevation={2}
+      sx={{
+        height: 500,
+        maxHeight: "70vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <CardHeader title="Chat" sx={{ flexShrink: 0 }} />
       <CardContent
         sx={{
@@ -61,18 +69,41 @@ const RoomChat = ({ room }: RoomChatProps) => {
               Nenhuma mensagem ainda.
             </Typography>
           )}
-          {room.messages.map((m, i) => (
-            <Box key={i} sx={{ mb: 1 }}>
-              <strong
-                style={{
-                  color: m.playerId === room.playerId ? "#3f7fd6" : undefined,
+          {room.messages.map((m, i) => {
+            const isMine = m.playerId === room.playerId;
+            return (
+              <Box
+                key={i}
+                sx={{
+                  display: "flex",
+                  justifyContent: isMine ? "flex-end" : "flex-start",
+                  mb: 1,
                 }}
               >
-                {m.name}:
-              </strong>{" "}
-              <span>{m.content}</span>
-            </Box>
-          ))}
+                <Box
+                  sx={{
+                    maxWidth: "80%",
+                    bgcolor: isMine ? "primary.main" : "action.hover",
+                    color: isMine ? "primary.contrastText" : "text.primary",
+                    borderRadius: 2,
+                    px: 1.5,
+                    py: 0.75,
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {!isMine && (
+                    <Typography
+                      variant="caption"
+                      sx={{ display: "block", fontWeight: "bold" }}
+                    >
+                      {m.name}
+                    </Typography>
+                  )}
+                  <Typography variant="body2">{m.content}</Typography>
+                </Box>
+              </Box>
+            );
+          })}
         </Box>
         <Box component="form" onSubmit={submit} sx={{ display: "flex", gap: 1 }}>
           <IconButton
