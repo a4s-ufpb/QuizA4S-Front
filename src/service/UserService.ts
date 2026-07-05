@@ -69,4 +69,11 @@ export class UserService extends BaseService {
       `/user/admin/${userId}`
     );
   }
+
+  searchUsersByName(name: string) {
+    return this.handleRequest<User[]>(
+      "get",
+      `/user/search?name=${encodeURIComponent(name)}`
+    );
+  }
 }

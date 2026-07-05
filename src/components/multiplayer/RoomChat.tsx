@@ -19,6 +19,7 @@ interface RoomChatProps {
 }
 
 const MAX_MESSAGE_LENGTH = 50;
+const QUICK_REACTIONS = ["👍", "😂", "😮", "❤️", "😢", "🔥"];
 
 /** Chat da sala em tempo real (mensagens efêmeras). */
 const RoomChat = ({ room }: RoomChatProps) => {
@@ -106,6 +107,19 @@ const RoomChat = ({ room }: RoomChatProps) => {
               </Box>
             );
           })}
+        </Box>
+        <Box sx={{ display: "flex", gap: 0.5, mb: 1, flexWrap: "wrap" }}>
+          {QUICK_REACTIONS.map((emoji) => (
+            <IconButton
+              key={emoji}
+              size="small"
+              title={`Reagir com ${emoji}`}
+              onClick={() => room.sendChat(emoji)}
+              sx={{ fontSize: "1.2em" }}
+            >
+              {emoji}
+            </IconButton>
+          ))}
         </Box>
         <Box component="form" onSubmit={submit} sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
           <IconButton

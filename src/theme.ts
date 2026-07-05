@@ -1,38 +1,48 @@
-import { createTheme } from "@mui/material/styles";
+import { createTheme, type PaletteMode, type Theme } from "@mui/material/styles";
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#3f7fd6",
-      dark: "#0055cc",
+export function createAppTheme(mode: PaletteMode): Theme {
+  const isDark = mode === "dark";
+
+  return createTheme({
+    palette: {
+      mode,
+      primary: {
+        main: "#3f7fd6",
+        dark: "#0055cc",
+      },
+      secondary: {
+        main: "rgb(76, 76, 250)",
+      },
+      error: {
+        main: "rgb(194, 0, 0)",
+      },
+      background: {
+        default: isDark ? "#0f1620" : "#78b9f2",
+        paper: isDark ? "#1a2432" : "#ffffff",
+      },
     },
-    secondary: {
-      main: "rgb(76, 76, 250)",
+    typography: {
+      fontFamily: "'Poppins', sans-serif",
     },
-    error: {
-      main: "rgb(194, 0, 0)",
+    shape: {
+      borderRadius: 10,
     },
-    background: {
-      default: "#78b9f2",
-    },
-  },
-  typography: {
-    fontFamily: "'Poppins', sans-serif",
-  },
-  shape: {
-    borderRadius: 10,
-  },
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          minHeight: "100dvh",
-          background: "linear-gradient(160deg, #78b9f2 0%, #3f7fd6 100%)",
-          backgroundAttachment: "fixed",
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            minHeight: "100dvh",
+            background: isDark
+              ? "linear-gradient(160deg, #16202e 0%, #0a0f16 100%)"
+              : "linear-gradient(160deg, #78b9f2 0%, #3f7fd6 100%)",
+            backgroundAttachment: "fixed",
+          },
         },
       },
     },
-  },
-});
+  });
+}
+
+const theme = createAppTheme("light");
 
 export default theme;

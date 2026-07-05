@@ -2,9 +2,7 @@ import "./index.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import theme from "./theme";
+import { ThemeModeProvider } from "./context/ThemeModeContext";
 import { queryClient } from "./query/queryClient";
 import App from "./App";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -28,8 +26,7 @@ import Room from "./routes/multiplayer/Room";
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <ThemeModeProvider>
       <AuthenticationProvider>
         <BrowserRouter>
           <Routes>
@@ -94,7 +91,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           </Routes>
         </BrowserRouter>
       </AuthenticationProvider>
-    </ThemeProvider>
+    </ThemeModeProvider>
     </QueryClientProvider>
   </React.StrictMode>
 );

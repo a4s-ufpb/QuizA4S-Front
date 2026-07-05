@@ -1,10 +1,12 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo-a4s.webp";
-import { BsList } from "react-icons/bs";
+import { BsList, BsSunFill, BsMoonStarsFill } from "react-icons/bs";
+import { IconButton, Tooltip } from "@mui/material";
 
 import "./Header.css";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Menu from "../menu/Menu";
+import { ThemeModeContext } from "../../context/ThemeModeContext";
 
 interface HeaderProps {
   isAuth: boolean;
@@ -13,6 +15,7 @@ interface HeaderProps {
 const Header = ({ isAuth }: HeaderProps) => {
   const [menu, setMenu] = useState(false);
   const navigate = useNavigate();
+  const { mode, toggleMode } = useContext(ThemeModeContext);
 
   return (
     <header className="header">
@@ -64,6 +67,12 @@ const Header = ({ isAuth }: HeaderProps) => {
           </NavLink>
         )}
       </ul>
+      <Tooltip title={mode === "light" ? "Modo escuro" : "Modo claro"}>
+        <IconButton onClick={toggleMode} sx={{ color: "inherit" }}>
+          {mode === "light" ? <BsMoonStarsFill /> : <BsSunFill />}
+        </IconButton>
+      </Tooltip>
+
       {isAuth && (
         <BsList size={80} className="profile" onClick={() => setMenu(true)} />
       )}

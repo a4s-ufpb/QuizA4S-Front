@@ -9,6 +9,7 @@ import InformationBox from "../informationBox/InformationBox";
 import { HIT_VALUE, REDUCE_VALUE } from "../../vite-env";
 import { useInsertStatisticMutation } from "../../query/useStatisticQueries";
 import { getStoredTheme, getStoredUser } from "../../util/storage";
+import { generateResultImage, downloadImage } from "../../util/shareImage";
 import type { ScoreRequest, StatisticRequest } from "../../types";
 
 interface QuizFinishedProps {
@@ -16,6 +17,7 @@ interface QuizFinishedProps {
   restart: () => void;
   score: number;
   time: number;
+  total: number;
 }
 
 const QuizFinished = ({
@@ -23,6 +25,7 @@ const QuizFinished = ({
   restart,
   score,
   time,
+  total,
 }: QuizFinishedProps) => {
   const insertScoreMutation = useInsertScoreMutation();
   const insertStatisticMutation = useInsertStatisticMutation();
@@ -116,6 +119,18 @@ const QuizFinished = ({
     navigate("/theme");
   }
 
+  function handleShare() {
+    const theme = getStoredTheme();
+    const user = getStoredUser();
+    const dataUrl = generateResultImage({
+      themeName: theme.name || "Quiz",
+      playerName: user.name || "Jogador",
+      score,
+      total,
+    });
+    downloadImage(dataUrl, "quiz-a4s-resultado.png");
+  }
+
   return (
     <div className="container-quiz-finished">
       <div className="quiz-finished">
@@ -164,6 +179,9 @@ const QuizFinished = ({
         <div className="container-quiz-finished-btn">
           <button onClick={restart} className="quiz-finished-btn">
             Voltar
+          </button>
+          <button onClick={handleShare} className="quiz-finished-btn">
+            Compartilhar
           </button>
           {isAuth && (
             <button

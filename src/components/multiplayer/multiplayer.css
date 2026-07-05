@@ -142,6 +142,31 @@
   transform: scale(1.08);
 }
 
+.mp-presentation-btn {
+  left: 66px;
+}
+
+.mp-presentation-btn.active {
+  background: #3f7fd6;
+  color: #fff;
+}
+
+/* Modo apresentação: aumenta fontes/alvos de clique pra visualização em telão. */
+.mp-room.mp-presentation-mode {
+  font-size: 1.35em;
+}
+
+.mp-room.mp-presentation-mode .mp-answer-btn {
+  font-size: 1.2em;
+  padding-top: 1.5em;
+  padding-bottom: 1.5em;
+}
+
+.mp-room.mp-presentation-mode .question-title,
+.mp-room.mp-presentation-mode h1 {
+  font-size: 1.4em;
+}
+
 .mp-room {
   position: relative;
   width: 100%;

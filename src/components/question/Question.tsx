@@ -1,4 +1,4 @@
-import type { MouseEvent } from "react";
+import { useEffect, useRef, type MouseEvent } from "react";
 import "./Question.css";
 import type { Alternative, Question as QuestionModel } from "../../types";
 import QuestionImageGallery from "../questionImageGallery/QuestionImageGallery";
@@ -37,6 +37,18 @@ const Question = ({
   lastQuestion,
 }: QuestionProps) => {
   const alternativeList = ["A", "B", "C", "D", "E", "F"];
+  const alternativeRefs = useRef<(HTMLLIElement | null)[]>([]);
+
+  // Atalhos de teclado: teclas 1-6 selecionam a alternativa correspondente.
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const index = Number(e.key) - 1;
+      if (Number.isNaN(index)) return;
+      alternativeRefs.current[index]?.click();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [questionId]);
 
   const images = getOrderedQuestionImages({
     imageUrl: questionImg,
@@ -69,6 +81,9 @@ const Question = ({
           alternatives.map((alternative, index) => (
             <li
               key={alternative.id}
+              ref={(el) => {
+                alternativeRefs.current[index] = el;
+              }}
               value={String(alternative.correct)}
               onClick={(e) =>
                 onAnswerClick(e, alternative.id, questionId, creatorId)

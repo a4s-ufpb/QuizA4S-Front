@@ -1,4 +1,4 @@
-import { useContext, type Dispatch, type SetStateAction } from "react";
+import { useContext, useState, type Dispatch, type SetStateAction } from "react";
 import { AuthenticationContext } from "../../context/AuthenticationContext";
 import { useNavigate } from "react-router-dom";
 import {
@@ -11,8 +11,10 @@ import {
   BsBoxArrowRight,
   BsPersonPlusFill,
   BsBoxArrowInRight,
+  BsGearFill,
 } from "react-icons/bs";
 import { getStoredUser } from "../../util/storage";
+import SettingsModal from "../settingsModal/SettingsModal";
 
 import "./Menu.css";
 
@@ -25,6 +27,7 @@ const Menu = ({ setMenu, isAuth }: MenuProps) => {
   const { setAuthenticated } = useContext(AuthenticationContext);
   const navigate = useNavigate();
   const user = isAuth ? getStoredUser() : null;
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   function handleButtonClick(callback: () => void) {
     setMenu(false);
@@ -87,6 +90,12 @@ const Menu = ({ setMenu, isAuth }: MenuProps) => {
           </button>
           <button
             type="button"
+            onClick={() => handleButtonClick(() => setSettingsOpen(true))}
+          >
+            <BsGearFill /> Configurações
+          </button>
+          <button
+            type="button"
             className="menu-btn-logout"
             onClick={() => handleButtonClick(logout)}
           >
@@ -111,6 +120,12 @@ const Menu = ({ setMenu, isAuth }: MenuProps) => {
           </button>
           <button
             type="button"
+            onClick={() => handleButtonClick(() => setSettingsOpen(true))}
+          >
+            <BsGearFill /> Configurações
+          </button>
+          <button
+            type="button"
             onClick={() => handleButtonClick(() => navigate("/register"))}
           >
             <BsPersonPlusFill /> Cadastrar-se
@@ -123,6 +138,8 @@ const Menu = ({ setMenu, isAuth }: MenuProps) => {
           </button>
         </div>
       )}
+
+      <SettingsModal open={settingsOpen} setOpen={setSettingsOpen} />
     </div>
   );
 };

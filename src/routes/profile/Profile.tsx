@@ -7,6 +7,7 @@ import {
   Tabs,
   Tab,
   Typography,
+  LinearProgress,
 } from "@mui/material";
 import { BsPersonCircle, BsHandThumbsUpFill } from "react-icons/bs";
 import MyTheme from "./myTheme/MyTheme";
@@ -18,6 +19,9 @@ import ConfirmBox from "../../components/confirmBox/ConfirmBox";
 import UpdateBox from "../../components/updateBox/UpdateBox";
 import MyStatistics from "./myStatisticPerResponse/MyStatistics";
 import MyStatisticConclusion from "./myStatisticPerConclusion/MyStatisticConclusion";
+import MatchHistory from "./matchHistory/MatchHistory";
+import Friends from "./friends/Friends";
+import Achievements from "./achievements/Achievements";
 import { useNavigate } from "react-router-dom";
 import Users from "./users/Users";
 import { getStoredUser } from "../../util/storage";
@@ -39,6 +43,9 @@ const Profile = () => {
   const { uuid, name, email } = getStoredUser();
   const findUserQuery = useFindUserQuery();
   const likes = findUserQuery.data?.success ? findUserQuery.data.data.likes ?? 0 : 0;
+  const xp = findUserQuery.data?.success ? findUserQuery.data.data.xp ?? 0 : 0;
+  const level = findUserQuery.data?.success ? findUserQuery.data.data.level ?? 1 : 1;
+  const xpIntoLevel = xp % 100;
   const updateUserMutation = useUpdateUserMutation();
   const removeUserMutation = useRemoveUserMutation();
   const updatePasswordMutation = useUpdatePasswordMutation();
@@ -70,6 +77,9 @@ const Profile = () => {
     <MyResponse key="my-response" />,
     <MyStatistics key="my-statistics" />,
     <MyStatisticConclusion key="my-statistic-conclusion" />,
+    <MatchHistory key="match-history" />,
+    <Friends key="friends" />,
+    <Achievements key="achievements" />,
     isAdmin && <Users key="users" />,
   ];
 
@@ -87,7 +97,10 @@ const Profile = () => {
       label: "Estatísticas por Conclusão",
       index: 4,
     },
-    ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 5 }] : []),
+    { id: "btn-match-history", label: "Histórico Recente", index: 5 },
+    { id: "btn-friends", label: "Amigos", index: 6 },
+    { id: "btn-achievements", label: "Conquistas", index: 7 },
+    ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 8 }] : []),
   ];
 
   const [newName, setNewName] = useState("");
@@ -288,6 +301,19 @@ const Profile = () => {
               {name}
             </Typography>
             <Typography color="text.secondary">{email}</Typography>
+            <Box sx={{ width: "100%" }}>
+              <Typography variant="body2" sx={{ fontWeight: "bold", color: "primary.main" }}>
+                Nível {level}
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={xpIntoLevel}
+                sx={{ height: 8, borderRadius: 4 }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                {xpIntoLevel}/100 XP
+              </Typography>
+            </Box>
             <Button
               variant="outlined"
               sx={{ width: "75%", borderRadius: 50 }}

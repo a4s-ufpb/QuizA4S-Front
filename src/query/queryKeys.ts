@@ -76,6 +76,24 @@ export const queryKeys = {
   scores: {
     all: ["scores"] as const,
     rankingByTheme: (themeId: number) => ["scores", "ranking", themeId] as const,
+    global: (period: string, page: number) =>
+      ["scores", "global", period, page] as const,
+  },
+  friendship: {
+    all: ["friendship"] as const,
+    mine: ["friendship", "mine"] as const,
+    pending: ["friendship", "pending"] as const,
+  },
+  matchHistory: {
+    all: ["match-history"] as const,
+    mine: (page: number) => ["match-history", "mine", page] as const,
+    achievements: ["match-history", "achievements"] as const,
+  },
+  roomInvite: {
+    mine: ["room-invite", "mine"] as const,
+  },
+  userSearch: {
+    byName: (name: string) => ["users", "search", name] as const,
   },
   statistics: {
     all: ["statistics"] as const,

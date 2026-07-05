@@ -6,6 +6,7 @@ import { useContext } from "react";
 import { AuthenticationContext } from "./context/AuthenticationContext";
 import Loading from "./components/loading/Loading";
 import { useFooter } from "./hooks/useFooter";
+import RoomInviteToast from "./components/roomInviteToast/RoomInviteToast";
 
 // Css
 import "./App.css";
@@ -18,6 +19,7 @@ function App() {
     <div className="app">
       {loading && <Loading />}
       <Header isAuth={isAuthenticated} />
+      <RoomInviteToast enabled={isAuthenticated} />
       <Outlet />
       {showFooter && <Footer />}
     </div>

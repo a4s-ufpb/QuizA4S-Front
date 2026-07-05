@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Container, Alert, Button, Typography } from "@mui/material";
-import { BsArrowsFullscreen, BsFullscreenExit } from "react-icons/bs";
+import { BsArrowsFullscreen, BsFullscreenExit, BsEaselFill } from "react-icons/bs";
 import { useGameRoom } from "../../hooks/useGameRoom";
 import Loading from "../loading/Loading";
 import Lobby from "./Lobby";
@@ -19,6 +19,7 @@ const RoomConnected = ({ code, avatar }: RoomConnectedProps) => {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [presentationMode, setPresentationMode] = useState(false);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -98,7 +99,10 @@ const RoomConnected = ({ code, avatar }: RoomConnectedProps) => {
   const { status } = room.state;
 
   return (
-    <div className="mp-room" ref={containerRef}>
+    <div
+      className={`mp-room ${presentationMode ? "mp-presentation-mode" : ""}`}
+      ref={containerRef}
+    >
       {(status === "IN_QUESTION" || status === "BETWEEN") && (
         <button
           type="button"
@@ -112,6 +116,17 @@ const RoomConnected = ({ code, avatar }: RoomConnectedProps) => {
           ) : (
             <BsArrowsFullscreen size={18} />
           )}
+        </button>
+      )}
+      {(status === "IN_QUESTION" || status === "BETWEEN") && (
+        <button
+          type="button"
+          className={`mp-fullscreen-btn mp-presentation-btn ${presentationMode ? "active" : ""}`}
+          onClick={() => setPresentationMode((prev) => !prev)}
+          title={presentationMode ? "Sair do modo apresentação" : "Modo apresentação (telão)"}
+          aria-label={presentationMode ? "Sair do modo apresentação" : "Modo apresentação (telão)"}
+        >
+          <BsEaselFill size={18} />
         </button>
       )}
 

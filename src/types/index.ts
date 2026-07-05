@@ -31,6 +31,41 @@ export interface User {
   email: string;
   role?: Role;
   likes?: number;
+  xp?: number;
+  level?: number;
+}
+
+export interface FriendshipResponse {
+  id: number;
+  requester: User;
+  addressee: User;
+  status: "PENDING" | "ACCEPTED";
+}
+
+export interface MatchHistoryResponse {
+  id: number;
+  mode: "SINGLE_PLAYER" | "MULTIPLAYER";
+  themeName: string;
+  score: number;
+  total: number;
+  playedAt: string;
+}
+
+export interface AchievementResponse {
+  code: string;
+  name: string;
+  description: string;
+  unlocked: boolean;
+}
+
+export interface GlobalRankingResponse {
+  user: User;
+  totalScore: number;
+}
+
+export interface RoomInviteResponse {
+  fromName: string;
+  roomCode: string;
 }
 
 export type GameMode = "SINGLE_PLAYER" | "MULTIPLAYER";

@@ -8,11 +8,14 @@ import QuestionFinished from "../../components/quizFinished/QuizFinished";
 import { useTop10QuestionsForPlayQuery } from "../../query/useQuestionQueries";
 import { useInsertResponseMutation } from "../../query/useResponseQueries";
 import FeedbackBox from "../../components/feedbackBox/FeedbackBox";
-import { getStoredUser } from "../../util/storage";
+import { getStoredUser, getStoredTheme } from "../../util/storage";
+import { addMatchHistoryEntry } from "../../util/matchHistory";
+import { useRecordMatchMutation } from "../../query/useMatchHistoryQueries";
 import type { QuizQuestion } from "../../types";
 
 import correctSoundFile from "../../assets/sounds/alternative-success.mp3";
 import errorSoundFile from "../../assets/sounds/alternative-error.mp3";
+import { getSoundMuted, getSoundVolume } from "../../util/sound";
 
 // CSS
 import "./Quiz.css";
@@ -25,6 +28,7 @@ const Quiz = () => {
   if (!errorSoundRef.current) errorSoundRef.current = new Audio(errorSoundFile);
 
   const insertResponseMutation = useInsertResponseMutation();
+  const recordMatchMutation = useRecordMatchMutation();
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -135,17 +139,23 @@ const Quiz = () => {
       setFeedbackMessage("Parabéns, você acertou!");
       setFeedbackColor("green");
       // Play correct sound
-      correctSoundRef.current?.play().catch((error) => {
-        console.error("Error playing correct sound:", error);
-      });
+      if (!getSoundMuted() && correctSoundRef.current) {
+        correctSoundRef.current.volume = getSoundVolume();
+        correctSoundRef.current.play().catch((error) => {
+          console.error("Error playing correct sound:", error);
+        });
+      }
     } else {
       event.currentTarget.classList.add("wrong-answer");
       setFeedbackMessage("Que pena, você errou!");
       setFeedbackColor("red");
       // Play error sound
-      errorSoundRef.current?.play().catch((error) => {
-        console.error("Error playing error sound:", error);
-      });
+      if (!getSoundMuted() && errorSoundRef.current) {
+        errorSoundRef.current.volume = getSoundVolume();
+        errorSoundRef.current.play().catch((error) => {
+          console.error("Error playing error sound:", error);
+        });
+      }
     }
 
     setShowFeedback(true);
@@ -156,6 +166,22 @@ const Quiz = () => {
 
       if (currentQuestionIndex === questions.length - 1) {
         setQuizFinished(true);
+        const finalScore = isCorrect ? score + 1 : score;
+        const matchThemeName = getStoredTheme().name || "Quiz";
+        addMatchHistoryEntry({
+          mode: "SINGLE_PLAYER",
+          themeName: matchThemeName,
+          score: finalScore,
+          total: questions.length,
+        });
+        if (token) {
+          recordMatchMutation.mutate({
+            mode: "SINGLE_PLAYER",
+            themeName: matchThemeName,
+            score: finalScore,
+            total: questions.length,
+          });
+        }
         return;
       }
 
@@ -260,6 +286,7 @@ const Quiz = () => {
           restart={restart}
           score={score}
           time={time}
+          total={questions.length}
         />
       )}
     </div>

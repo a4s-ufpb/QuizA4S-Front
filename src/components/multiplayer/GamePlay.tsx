@@ -43,6 +43,7 @@ import { getOrderedQuestionImages } from "../../util/questionImages";
 import type { Question as QuestionModel } from "../../types";
 import correctSoundFile from "../../assets/sounds/alternative-success.mp3";
 import errorSoundFile from "../../assets/sounds/alternative-error.mp3";
+import { playSound } from "../../util/sound";
 import "./multiplayer.css";
 
 interface GamePlayProps {
@@ -172,8 +173,7 @@ const GamePlay = ({ room }: GamePlayProps) => {
 
     if (selectedId != null) {
       const isCorrect = result.correctAlternativeId === selectedId;
-      const sound = new Audio(isCorrect ? correctSoundFile : errorSoundFile);
-      sound.play().catch(() => {});
+      playSound(isCorrect ? correctSoundFile : errorSoundFile);
       setFeedback({
         message: isCorrect ? "Parabéns, você acertou!" : "Que pena, você errou!",
         color: isCorrect ? "green" : "red",
@@ -232,6 +232,29 @@ const GamePlay = ({ room }: GamePlayProps) => {
     },
     [selectedId, inQuestion, isSpectator, room]
   );
+
+  const canAdvance =
+    state!.status === "BETWEEN" &&
+    result != null &&
+    room.isHost &&
+    state!.config.advanceMode === "HOST";
+
+  // Atalhos de teclado: 1-6 escolhem a alternativa, espaço avança a questão (host).
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.code === "Space" && canAdvance) {
+        e.preventDefault();
+        room.next();
+        return;
+      }
+      const index = Number(e.key) - 1;
+      if (Number.isNaN(index) || !question) return;
+      const alt = question.alternatives[index];
+      if (alt) pick(alt.id);
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [canAdvance, question, pick, room]);
 
   if (!question) {
     return (

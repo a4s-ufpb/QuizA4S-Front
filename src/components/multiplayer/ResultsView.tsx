@@ -17,11 +17,15 @@ import {
   BsPersonFill,
   BsHandThumbsUp,
   BsHandThumbsUpFill,
+  BsShareFill,
 } from "react-icons/bs";
 import confetti from "canvas-confetti";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
 import { useLikeUserMutation } from "../../query/useUserQueries";
 import { getStoredUser } from "../../util/storage";
+import { addMatchHistoryEntry } from "../../util/matchHistory";
+import { useRecordMatchMutation } from "../../query/useMatchHistoryQueries";
+import { generateResultImage, downloadImage } from "../../util/shareImage";
 import "./multiplayer.css";
 
 interface ResultsViewProps {
@@ -143,6 +147,7 @@ function rankBadge(index: number) {
 /** Tela final: pódio (top 3) + ranking dos demais, com confete ao entrar. */
 const ResultsView = ({ room }: ResultsViewProps) => {
   const navigate = useNavigate();
+  const recordMatchMutation = useRecordMatchMutation();
   const state = room.state!;
   const isTeam = state.config.roomMode === "TEAM";
   // Curtir é uma ação de conta (não de equipe) — só faz sentido no modo
@@ -165,14 +170,71 @@ const ResultsView = ({ room }: ResultsViewProps) => {
         userUuid: p.userUuid,
       }));
 
+  const myRank = isTeam
+    ? teams.findIndex(
+        (t) => t.id === state.players.find((p) => p.id === room.playerId)?.teamId
+      )
+    : podiumEntries.findIndex((p) => p.isMe);
+
   useEffect(() => {
-    confetti({ particleCount: 120, spread: 90, origin: { y: 0.3 } });
+    // Cores/intensidade do confete variam conforme a posição de quem está vendo a tela.
+    const RANK_COLORS: Record<number, string[]> = {
+      0: ["#ffd700", "#fff2a8", "#ffffff"], // ouro
+      1: ["#c0c0c0", "#e8e8e8", "#ffffff"], // prata
+      2: ["#cd7f32", "#e6a86b", "#ffffff"], // bronze
+    };
+    const colors = RANK_COLORS[myRank];
+    const particleCount = myRank === 0 ? 160 : myRank === 1 ? 120 : myRank === 2 ? 100 : 70;
+
+    confetti({ particleCount, spread: 90, origin: { y: 0.3 }, colors });
     const timeout = setTimeout(() => {
-      confetti({ particleCount: 80, angle: 60, spread: 70, origin: { x: 0 } });
-      confetti({ particleCount: 80, angle: 120, spread: 70, origin: { x: 1 } });
+      confetti({ particleCount: particleCount * 0.65, angle: 60, spread: 70, origin: { x: 0 }, colors });
+      confetti({ particleCount: particleCount * 0.65, angle: 120, spread: 70, origin: { x: 1 }, colors });
     }, 250);
     return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const myScore = isTeam
+    ? (teams.find(
+        (t) => t.id === state.players.find((p) => p.id === room.playerId)?.teamId
+      )?.score ?? 0)
+    : (players.find((p) => p.id === room.playerId)?.score ?? 0);
+  const myName = isTeam
+    ? (teams.find(
+        (t) => t.id === state.players.find((p) => p.id === room.playerId)?.teamId
+      )?.name ?? "Equipe")
+    : (players.find((p) => p.id === room.playerId)?.name ?? "Jogador");
+
+  useEffect(() => {
+    const matchThemeName = state.themeName || "Multiplayer";
+    addMatchHistoryEntry({
+      mode: "MULTIPLAYER",
+      themeName: matchThemeName,
+      score: myScore,
+      total: state.totalQuestions,
+    });
+    if (getStoredUser().uuid) {
+      recordMatchMutation.mutate({
+        mode: "MULTIPLAYER",
+        themeName: matchThemeName,
+        score: myScore,
+        total: state.totalQuestions,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleShare() {
+    const dataUrl = generateResultImage({
+      themeName: state.themeName || "Multiplayer",
+      playerName: myName,
+      rank: myRank,
+      score: myScore,
+      total: state.totalQuestions,
+    });
+    downloadImage(dataUrl, "quiz-a4s-resultado.png");
+  }
 
   return (
     <Container sx={{ py: 5 }}>
@@ -181,6 +243,14 @@ const ResultsView = ({ room }: ResultsViewProps) => {
         <Typography variant="h4" sx={{ mt: 2, color: "#fff" }}>
           Fim de jogo!
         </Typography>
+        <Button
+          variant="outlined"
+          startIcon={<BsShareFill />}
+          onClick={handleShare}
+          sx={{ mt: 2, color: "#fff", borderColor: "#fff" }}
+        >
+          Compartilhar resultado
+        </Button>
       </Box>
 
       <Podium entries={podiumEntries} canLike={canLike} />
