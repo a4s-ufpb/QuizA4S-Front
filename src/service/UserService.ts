@@ -19,6 +19,10 @@ export class UserService extends BaseService {
     return this.handleRequest<User>("get", `/user/find`);
   }
 
+  likeUser(targetUserId: string) {
+    return this.handleRequest<User>("post", `/user/${targetUserId}/like`);
+  }
+
   findAllUsers(userId: string, currentPage: number, name: string) {
     return this.handleRequest<Page<User>>(
       "get",

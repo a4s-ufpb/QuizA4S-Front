@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Container,
@@ -9,10 +9,19 @@ import {
   ListItem,
   Box,
   Typography,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import { BsTrophyFill, BsPersonFill } from "react-icons/bs";
+import {
+  BsTrophyFill,
+  BsPersonFill,
+  BsHandThumbsUp,
+  BsHandThumbsUpFill,
+} from "react-icons/bs";
 import confetti from "canvas-confetti";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
+import { useLikeUserMutation } from "../../query/useUserQueries";
+import { getStoredUser } from "../../util/storage";
 import "./multiplayer.css";
 
 interface ResultsViewProps {
@@ -25,12 +34,45 @@ interface PodiumEntry {
   avatar?: string | null;
   score: number;
   isMe?: boolean;
+  userUuid?: string | null;
+}
+
+/** Botão de curtida: só pra jogadores logados, curtindo outra conta real (não convidado). */
+function LikeButton({
+  targetUserUuid,
+  canLike,
+}: {
+  targetUserUuid: string | null | undefined;
+  canLike: boolean;
+}) {
+  const likeUserMutation = useLikeUserMutation();
+  const [liked, setLiked] = useState(false);
+
+  if (!canLike || !targetUserUuid) return null;
+
+  return (
+    <Tooltip title={liked ? "Curtido!" : "Dar like"}>
+      <span>
+        <IconButton
+          size="small"
+          color="primary"
+          disabled={liked}
+          onClick={() => {
+            setLiked(true);
+            likeUserMutation.mutate(targetUserUuid);
+          }}
+        >
+          {liked ? <BsHandThumbsUpFill /> : <BsHandThumbsUp />}
+        </IconButton>
+      </span>
+    </Tooltip>
+  );
 }
 
 const PODIUM_ORDER = [1, 0, 2]; // 2º à esquerda, 1º ao centro, 3º à direita
 const PODIUM_HEIGHT: Record<number, number> = { 0: 190, 1: 145, 2: 115 };
 
-function Podium({ entries }: { entries: PodiumEntry[] }) {
+function Podium({ entries, canLike }: { entries: PodiumEntry[]; canLike: boolean }) {
   const top3 = entries.slice(0, 3);
 
   return (
@@ -75,6 +117,9 @@ function Podium({ entries }: { entries: PodiumEntry[] }) {
               {entry.isMe && " (você)"}
             </Typography>
             <Typography sx={{ color: "#fff", mb: 1 }}>{entry.score} pts</Typography>
+            {!entry.isMe && (
+              <LikeButton targetUserUuid={entry.userUuid} canLike={canLike} />
+            )}
             <Box
               className={`mp-podium-step mp-podium-${i + 1}`}
               sx={{ height: PODIUM_HEIGHT[i], width: "100%" }}
@@ -100,6 +145,9 @@ const ResultsView = ({ room }: ResultsViewProps) => {
   const navigate = useNavigate();
   const state = room.state!;
   const isTeam = state.config.roomMode === "TEAM";
+  // Curtir é uma ação de conta (não de equipe) — só faz sentido no modo
+  // individual, e só quem está logado pode curtir.
+  const canLike = !isTeam && Boolean(getStoredUser().uuid);
 
   const players = [...state.players]
     .filter((p) => !p.host || state.players.length === 1)
@@ -114,6 +162,7 @@ const ResultsView = ({ room }: ResultsViewProps) => {
         avatar: p.avatar,
         score: p.score,
         isMe: p.id === room.playerId,
+        userUuid: p.userUuid,
       }));
 
   useEffect(() => {
@@ -134,7 +183,7 @@ const ResultsView = ({ room }: ResultsViewProps) => {
         </Typography>
       </Box>
 
-      <Podium entries={podiumEntries} />
+      <Podium entries={podiumEntries} canLike={canLike} />
 
       {isTeam && teams.length > 0 && (
         <Card elevation={2} className="mp-final-scoreboard" sx={{ mb: 4 }}>
@@ -185,7 +234,12 @@ const ResultsView = ({ room }: ResultsViewProps) => {
                   {p.name}
                   {p.id === room.playerId && " (você)"}
                 </span>
-                <strong>{p.score}</strong>
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {p.id !== room.playerId && (
+                    <LikeButton targetUserUuid={p.userUuid} canLike={canLike} />
+                  )}
+                  <strong>{p.score}</strong>
+                </span>
               </ListItem>
             );
           })}

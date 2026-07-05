@@ -8,8 +8,8 @@ interface QuestionProps {
   title: string;
   questionId: number;
   questionImg?: string;
-  imageBase64One?: string;
-  imageBase64Two?: string;
+  imageOneUrl?: string;
+  imageTwoUrl?: string;
   imagesOrder?: string;
   creatorId?: string;
   alternatives?: Alternative[];
@@ -27,8 +27,8 @@ const Question = ({
   title,
   questionId,
   questionImg,
-  imageBase64One,
-  imageBase64Two,
+  imageOneUrl,
+  imageTwoUrl,
   imagesOrder,
   creatorId,
   alternatives,
@@ -40,8 +40,8 @@ const Question = ({
 
   const images = getOrderedQuestionImages({
     imageUrl: questionImg,
-    imageBase64One,
-    imageBase64Two,
+    imageOneUrl,
+    imageTwoUrl,
     imagesOrder,
   } as QuestionModel);
 

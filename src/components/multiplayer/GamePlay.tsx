@@ -9,11 +9,36 @@ import {
   LinearProgress,
   Typography,
 } from "@mui/material";
+import {
+  BsGraphUp,
+  BsGraphUpArrow,
+  BsRocketTakeoffFill,
+  BsEyeSlashFill,
+  BsTypeBold,
+  BsLightbulbFill,
+  BsArrowsMove,
+  BsCashCoin,
+} from "react-icons/bs";
+import type { IconType } from "react-icons";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
-import type { AlternativeView } from "../../types/game";
+import type { AlternativeView, QuestionPower } from "../../types/game";
+import { QUESTION_POWER_LABELS } from "../../types/game";
+
+const POWER_STYLE: Record<
+  QuestionPower,
+  { icon: IconType; color: "primary" | "secondary" | "error" | "info" | "success" | "warning" }
+> = {
+  SCORE_1_5X: { icon: BsGraphUp, color: "success" },
+  SCORE_2_0X: { icon: BsGraphUpArrow, color: "info" },
+  SCORE_2_5X: { icon: BsRocketTakeoffFill, color: "secondary" },
+  HIDE_WRONG_ALTERNATIVE: { icon: BsEyeSlashFill, color: "warning" },
+  HIDE_ALTERNATIVE_TEXTS: { icon: BsTypeBold, color: "primary" },
+  BLINK_SCREEN: { icon: BsLightbulbFill, color: "warning" },
+  SHAKE_SCREEN: { icon: BsArrowsMove, color: "error" },
+  STEAL_POINTS: { icon: BsCashCoin, color: "error" },
+};
 import QuestionImageGallery from "../questionImageGallery/QuestionImageGallery";
 import FeedbackBox from "../feedbackBox/FeedbackBox";
-import { useQuestionImagesQuery } from "../../query/useQuestionQueries";
 import { getOrderedQuestionImages } from "../../util/questionImages";
 import type { Question as QuestionModel } from "../../types";
 import correctSoundFile from "../../assets/sounds/alternative-success.mp3";
@@ -33,6 +58,8 @@ const ANSWER_COLORS = [
 
 const REVEAL_DURATION_MS = 2000;
 
+const ALTERNATIVE_LETTERS = ["A", "B", "C", "D", "E", "F"];
+
 interface AlternativesGridProps {
   alternatives: AlternativeView[];
   selectedId: number | null;
@@ -40,6 +67,7 @@ interface AlternativesGridProps {
   correctAlternativeId?: number | null;
   inQuestion: boolean;
   isSpectator: boolean;
+  hideTexts: boolean;
   onPick: (alternativeId: number) => void;
 }
 
@@ -53,6 +81,7 @@ const AlternativesGrid = memo(function AlternativesGrid({
   correctAlternativeId,
   inQuestion,
   isSpectator,
+  hideTexts,
   onPick,
 }: AlternativesGridProps) {
   return (
@@ -88,15 +117,27 @@ const AlternativesGrid = memo(function AlternativesGrid({
               justifyContent: "flex-start",
               textAlign: "left",
               py: 2,
+              // Os botões ficam `disabled` durante o reveal (resposta já
+              // enviada) — sem o override de "&.Mui-disabled" o tema aplica
+              // a opacidade/cor cinza padrão por cima e o verde/vermelho não
+              // aparece.
               ...(revealing &&
                 (isCorrect
-                  ? { bgcolor: "#5bcebf", color: "#fff" }
-                  : { bgcolor: "#d9434f", color: "#fff" })),
+                  ? {
+                      bgcolor: "#5bcebf",
+                      color: "#fff",
+                      "&.Mui-disabled": { bgcolor: "#5bcebf", color: "#fff" },
+                    }
+                  : {
+                      bgcolor: "#d9434f",
+                      color: "#fff",
+                      "&.Mui-disabled": { bgcolor: "#d9434f", color: "#fff" },
+                    })),
             }}
             disabled={selectedId != null || !inQuestion || isSpectator}
             onClick={() => onPick(alt.id)}
           >
-            {alt.text}
+            {hideTexts ? ALTERNATIVE_LETTERS[i] : alt.text}
           </Button>
         );
       })}
@@ -164,25 +205,17 @@ const GamePlay = ({ room }: GamePlayProps) => {
     [result]
   );
 
-  // O broadcast STOMP não traz mais base64 (só imageUrl/imagesOrder); quando
-  // imagesOrder indica upload (IMAGE_1/IMAGE_2), busca as imagens à parte
-  // (cacheado por questão — outra rodada/sala não baixa de novo).
-  const needsImageFetch = Boolean(
-    question?.imagesOrder?.includes("IMAGE_1") ||
-      question?.imagesOrder?.includes("IMAGE_2")
-  );
-  const imagesQuery = useQuestionImagesQuery(question?.id ?? 0, needsImageFetch);
-
+  // Imagens já vêm como URLs do MinIO direto no broadcast STOMP (leves, sem
+  // precisar de fetch sob demanda).
   const questionImages = useMemo(() => {
     if (!question) return [];
-    const fetchedImages = imagesQuery.data?.success ? imagesQuery.data.data : null;
     return getOrderedQuestionImages({
       imageUrl: question.imageUrl,
-      imageBase64One: fetchedImages?.imageBase64One,
-      imageBase64Two: fetchedImages?.imageBase64Two,
+      imageOneUrl: question.imageOneUrl,
+      imageTwoUrl: question.imageTwoUrl,
       imagesOrder: question.imagesOrder,
     } as QuestionModel);
-  }, [question, imagesQuery.data]);
+  }, [question]);
 
   const me = state!.players.find((p) => p.id === room.playerId);
   const isTeamMode = state!.config.roomMode === "TEAM";
@@ -214,8 +247,17 @@ const GamePlay = ({ room }: GamePlayProps) => {
   const showQuestion = !showResult || revealing;
   const showScoreboardOnly = showResult && !revealing;
 
+  const isFunMode = state!.config.gameStyle === "FUN";
+  const activePower = inQuestion ? question.activePower : null;
+  const powerClass =
+    activePower === "BLINK_SCREEN"
+      ? "mp-power-blink"
+      : activePower === "SHAKE_SCREEN"
+        ? "mp-power-shake"
+        : "";
+
   return (
-    <div className="mp-quiz-external">
+    <div className={`mp-quiz-external ${powerClass}`}>
       {feedback && <FeedbackBox title={feedback.message} color={feedback.color} />}
       <Container
         sx={{ py: 4, display: "flex", flexDirection: "column", minHeight: "100dvh" }}
@@ -244,6 +286,24 @@ const GamePlay = ({ room }: GamePlayProps) => {
           value={(remaining / question.timeSeconds) * 100}
           sx={{ mb: 3, flex: "0 0 auto" }}
         />
+      )}
+
+      {activePower && (
+        <Box
+          className="mp-pop"
+          sx={{
+            mb: 2,
+            flex: "0 0 auto",
+            textAlign: "center",
+            bgcolor: "warning.main",
+            color: "#000",
+            borderRadius: 2,
+            py: 0.75,
+            fontWeight: "bold",
+          }}
+        >
+          ⚡ Poder ativo: {QUESTION_POWER_LABELS[activePower]}
+        </Box>
       )}
 
       {showQuestion && (
@@ -299,6 +359,7 @@ const GamePlay = ({ room }: GamePlayProps) => {
             correctAlternativeId={result?.correctAlternativeId}
             inQuestion={inQuestion}
             isSpectator={isSpectator}
+            hideTexts={activePower === "HIDE_ALTERNATIVE_TEXTS"}
             onPick={pick}
           />
 
@@ -356,6 +417,32 @@ const GamePlay = ({ room }: GamePlayProps) => {
                 <strong>{p.score}</strong>
               </Box>
             ))}
+            {room.isHost && isFunMode && !result!.lastQuestion && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Ativar poder pra próxima questão:
+                </Typography>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                  {(Object.keys(QUESTION_POWER_LABELS) as QuestionPower[]).map((power) => {
+                    const { icon: PowerIcon, color } = POWER_STYLE[power];
+                    return (
+                      <Button
+                        key={power}
+                        size="small"
+                        startIcon={<PowerIcon />}
+                        variant={state!.pendingPowerUp === power ? "contained" : "outlined"}
+                        color={color}
+                        onClick={() =>
+                          room.setPower(state!.pendingPowerUp === power ? null : power)
+                        }
+                      >
+                        {QUESTION_POWER_LABELS[power]}
+                      </Button>
+                    );
+                  })}
+                </Box>
+              </Box>
+            )}
             {room.isHost && state!.config.advanceMode === "HOST" && (
               <Box sx={{ display: "grid", mt: 3 }}>
                 <Button variant="contained" onClick={room.next}>

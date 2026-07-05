@@ -89,6 +89,12 @@ export function useUpdatePasswordMutation() {
   });
 }
 
+export function useLikeUserMutation() {
+  return useMutation({
+    mutationFn: (targetUserId: string) => userService.likeUser(targetUserId),
+  });
+}
+
 export function useRemoveUserMutation() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -18,6 +18,8 @@ interface RoomChatProps {
   room: UseGameRoom;
 }
 
+const MAX_MESSAGE_LENGTH = 50;
+
 /** Chat da sala em tempo real (mensagens efêmeras). */
 const RoomChat = ({ room }: RoomChatProps) => {
   const [text, setText] = useState("");
@@ -105,7 +107,7 @@ const RoomChat = ({ room }: RoomChatProps) => {
             );
           })}
         </Box>
-        <Box component="form" onSubmit={submit} sx={{ display: "flex", gap: 1 }}>
+        <Box component="form" onSubmit={submit} sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
           <IconButton
             size="small"
             onClick={(e) => setEmojiAnchor(e.currentTarget)}
@@ -117,7 +119,8 @@ const RoomChat = ({ room }: RoomChatProps) => {
             size="small"
             placeholder="Mensagem..."
             value={text}
-            slotProps={{ htmlInput: { maxLength: 300 } }}
+            slotProps={{ htmlInput: { maxLength: MAX_MESSAGE_LENGTH } }}
+            helperText={`${text.length}/${MAX_MESSAGE_LENGTH}`}
             onChange={(e) => setText(e.target.value)}
           />
           <Button type="submit" variant="contained">

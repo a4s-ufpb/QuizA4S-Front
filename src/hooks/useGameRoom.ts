@@ -35,6 +35,7 @@ export interface UseGameRoom {
   kick: (targetId: string) => void;
   changeQuiz: (themeId: number) => void;
   updateConfig: (config: GameConfig) => void;
+  setPower: (power: string | null) => void;
   sendChat: (content: string) => void;
   start: () => void;
   answer: (alternativeId: number) => void;
@@ -145,6 +146,7 @@ export function useGameRoom(code: string, joinAvatar?: string): UseGameRoom {
         playerId,
         name: getGuestName(),
         avatar: joinAvatar,
+        userUuid: getStoredUser().uuid || undefined,
       });
     });
     return () => {
@@ -185,6 +187,7 @@ export function useGameRoom(code: string, joinAvatar?: string): UseGameRoom {
     kick: (targetId) => send("kick", { code, hostId: playerId, targetId }),
     changeQuiz: (themeId) => send("change-quiz", { code, hostId: playerId, themeId }),
     updateConfig: (config) => send("config", { code, hostId: playerId, config }),
+    setPower: (power) => send("power", { code, hostId: playerId, power }),
     sendChat: (content) => send("chat", { code, playerId, content }),
     start: () => send("start", { code, hostId: playerId }),
     answer: (alternativeId) => {

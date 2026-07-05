@@ -99,19 +99,21 @@ const RoomConnected = ({ code, avatar }: RoomConnectedProps) => {
 
   return (
     <div className="mp-room" ref={containerRef}>
-      <button
-        type="button"
-        className="mp-fullscreen-btn"
-        onClick={toggleFullscreen}
-        title={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-        aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-      >
-        {isFullscreen ? (
-          <BsFullscreenExit size={18} />
-        ) : (
-          <BsArrowsFullscreen size={18} />
-        )}
-      </button>
+      {(status === "IN_QUESTION" || status === "BETWEEN") && (
+        <button
+          type="button"
+          className="mp-fullscreen-btn"
+          onClick={toggleFullscreen}
+          title={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+          aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+        >
+          {isFullscreen ? (
+            <BsFullscreenExit size={18} />
+          ) : (
+            <BsArrowsFullscreen size={18} />
+          )}
+        </button>
+      )}
 
       {room.error && (
         <Box

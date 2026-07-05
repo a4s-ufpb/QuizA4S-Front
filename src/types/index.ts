@@ -30,6 +30,7 @@ export interface User {
   name: string;
   email: string;
   role?: Role;
+  likes?: number;
 }
 
 export type GameMode = "SINGLE_PLAYER" | "MULTIPLAYER";
@@ -46,12 +47,13 @@ export interface Alternative {
   correct: boolean;
 }
 
-// Questão pra jogar o quiz single-player, sem os base64 de imagem — a
-// imagem da questão atual é buscada sob demanda (ver useQuestionImagesQuery).
+// Questão pra jogar o quiz single-player — imagens já vêm como URLs do MinIO.
 export interface QuizQuestion {
   id: number;
   title: string;
   imageUrl: string;
+  imageOneUrl?: string;
+  imageTwoUrl?: string;
   imagesOrder?: string;
   alternatives: Alternative[];
 }
@@ -60,8 +62,8 @@ export interface Question {
   id: number;
   title: string;
   imageUrl: string;
-  imageBase64One?: string;
-  imageBase64Two?: string;
+  imageOneUrl?: string;
+  imageTwoUrl?: string;
   imagesOrder?: string;
   creatorId?: string;
   alternatives?: Alternative[];
@@ -116,8 +118,8 @@ export interface ResponseItem {
   question: {
     title: string;
     imageUrl?: string;
-    imageBase64One?: string;
-    imageBase64Two?: string;
+    imageOneUrl?: string;
+    imageTwoUrl?: string;
     imagesOrder?: string;
     theme: { name: string };
   };

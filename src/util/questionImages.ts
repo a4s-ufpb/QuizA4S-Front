@@ -13,8 +13,8 @@ export function getQuestionImageBySlot(
   slot: ImageSlotKey
 ): string | undefined {
   if (slot === "URL") return question.imageUrl || undefined;
-  if (slot === "IMAGE_1") return question.imageBase64One || undefined;
-  return question.imageBase64Two || undefined;
+  if (slot === "IMAGE_1") return question.imageOneUrl || undefined;
+  return question.imageTwoUrl || undefined;
 }
 
 /** Monta a lista de imagens (URL + uploads) na ordem definida por `imagesOrder`. */

@@ -14,7 +14,7 @@ import {
   Typography,
   type SelectChangeEvent,
 } from "@mui/material";
-import type { AdvanceMode, GameConfig, ScoringMode } from "../../types/game";
+import type { AdvanceMode, GameConfig, GameStyle, ScoringMode } from "../../types/game";
 
 interface RoomConfigFormProps {
   config: GameConfig;
@@ -42,6 +42,21 @@ const RoomConfigForm = ({ config, onSave, onClose }: RoomConfigFormProps) => {
       <DialogTitle>Regras da partida</DialogTitle>
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 1 }}>
+          <FormControl fullWidth>
+            <InputLabel id="game-style-label">Estilo de jogo</InputLabel>
+            <Select
+              labelId="game-style-label"
+              label="Estilo de jogo"
+              value={draft.gameStyle}
+              onChange={(e: SelectChangeEvent) =>
+                update("gameStyle", e.target.value as GameStyle)
+              }
+            >
+              <MenuItem value="NORMAL">Normal</MenuItem>
+              <MenuItem value="FUN">Diversão (poderes na partida)</MenuItem>
+            </Select>
+          </FormControl>
+
           <FormControl fullWidth>
             <InputLabel id="scoring-mode-label">Pontuação</InputLabel>
             <Select

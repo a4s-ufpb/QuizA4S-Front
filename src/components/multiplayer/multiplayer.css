@@ -178,6 +178,43 @@
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
+/* Poder "piscar a tela" (modo Diversão) */
+.mp-power-blink {
+  animation: mpPowerBlink 0.6s steps(1) infinite;
+}
+
+@keyframes mpPowerBlink {
+  0%, 49% {
+    filter: brightness(1);
+  }
+  50%, 100% {
+    filter: brightness(0.15);
+  }
+}
+
+/* Poder "tremer a tela" (modo Diversão) */
+.mp-power-shake {
+  animation: mpPowerShake 0.35s ease-in-out infinite;
+}
+
+@keyframes mpPowerShake {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(-6px, 3px) rotate(-1deg);
+  }
+  50% {
+    transform: translate(5px, -4px) rotate(1deg);
+  }
+  75% {
+    transform: translate(-4px, -3px) rotate(-1deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
 .mp-quiz-external {
   width: 100%;
   min-height: 100dvh;

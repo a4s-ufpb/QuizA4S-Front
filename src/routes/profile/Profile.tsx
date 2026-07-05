@@ -8,7 +8,7 @@ import {
   Tab,
   Typography,
 } from "@mui/material";
-import { BsPersonCircle } from "react-icons/bs";
+import { BsPersonCircle, BsHandThumbsUpFill } from "react-icons/bs";
 import MyTheme from "./myTheme/MyTheme";
 import MyOwnResponses from "./myOwnResponses/MyOwnResponses";
 import MyResponse from "./myResponse/MyResponse";
@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import Users from "./users/Users";
 import { getStoredUser } from "../../util/storage";
 import {
+  useFindUserQuery,
   useIsAdminQuery,
   useRemoveUserMutation,
   useUpdatePasswordMutation,
@@ -36,6 +37,8 @@ interface PasswordValidation {
 
 const Profile = () => {
   const { uuid, name, email } = getStoredUser();
+  const findUserQuery = useFindUserQuery();
+  const likes = findUserQuery.data?.success ? findUserQuery.data.data.likes ?? 0 : 0;
   const updateUserMutation = useUpdateUserMutation();
   const removeUserMutation = useRemoveUserMutation();
   const updatePasswordMutation = useUpdatePasswordMutation();
@@ -276,7 +279,12 @@ const Profile = () => {
             }}
           >
             <BsPersonCircle size={80} color="#3f7fd6" />
-            <Typography variant="h6" sx={{ mb: 0 }}>
+            <Typography
+              sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "primary.main", fontWeight: "bold" }}
+            >
+              Curtidas: {likes} <BsHandThumbsUpFill />
+            </Typography>
+            <Typography variant="h6" sx={{ mb: 0, mt: -1 }}>
               {name}
             </Typography>
             <Typography color="text.secondary">{email}</Typography>

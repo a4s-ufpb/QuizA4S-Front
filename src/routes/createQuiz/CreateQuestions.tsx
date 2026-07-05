@@ -115,13 +115,13 @@ const CreateQuestions = () => {
   const [question, setQuestion] = useState<{
     title: string;
     imageUrl: string;
-    imageBase64One: string;
-    imageBase64Two: string;
+    imageOneUrl: string;
+    imageTwoUrl: string;
   }>({
     title: "",
     imageUrl: "",
-    imageBase64One: "",
-    imageBase64Two: "",
+    imageOneUrl: "",
+    imageTwoUrl: "",
   });
 
   const [imagesOrder, setImagesOrder] = useState<ImageSlotKey[]>([
@@ -264,8 +264,8 @@ const CreateQuestions = () => {
     setQuestion({
       title: questionToEdit.title,
       imageUrl: questionToEdit.imageUrl ?? "",
-      imageBase64One: questionToEdit.imageBase64One ?? "",
-      imageBase64Two: questionToEdit.imageBase64Two ?? "",
+      imageOneUrl: questionToEdit.imageOneUrl ?? "",
+      imageTwoUrl: questionToEdit.imageTwoUrl ?? "",
     });
 
     const orderFromField = (questionToEdit.imagesOrder ?? "")
@@ -310,8 +310,8 @@ const CreateQuestions = () => {
     setQuestion({
       title: "",
       imageUrl: "",
-      imageBase64One: "",
-      imageBase64Two: "",
+      imageOneUrl: "",
+      imageTwoUrl: "",
     });
     setImagesOrder([...ALL_IMAGE_SLOTS]);
     setUploadedFileNames({});
@@ -394,8 +394,8 @@ const CreateQuestions = () => {
 
     setQuestion((prevQuestion) => ({
       ...prevQuestion,
-      imageBase64One: dataUrls[0] ?? "",
-      imageBase64Two: dataUrls[1] ?? "",
+      imageOneUrl: dataUrls[0] ?? "",
+      imageTwoUrl: dataUrls[1] ?? "",
     }));
     setUploadedFileNames({
       IMAGE_1: files[0]?.name,
@@ -426,7 +426,7 @@ const CreateQuestions = () => {
 
     setQuestion((prevQuestion) => ({
       ...prevQuestion,
-      [slot === "IMAGE_1" ? "imageBase64One" : "imageBase64Two"]: "",
+      [slot === "IMAGE_1" ? "imageOneUrl" : "imageTwoUrl"]: "",
     }));
     setUploadedFileNames((prev) => ({ ...prev, [slot]: undefined }));
   }

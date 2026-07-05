@@ -5,10 +5,7 @@ import Question from "../../components/question/Question";
 import InformationBox from "../../components/informationBox/InformationBox";
 import Loading from "../../components/loading/Loading";
 import QuestionFinished from "../../components/quizFinished/QuizFinished";
-import {
-  useQuestionImagesQuery,
-  useTop10QuestionsForPlayQuery,
-} from "../../query/useQuestionQueries";
+import { useTop10QuestionsForPlayQuery } from "../../query/useQuestionQueries";
 import { useInsertResponseMutation } from "../../query/useResponseQueries";
 import FeedbackBox from "../../components/feedbackBox/FeedbackBox";
 import { getStoredUser } from "../../util/storage";
@@ -52,16 +49,6 @@ const Quiz = () => {
   const loading = questionsQuery.isLoading;
 
   const currentQuestion = questions[currentQuestionIndex];
-  // Só busca a imagem sob demanda se a questão tiver upload (URL simples já
-  // vem em imageUrl, sem precisar de outra request).
-  const needsImageFetch = Boolean(
-    currentQuestion?.imagesOrder?.includes("IMAGE_1") ||
-      currentQuestion?.imagesOrder?.includes("IMAGE_2")
-  );
-  const currentQuestionImagesQuery = useQuestionImagesQuery(
-    currentQuestion?.id ?? 0,
-    needsImageFetch
-  );
 
   useEffect(() => {
     if (!questionsQuery.data) return;
@@ -237,16 +224,8 @@ const Quiz = () => {
               title={currentQuestion.title}
               questionId={currentQuestion.id}
               questionImg={currentQuestion.imageUrl}
-              imageBase64One={
-                currentQuestionImagesQuery.data?.success
-                  ? currentQuestionImagesQuery.data.data.imageBase64One
-                  : undefined
-              }
-              imageBase64Two={
-                currentQuestionImagesQuery.data?.success
-                  ? currentQuestionImagesQuery.data.data.imageBase64Two
-                  : undefined
-              }
+              imageOneUrl={currentQuestion.imageOneUrl}
+              imageTwoUrl={currentQuestion.imageTwoUrl}
               imagesOrder={currentQuestion.imagesOrder}
               alternatives={currentQuestion.alternatives}
               onAnswerClick={

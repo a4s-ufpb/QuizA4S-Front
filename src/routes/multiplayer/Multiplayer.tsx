@@ -66,9 +66,10 @@ const Multiplayer = () => {
         roomMode,
         scoringMode: "SPEED",
         advanceMode: "HOST",
-        questionTimeSeconds: 20,
+        questionTimeSeconds: 120,
         questionCount: 10,
         maxPlayersPerTeam: roomMode === "TEAM" ? maxPlayersPerTeam : null,
+        gameStyle: "NORMAL",
       },
     });
     setLoading(false);

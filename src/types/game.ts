@@ -4,6 +4,17 @@ export type RoomMode = "INDIVIDUAL" | "TEAM";
 export type ScoringMode = "SPEED" | "FIXED";
 export type AdvanceMode = "HOST" | "AUTO";
 export type RoomStatus = "LOBBY" | "IN_QUESTION" | "BETWEEN" | "FINISHED";
+export type GameStyle = "NORMAL" | "FUN";
+
+export type QuestionPower =
+  | "SCORE_1_5X"
+  | "SCORE_2_0X"
+  | "SCORE_2_5X"
+  | "HIDE_WRONG_ALTERNATIVE"
+  | "HIDE_ALTERNATIVE_TEXTS"
+  | "BLINK_SCREEN"
+  | "SHAKE_SCREEN"
+  | "STEAL_POINTS";
 
 export interface GameConfig {
   roomMode: RoomMode;
@@ -12,6 +23,7 @@ export interface GameConfig {
   questionTimeSeconds: number;
   questionCount: number;
   maxPlayersPerTeam?: number | null;
+  gameStyle: GameStyle;
 }
 
 export interface PlayerView {
@@ -23,6 +35,8 @@ export interface PlayerView {
   score: number;
   avatar?: string | null;
   captain: boolean;
+  /** UUID da conta real do jogador, se estiver logado (null = convidado). */
+  userUuid: string | null;
 }
 
 export interface TeamView {
@@ -45,6 +59,8 @@ export interface RoomState {
   teams: TeamView[];
   currentQuestionIndex: number;
   totalQuestions: number;
+  /** Poder armado (modo Diversão) pra próxima questão — só o líder escolhe. */
+  pendingPowerUp: QuestionPower | null;
 }
 
 export interface AlternativeView {
@@ -52,20 +68,21 @@ export interface AlternativeView {
   text: string;
 }
 
-// Sem os base64 de imagem: o backend não manda mais isso no broadcast STOMP
-// (payload grande demais pra ir em toda questão, pra todo jogador). Quando
-// imagesOrder indica upload (IMAGE_1/IMAGE_2), o cliente busca via
-// useQuestionImagesQuery (GET /question/{id}/images).
+// Imagens já vêm como URLs do MinIO (leves), sem precisar de fetch sob demanda.
 export interface QuestionView {
   id: number;
   title: string;
   imageUrl: string;
+  imageOneUrl?: string;
+  imageTwoUrl?: string;
   imagesOrder?: string;
   index: number;
   total: number;
   timeSeconds: number;
   startAt: number;
   alternatives: AlternativeView[];
+  /** Poder valendo pra essa questão (modo Diversão), ou null no modo Normal. */
+  activePower: QuestionPower | null;
 }
 
 export interface PlayerAnswerView {
@@ -118,7 +135,19 @@ export const DEFAULT_GAME_CONFIG: GameConfig = {
   roomMode: "INDIVIDUAL",
   scoringMode: "SPEED",
   advanceMode: "HOST",
-  questionTimeSeconds: 20,
+  questionTimeSeconds: 120,
   questionCount: 10,
   maxPlayersPerTeam: null,
+  gameStyle: "NORMAL",
+};
+
+export const QUESTION_POWER_LABELS: Record<QuestionPower, string> = {
+  SCORE_1_5X: "Questão vale 1.5x",
+  SCORE_2_0X: "Questão vale 2.0x",
+  SCORE_2_5X: "Questão vale 2.5x",
+  HIDE_WRONG_ALTERNATIVE: "Esconder uma alternativa errada",
+  HIDE_ALTERNATIVE_TEXTS: "Esconder o texto das alternativas",
+  BLINK_SCREEN: "Piscar a tela",
+  SHAKE_SCREEN: "Tremer a tela",
+  STEAL_POINTS: "Roubar 100 pontos (primeiro a acertar)",
 };

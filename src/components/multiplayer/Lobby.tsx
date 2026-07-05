@@ -128,7 +128,12 @@ const Lobby = ({ room }: LobbyProps) => {
               component="img"
               image={state.themeImageUrl || DEFAULT_IMG}
               alt="tema do quiz"
-              sx={{ width: 120, height: 120, objectFit: "cover" }}
+              sx={{
+                width: { xs: 150, lg: 150 },
+                display: "block",
+                flexShrink: 0,
+                m: 0,
+              }}
             />
           )}
           <Box sx={{ flexGrow: 1, p: 2 }}>
@@ -153,7 +158,7 @@ const Lobby = ({ room }: LobbyProps) => {
                 <BsBoxArrowRight style={{ marginRight: 4 }} /> Sair da sala
               </Button>
             </Box>
-            <Typography sx={{ color: "#fff", fontWeight: "bold", mt: 1, mb: 1.5 }}>
+            <Typography sx={{ color: "#000", fontWeight: "bold", mt: 1, mb: 1.5 }}>
               {state.themeName || "Nenhum quiz selecionado"}
             </Typography>
             <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
@@ -190,7 +195,7 @@ const Lobby = ({ room }: LobbyProps) => {
         <Box>
           <Card elevation={2} className="mp-fade-in" sx={{ mb: 3 }}>
             <CardHeader title={`Jogadores (${state.players.length})`} />
-            <List disablePadding>
+            <List disablePadding sx={{ maxHeight: 320, overflowY: "auto" }}>
               {state.players.map((p) => (
                 <ListItem
                   key={p.id}

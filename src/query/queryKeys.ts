@@ -18,7 +18,6 @@ export const queryKeys = {
   questions: {
     all: ["questions"] as const,
     detail: (id: number) => ["questions", "detail", id] as const,
-    images: (id: number) => ["questions", "images", id] as const,
     byThemeTop10: (themeId: string | number) =>
       ["questions", "quiz", themeId] as const,
     byThemeTop10ForPlay: (themeId: string | number) =>

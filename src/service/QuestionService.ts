@@ -14,16 +14,6 @@ export class QuestionService extends BaseService {
     return this.handleRequest<Question>("get", `/question/${questionId}`);
   }
 
-  findQuestionImages(questionId: number) {
-    return this.handleRequest<{
-      id: number;
-      imageUrl?: string;
-      imageBase64One?: string;
-      imageBase64Two?: string;
-      imagesOrder?: string;
-    }>("get", `/question/${questionId}/images`);
-  }
-
   removeQuestion(questionId: number) {
     return this.handleRequest<void>("delete", `/question/${questionId}`);
   }
