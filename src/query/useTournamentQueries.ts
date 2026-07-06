@@ -13,8 +13,17 @@ export function useCreateTournamentMutation() {
 
 export function useJoinTournamentMutation() {
   return useMutation({
-    mutationFn: ({ code, playerId, name }: { code: string; playerId: string; name: string }) =>
-      tournamentService.join(code, playerId, name),
+    mutationFn: ({
+      code,
+      playerId,
+      name,
+      userUuid,
+    }: {
+      code: string;
+      playerId: string;
+      name: string;
+      userUuid: string;
+    }) => tournamentService.join(code, playerId, name, userUuid),
   });
 }
 

@@ -8,6 +8,9 @@ export interface TournamentPlayerView {
   name: string;
   host: boolean;
   eliminated: boolean;
+  title?: string | null;
+  frame?: string | null;
+  banner?: string | null;
 }
 
 export interface MatchView {
@@ -39,4 +42,6 @@ export interface CreateTournamentRequest {
   questionCount: number;
   questionTimeSeconds: number;
   maxPlayers: number;
+  /** UUID da conta real do host (para exibir cosméticos); vazio = convidado. */
+  hostUuid: string;
 }

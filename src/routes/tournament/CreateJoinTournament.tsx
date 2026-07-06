@@ -79,6 +79,7 @@ const CreateJoinTournament = () => {
       questionCount,
       questionTimeSeconds,
       maxPlayers,
+      hostUuid: loggedUser?.uuid ?? "",
     });
 
     if (!response.success) {
@@ -102,6 +103,7 @@ const CreateJoinTournament = () => {
       code: normalized,
       playerId: getGuestId(),
       name: name.trim(),
+      userUuid: loggedUser?.uuid ?? "",
     });
 
     if (!response.success) {

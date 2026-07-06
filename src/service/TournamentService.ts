@@ -11,10 +11,11 @@ export class TournamentService extends BaseService {
     return this.handleRequest<TournamentState>("get", `/tournament/${code}`);
   }
 
-  join(code: string, playerId: string, name: string) {
+  join(code: string, playerId: string, name: string, userUuid: string) {
     return this.handleRequest<TournamentState>("post", `/tournament/${code}/join`, {
       playerId,
       name,
+      userUuid,
     });
   }
 

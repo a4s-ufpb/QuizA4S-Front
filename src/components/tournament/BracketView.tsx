@@ -2,6 +2,7 @@ import { Box, Paper, Typography, Chip } from "@mui/material";
 import { BsTrophyFill } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import type { MatchView, TournamentPlayerView } from "../../types/tournament";
+import { TitleBadge, FramedAvatar } from "../cosmetics/Cosmetic";
 
 interface BracketViewProps {
   rounds: MatchView[][];
@@ -9,9 +10,40 @@ interface BracketViewProps {
   myPlayerId: string;
 }
 
-function playerName(players: TournamentPlayerView[], id: string | null): string {
-  if (!id) return "—";
-  return players.find((p) => p.id === id)?.name ?? "?";
+function findPlayer(players: TournamentPlayerView[], id: string | null) {
+  if (!id) return null;
+  return players.find((p) => p.id === id) ?? null;
+}
+
+/** Nome do jogador com moldura e título equipados (se houver). */
+function PlayerLabel({
+  player,
+  highlight,
+}: {
+  player: TournamentPlayerView | null;
+  highlight: boolean;
+}) {
+  return (
+    <Typography
+      component="span"
+      variant="body2"
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 0.5,
+        fontWeight: highlight ? "bold" : "normal",
+        color: highlight ? "success.main" : "text.primary",
+      }}
+    >
+      {player?.frame && (
+        <FramedAvatar code={player.frame} size={20}>
+          <span style={{ fontSize: "0.7em" }}>·</span>
+        </FramedAvatar>
+      )}
+      {player?.name ?? "—"}
+      {player?.title && <TitleBadge code={player.title} />}
+    </Typography>
+  );
 }
 
 function roundLabel(index: number, total: number): string {
@@ -56,24 +88,14 @@ const BracketView = ({ rounds, players, myPlayerId }: BracketViewProps) => {
                   borderColor: match.winnerId ? "success.main" : "divider",
                 }}
               >
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: match.winnerId === match.player1Id ? "bold" : "normal",
-                    color: match.winnerId === match.player1Id ? "success.main" : "text.primary",
-                  }}
-                >
-                  {playerName(players, match.player1Id)}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: match.winnerId === match.player2Id ? "bold" : "normal",
-                    color: match.winnerId === match.player2Id ? "success.main" : "text.primary",
-                  }}
-                >
-                  {playerName(players, match.player2Id)}
-                </Typography>
+                <PlayerLabel
+                  player={findPlayer(players, match.player1Id)}
+                  highlight={Boolean(match.winnerId) && match.winnerId === match.player1Id}
+                />
+                <PlayerLabel
+                  player={findPlayer(players, match.player2Id)}
+                  highlight={Boolean(match.winnerId) && match.winnerId === match.player2Id}
+                />
                 <Chip
                   size="small"
                   label={STATUS_LABELS[match.status]}
