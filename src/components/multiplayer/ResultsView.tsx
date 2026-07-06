@@ -61,8 +61,8 @@ function LikeButton({
     <Tooltip title={liked ? "Curtido!" : "Dar like"}>
       <span>
         <IconButton
-          size="small"
-          color="primary"
+          size="medium"
+          color="warning"
           disabled={liked}
           onClick={() => {
             setLiked(true);
@@ -219,18 +219,29 @@ const ResultsView = ({ room }: ResultsViewProps) => {
     : (players.find((p) => p.id === room.playerId)?.name ?? "Jogador");
 
   useEffect(() => {
+    // Registra a partida UMA vez por sala. O ResultsView pode remontar a cada
+    // broadcast de estado; sem esse guard o histórico/XP/moedas eram creditados
+    // várias vezes na mesma partida.
+    const recordedKey = `mp_recorded_${state.code}`;
+    if (sessionStorage.getItem(recordedKey)) return;
+    sessionStorage.setItem(recordedKey, "1");
+
+    // XP/moedas/histórico usam o Nº DE ACERTOS (não a pontuação por velocidade,
+    // que chega a milhares e inflava o XP absurdamente).
+    const myHits =
+      state.players.find((p) => p.id === room.playerId)?.correctCount ?? 0;
     const matchThemeName = state.themeName || "Multiplayer";
     addMatchHistoryEntry({
       mode: "MULTIPLAYER",
       themeName: matchThemeName,
-      score: myScore,
+      score: myHits,
       total: state.totalQuestions,
     });
     if (getStoredUser().uuid) {
       recordMatchMutation.mutate({
         mode: "MULTIPLAYER",
         themeName: matchThemeName,
-        score: myScore,
+        score: myHits,
         total: state.totalQuestions,
       });
     }

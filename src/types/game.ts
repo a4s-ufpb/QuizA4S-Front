@@ -52,6 +52,8 @@ export interface PlayerView {
   title?: string | null;
   frame?: string | null;
   banner?: string | null;
+  /** Nº de questões acertadas na partida (base de XP/moedas/histórico). */
+  correctCount: number;
 }
 
 export interface TeamView {
