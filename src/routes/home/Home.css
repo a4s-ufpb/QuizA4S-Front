@@ -4,11 +4,11 @@
   align-items: start;
   justify-content: center;
   min-height: 100dvh;
-  background: transparent;
-  background-position: center;
-  background-size: cover;
-  margin-top: -32px;
-  margin-bottom: -32px;
+  background: linear-gradient(160deg, #78b9f2 0%, #3f7fd6 60%, #0055cc 100%);
+}
+
+[data-theme="dark"] .container-home {
+  background: linear-gradient(160deg, #16202e 0%, #0f1620 60%, #0a0f16 100%);
 }
 
 .home {

@@ -1,4 +1,5 @@
-// Histórico local de partidas (single-player e multiplayer), persistido em localStorage.
+// Histórico local de partidas (single-player e multiplayer), persistido em
+// sessionStorage (só token e user ficam no localStorage).
 
 const STORAGE_KEY = "matchHistory";
 const MAX_ENTRIES = 20;
@@ -14,7 +15,7 @@ export interface MatchHistoryEntry {
 
 export function getMatchHistory(): MatchHistoryEntry[] {
   try {
-    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    const raw = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "[]");
     return Array.isArray(raw) ? (raw as MatchHistoryEntry[]) : [];
   } catch {
     return [];
@@ -30,12 +31,12 @@ export function addMatchHistoryEntry(
     id: Date.now(),
     date: new Date().toISOString(),
   });
-  localStorage.setItem(
+  sessionStorage.setItem(
     STORAGE_KEY,
     JSON.stringify(history.slice(0, MAX_ENTRIES))
   );
 }
 
 export function clearMatchHistory(): void {
-  localStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(STORAGE_KEY);
 }

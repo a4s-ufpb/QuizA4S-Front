@@ -120,7 +120,7 @@ function SearchImage({ setSearchImage, getUrlOfImage }: SearchImageProps) {
           <NotFoundComponent title="Nenhuma imagem encontrada" />
         )}
       </DialogContent>
-      <DialogActions sx={{ justifyContent: "space-between" }}>
+      <DialogActions sx={{ display: "flex", justifyContent: "center" }}>
         <Pagination
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}

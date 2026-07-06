@@ -11,6 +11,8 @@ export const PEXELS_CLIENT_ID =
   "VobhRhGYqprkaxYAvXjE07UsDOglWJwSU4cHbpWu0qGphVyZQUGW3CSS";
 export const PEXELS_URL = "https://api.pexels.com/v1/search";
 
-// Valores da Pontuação do Quiz
-export const HIT_VALUE = 97.45;
-export const REDUCE_VALUE = 1.26;
+// Valores da Pontuação do Quiz (devem espelhar Score.java no backend).
+export const HIT_VALUE = 100;
+export const REDUCE_VALUE = 0.35;
+// Cada acerto vale no mínimo isso — quem acerta ao menos 1 questão nunca zera.
+export const MIN_VALUE_PER_HIT = 20;

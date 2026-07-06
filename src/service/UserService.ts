@@ -1,5 +1,5 @@
 import { BaseService } from "./BaseService";
-import type { AuthResponse, Page, Role, User } from "../types";
+import type { AuthResponse, Page, PublicProfileResponse, Role, User } from "../types";
 
 interface UserPasswordRequest {
   newPassword: string;
@@ -74,6 +74,13 @@ export class UserService extends BaseService {
     return this.handleRequest<User[]>(
       "get",
       `/user/search?name=${encodeURIComponent(name)}`
+    );
+  }
+
+  findPublicProfile(userId: string) {
+    return this.handleRequest<PublicProfileResponse>(
+      "get",
+      `/user/${userId}/public-profile`
     );
   }
 }

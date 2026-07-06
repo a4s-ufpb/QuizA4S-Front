@@ -15,6 +15,7 @@ import {
   type SelectChangeEvent,
 } from "@mui/material";
 import type { AdvanceMode, GameConfig, GameStyle, ScoringMode } from "../../types/game";
+import { GAME_STYLE_LABELS } from "../../types/game";
 
 interface RoomConfigFormProps {
   config: GameConfig;
@@ -52,8 +53,11 @@ const RoomConfigForm = ({ config, onSave, onClose }: RoomConfigFormProps) => {
                 update("gameStyle", e.target.value as GameStyle)
               }
             >
-              <MenuItem value="NORMAL">Normal</MenuItem>
-              <MenuItem value="FUN">Diversão (poderes na partida)</MenuItem>
+              {(Object.keys(GAME_STYLE_LABELS) as GameStyle[]).map((style) => (
+                <MenuItem key={style} value={style}>
+                  {GAME_STYLE_LABELS[style]}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 

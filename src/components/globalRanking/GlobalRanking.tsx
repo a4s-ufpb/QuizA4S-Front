@@ -14,9 +14,11 @@ import {
   Avatar,
 } from "@mui/material";
 import { BsTrophyFill } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 import { useGlobalRankingQuery } from "../../query/useGlobalRankingQuery";
 
 const GlobalRanking = () => {
+  const navigate = useNavigate();
   const [period, setPeriod] = useState<"ALL" | "WEEK">("ALL");
   const globalRankingQuery = useGlobalRankingQuery(period);
   const ranking = globalRankingQuery.data?.success
@@ -63,7 +65,10 @@ const GlobalRanking = () => {
                       i + 1
                     )}
                   </TableCell>
-                  <TableCell sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <TableCell
+                    sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
+                    onClick={() => navigate(`/profile/public/${entry.user.uuid}`)}
+                  >
                     <Avatar sx={{ width: 28, height: 28 }} />
                     {entry.user.name}
                   </TableCell>

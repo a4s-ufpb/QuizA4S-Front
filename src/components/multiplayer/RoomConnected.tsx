@@ -59,6 +59,13 @@ const RoomConnected = ({ code, avatar }: RoomConnectedProps) => {
     if (status === "LOBBY") gameStartedRef.current = false;
   }, [room.state?.status]);
 
+  // Sai da tela cheia ao mostrar o resultado final (igual ao quiz single-player).
+  useEffect(() => {
+    if (room.state?.status === "FINISHED" && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, [room.state?.status]);
+
   if (room.kicked) {
     return (
       <Container sx={{ py: 5, textAlign: "center" }}>

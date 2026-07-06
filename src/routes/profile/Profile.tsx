@@ -9,7 +9,8 @@ import {
   Typography,
   LinearProgress,
 } from "@mui/material";
-import { BsPersonCircle, BsHandThumbsUpFill } from "react-icons/bs";
+import { BsPersonCircle, BsHandThumbsUpFill, BsCoin } from "react-icons/bs";
+import { TitleBadge, FramedAvatar, bannerClassName } from "../../components/cosmetics/Cosmetic";
 import MyTheme from "./myTheme/MyTheme";
 import MyOwnResponses from "./myOwnResponses/MyOwnResponses";
 import MyResponse from "./myResponse/MyResponse";
@@ -19,9 +20,6 @@ import ConfirmBox from "../../components/confirmBox/ConfirmBox";
 import UpdateBox from "../../components/updateBox/UpdateBox";
 import MyStatistics from "./myStatisticPerResponse/MyStatistics";
 import MyStatisticConclusion from "./myStatisticPerConclusion/MyStatisticConclusion";
-import MatchHistory from "./matchHistory/MatchHistory";
-import Friends from "./friends/Friends";
-import Achievements from "./achievements/Achievements";
 import { useNavigate } from "react-router-dom";
 import Users from "./users/Users";
 import { getStoredUser } from "../../util/storage";
@@ -45,6 +43,10 @@ const Profile = () => {
   const likes = findUserQuery.data?.success ? findUserQuery.data.data.likes ?? 0 : 0;
   const xp = findUserQuery.data?.success ? findUserQuery.data.data.xp ?? 0 : 0;
   const level = findUserQuery.data?.success ? findUserQuery.data.data.level ?? 1 : 1;
+  const coins = findUserQuery.data?.success ? findUserQuery.data.data.coins ?? 0 : 0;
+  const equippedTitle = findUserQuery.data?.success ? findUserQuery.data.data.equippedTitle : null;
+  const equippedFrame = findUserQuery.data?.success ? findUserQuery.data.data.equippedFrame : null;
+  const equippedBanner = findUserQuery.data?.success ? findUserQuery.data.data.equippedBanner : null;
   const xpIntoLevel = xp % 100;
   const updateUserMutation = useUpdateUserMutation();
   const removeUserMutation = useRemoveUserMutation();
@@ -77,9 +79,6 @@ const Profile = () => {
     <MyResponse key="my-response" />,
     <MyStatistics key="my-statistics" />,
     <MyStatisticConclusion key="my-statistic-conclusion" />,
-    <MatchHistory key="match-history" />,
-    <Friends key="friends" />,
-    <Achievements key="achievements" />,
     isAdmin && <Users key="users" />,
   ];
 
@@ -97,10 +96,7 @@ const Profile = () => {
       label: "Estatísticas por Conclusão",
       index: 4,
     },
-    { id: "btn-match-history", label: "Histórico Recente", index: 5 },
-    { id: "btn-friends", label: "Amigos", index: 6 },
-    { id: "btn-achievements", label: "Conquistas", index: 7 },
-    ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 8 }] : []),
+    ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 5 }] : []),
   ];
 
   const [newName, setNewName] = useState("");
@@ -282,6 +278,9 @@ const Profile = () => {
         }}
       >
         <Card elevation={2} sx={{ alignSelf: "start", height: "fit-content" }}>
+          {equippedBanner && (
+            <Box className={bannerClassName(equippedBanner)} sx={{ height: 48 }} />
+          )}
           <CardContent
             sx={{
               textAlign: "center",
@@ -289,13 +288,26 @@ const Profile = () => {
               flexDirection: "column",
               alignItems: "center",
               gap: 2,
+              mt: equippedBanner ? -6 : 0,
             }}
           >
-            <BsPersonCircle size={80} color="#3f7fd6" />
+            <FramedAvatar code={equippedFrame} size={96}>
+              <BsPersonCircle size={80} color="#3f7fd6" />
+            </FramedAvatar>
+            {equippedTitle && (
+              <Box>
+                <TitleBadge code={equippedTitle} />
+              </Box>
+            )}
             <Typography
               sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "primary.main", fontWeight: "bold" }}
             >
               Curtidas: {likes} <BsHandThumbsUpFill />
+            </Typography>
+            <Typography
+              sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "warning.main", fontWeight: "bold" }}
+            >
+              {coins} moedas <BsCoin />
             </Typography>
             <Typography variant="h6" sx={{ mb: 0, mt: -1 }}>
               {name}

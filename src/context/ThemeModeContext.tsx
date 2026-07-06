@@ -1,5 +1,6 @@
 import {
   createContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -42,6 +43,13 @@ export const ThemeModeProvider = ({ children }: ThemeModeProviderProps) => {
   };
 
   const theme = useMemo(() => createAppTheme(mode), [mode]);
+
+  // Expõe o modo atual num atributo do <html> pra que CSS puro (fora do
+  // sistema de tema do MUI, ex. backgrounds construídos em .css comuns)
+  // também consiga reagir ao dark mode via seletor de atributo.
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", mode);
+  }, [mode]);
 
   return (
     <ThemeModeContext.Provider value={{ mode, toggleMode }}>

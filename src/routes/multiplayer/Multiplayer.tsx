@@ -20,6 +20,7 @@ import {
 import { GameService } from "../../service/GameService";
 import { getGuestId, getGuestName, setGuestName } from "../../util/guest";
 import { getStoredUser } from "../../util/storage";
+import { useIsAdminQuery } from "../../query/useUserQueries";
 import Loading from "../../components/loading/Loading";
 import type { RoomMode } from "../../types/game";
 
@@ -31,6 +32,13 @@ const Multiplayer = () => {
   const isLoggedIn = Boolean(
     localStorage.getItem("token") && loggedUser?.name
   );
+  const isAdminQuery = useIsAdminQuery(loggedUser?.uuid ?? "", isLoggedIn);
+  const isAdmin = isAdminQuery.data?.data.isAdmin ?? false;
+
+  // Capacidade e tamanho de equipe permitidos por papel:
+  //  convidado: 12 / 2  ·  logado: 12,24 / 2,3  ·  admin: 12,24,48 / 2,3,4
+  const capacityOptions = isAdmin ? [12, 24, 48] : isLoggedIn ? [12, 24] : [12];
+  const teamSizeOptions = isAdmin ? [2, 3, 4] : isLoggedIn ? [2, 3] : [2];
 
   const [name, setName] = useState(
     isLoggedIn ? loggedUser.name : getGuestName()
@@ -39,7 +47,8 @@ const Multiplayer = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [roomMode, setRoomMode] = useState<RoomMode>("INDIVIDUAL");
-  const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(4);
+  const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(2);
+  const [maxPlayers, setMaxPlayers] = useState(12);
 
   function persistName(): boolean {
     if (isLoggedIn) {
@@ -70,6 +79,7 @@ const Multiplayer = () => {
         questionCount: 10,
         maxPlayersPerTeam: roomMode === "TEAM" ? maxPlayersPerTeam : null,
         gameStyle: "NORMAL",
+        maxPlayers,
       },
     });
     setLoading(false);
@@ -153,6 +163,22 @@ const Multiplayer = () => {
             <ToggleButton value="TEAM">Equipes</ToggleButton>
           </ToggleButtonGroup>
 
+          <FormControl fullWidth sx={{ mb: roomMode === "TEAM" ? 2 : 3 }}>
+            <InputLabel id="capacity-label">Capacidade máxima (jogadores)</InputLabel>
+            <Select
+              labelId="capacity-label"
+              label="Capacidade máxima (jogadores)"
+              value={maxPlayers}
+              onChange={(e: SelectChangeEvent<number>) => setMaxPlayers(Number(e.target.value))}
+            >
+              {capacityOptions.map((n) => (
+                <MenuItem key={n} value={n}>
+                  {n}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           {roomMode === "TEAM" && (
             <FormControl fullWidth sx={{ mb: 3 }}>
               <InputLabel id="team-size-label">
@@ -166,7 +192,7 @@ const Multiplayer = () => {
                   setMaxPlayersPerTeam(Number(e.target.value))
                 }
               >
-                {[2, 3, 4, 5].map((n) => (
+                {teamSizeOptions.map((n) => (
                   <MenuItem key={n} value={n}>
                     {n}
                   </MenuItem>

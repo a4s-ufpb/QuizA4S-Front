@@ -1,6 +1,5 @@
+import { Box, Paper, Typography } from "@mui/material";
 import ImgNotFound from "../../assets/data-not-found.webp";
-
-import "./NotFoundComponent.css";
 
 interface NotFoundComponentProps {
   title: string;
@@ -8,16 +7,42 @@ interface NotFoundComponentProps {
 
 const NotFoundComponent = ({ title }: NotFoundComponentProps) => {
   return (
-    <div className="container-not-found">
-      <h2 className="title-not-found">{title}</h2>
-      <img
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        gap: 3,
+        my: 4,
+      }}
+    >
+      <Paper
+        elevation={2}
+        sx={{
+          textAlign: "center",
+          wordBreak: "break-word",
+          px: 3,
+          py: 1,
+          borderRadius: 2,
+        }}
+      >
+        <Typography variant="h6" color="primary.main">
+          {title}
+        </Typography>
+      </Paper>
+      <Box
+        component="img"
         src={ImgNotFound}
         alt="image-not-found"
-        className="img-not-found"
-        width={250}
-        height={250}
+        sx={{
+          width: { xs: 200, sm: 250 },
+          height: { xs: 200, sm: 250 },
+          borderRadius: 2,
+          boxShadow: 2,
+        }}
       />
-    </div>
+    </Box>
   );
 };
 

@@ -148,7 +148,7 @@ const Theme = ({ themes, setThemes, setCurrentPage }: ThemeProps) => {
       name,
       imageUrl,
     };
-    localStorage.setItem("theme", JSON.stringify(theme));
+    sessionStorage.setItem("theme", JSON.stringify(theme));
     navigate(`/profile/theme/${id}/question`);
   }
 

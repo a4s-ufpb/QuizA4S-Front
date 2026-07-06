@@ -6,7 +6,7 @@ import "./QuizFinished.css";
 import { useInsertScoreMutation } from "../../query/useScoreQueries";
 import { useNavigate } from "react-router-dom";
 import InformationBox from "../informationBox/InformationBox";
-import { HIT_VALUE, REDUCE_VALUE } from "../../vite-env";
+import { HIT_VALUE, REDUCE_VALUE, MIN_VALUE_PER_HIT } from "../../vite-env";
 import { useInsertStatisticMutation } from "../../query/useStatisticQueries";
 import { getStoredTheme, getStoredUser } from "../../util/storage";
 import { generateResultImage, downloadImage } from "../../util/shareImage";
@@ -69,11 +69,11 @@ const QuizFinished = ({
   }
 
   function calculateResult(): string | number {
-    const hitValue = HIT_VALUE;
-    const reduceValue = REDUCE_VALUE;
-    const result = score * hitValue - time * reduceValue;
-    if (result < 0) return 0.0;
-    return result.toFixed(2);
+    // Espelha Score.calculateResult do backend: piso de MIN_VALUE_PER_HIT por
+    // acerto, pra quem acertou ao menos 1 questão nunca ficar zerado.
+    const raw = score * HIT_VALUE - time * REDUCE_VALUE;
+    const floor = score * MIN_VALUE_PER_HIT;
+    return Math.max(raw, floor).toFixed(2);
   }
 
   const scoreRequest: ScoreRequest = {

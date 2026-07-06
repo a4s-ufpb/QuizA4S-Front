@@ -7,6 +7,7 @@ import {
   type SetStateAction,
 } from "react";
 import { useFindUserQuery } from "../query/useUserQueries";
+import { isTokenExpired, clearAuthStorage } from "../util/token";
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -29,7 +30,14 @@ export const AuthenticationProvider = ({
 }: AuthenticationProviderProps) => {
   const [isAuthenticated, setAuthenticated] = useState(false);
 
-  const token = localStorage.getItem("token");
+  const rawToken = localStorage.getItem("token");
+  // Token vencido é tratado como ausência de login: limpa antes mesmo de
+  // consultar o backend, pra não disparar chamada fadada a 401 nem manter
+  // token/user desatualizados no localStorage.
+  if (rawToken && isTokenExpired(rawToken)) {
+    clearAuthStorage();
+  }
+  const token = isTokenExpired(rawToken) ? null : rawToken;
 
   const findUserQuery = useFindUserQuery(Boolean(token));
   const loading = findUserQuery.isLoading;
@@ -42,7 +50,7 @@ export const AuthenticationProvider = ({
     if (!findUserQuery.data) return;
 
     if (!findUserQuery.data.success) {
-      localStorage.clear();
+      clearAuthStorage();
       setAuthenticated(false);
       return;
     }

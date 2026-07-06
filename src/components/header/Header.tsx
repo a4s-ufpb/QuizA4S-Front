@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo-a4s.webp";
 import { BsList, BsSunFill, BsMoonStarsFill } from "react-icons/bs";
 import { IconButton, Tooltip } from "@mui/material";
@@ -6,6 +6,11 @@ import { IconButton, Tooltip } from "@mui/material";
 import "./Header.css";
 import { useContext, useState } from "react";
 import Menu from "../menu/Menu";
+import SettingsModal from "../settingsModal/SettingsModal";
+import ProfileFeatureModal from "../profileFeatureModal/ProfileFeatureModal";
+import MatchHistory from "../../routes/profile/matchHistory/MatchHistory";
+import Friends from "../../routes/profile/friends/Friends";
+import Achievements from "../../routes/profile/achievements/Achievements";
 import { ThemeModeContext } from "../../context/ThemeModeContext";
 
 interface HeaderProps {
@@ -14,6 +19,10 @@ interface HeaderProps {
 
 const Header = ({ isAuth }: HeaderProps) => {
   const [menu, setMenu] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [friendsOpen, setFriendsOpen] = useState(false);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
   const navigate = useNavigate();
   const { mode, toggleMode } = useContext(ThemeModeContext);
 
@@ -24,64 +33,67 @@ const Header = ({ isAuth }: HeaderProps) => {
           src={logo}
           alt="Logo Apps4Society"
           className="logo"
-          width="80"
-          height="80"
+          width="60"
+          height="60"
         />
       </Link>
 
-      <h1 className="title" onClick={() => navigate("/")}>
+      <h1 onClick={() => navigate("/")}>
         Quiz A4S
       </h1>
 
-      <ul className="nav-bar">
-        {!isAuth && (
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              isActive ? "nav-item active" : "nav-item"
-            }
-          >
-            Início
-          </NavLink>
-        )}
+      <div className="header-buttons">
+        <Tooltip title={mode === "light" ? "Modo escuro" : "Modo claro"}>
+          <IconButton onClick={toggleMode} sx={{ color: "inherit" }}>
+            {mode === "light" ? <BsMoonStarsFill /> : <BsSunFill />}
+          </IconButton>
+        </Tooltip>
 
-        {!isAuth && (
-          <NavLink
-            to="/register"
-            className={({ isActive }) =>
-              isActive ? "nav-item active" : "nav-item"
-            }
-          >
-            Cadastrar-se
-          </NavLink>
-        )}
-
-        {!isAuth && (
-          <NavLink
-            to="/login"
-            className={({ isActive }) =>
-              isActive ? "nav-item active" : "nav-item"
-            }
-          >
-            Login
-          </NavLink>
-        )}
-      </ul>
-      <Tooltip title={mode === "light" ? "Modo escuro" : "Modo claro"}>
-        <IconButton onClick={toggleMode} sx={{ color: "inherit" }}>
-          {mode === "light" ? <BsMoonStarsFill /> : <BsSunFill />}
+        <IconButton onClick={() => setMenu(!menu)} sx={{ color: "inherit" }}>
+          <BsList size={35}/>
         </IconButton>
-      </Tooltip>
+      </div>
+
+      {menu && (
+        <Menu
+          setMenu={setMenu}
+          isAuth={isAuth}
+          onOpenSettings={() => setSettingsOpen(true)}
+          onOpenHistory={() => setHistoryOpen(true)}
+          onOpenFriends={() => setFriendsOpen(true)}
+          onOpenAchievements={() => setAchievementsOpen(true)}
+        />
+      )}
+
+      <SettingsModal open={settingsOpen} setOpen={setSettingsOpen} />
 
       {isAuth && (
-        <BsList size={80} className="profile" onClick={() => setMenu(true)} />
-      )}
+        <>
+          <ProfileFeatureModal
+            title="Histórico Recente"
+            open={historyOpen}
+            onClose={() => setHistoryOpen(false)}
+          >
+            <MatchHistory />
+          </ProfileFeatureModal>
 
-      {!isAuth && (
-        <BsList size={80} className="menu-mobile" onClick={() => setMenu(true)} />
-      )}
+          <ProfileFeatureModal
+            title="Amigos"
+            open={friendsOpen}
+            onClose={() => setFriendsOpen(false)}
+          >
+            <Friends onNavigateAway={() => setFriendsOpen(false)} />
+          </ProfileFeatureModal>
 
-      {menu && <Menu setMenu={setMenu} isAuth={isAuth} />}
+          <ProfileFeatureModal
+            title="Conquistas"
+            open={achievementsOpen}
+            onClose={() => setAchievementsOpen(false)}
+          >
+            <Achievements />
+          </ProfileFeatureModal>
+        </>
+      )}
     </header>
   );
 };

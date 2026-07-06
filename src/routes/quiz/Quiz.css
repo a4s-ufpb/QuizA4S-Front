@@ -6,12 +6,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: url("../../assets/background-question.webp");
-  background-size: cover;
-  background-position: center;
-  margin-top: -2em;
+  background: linear-gradient(160deg, #78b9f2 0%, #3f7fd6 60%, #0055cc 100%);
   padding: 30px 0px;
   position: relative;
+}
+
+[data-theme="dark"] .container-quiz-external {
+  background: linear-gradient(160deg, #16202e 0%, #0f1620 60%, #0a0f16 100%);
 }
 
 .fullscreen-btn {

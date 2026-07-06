@@ -125,5 +125,17 @@ export const queryKeys = {
     list: (userId: string, page: number, name: string) =>
       ["users", "list", userId, page, name] as const,
     isAdmin: (userId: string) => ["users", "is-admin", userId] as const,
+    publicProfile: (userId: string) => ["users", "public-profile", userId] as const,
+  },
+  tournament: {
+    state: (code: string) => ["tournament", "state", code] as const,
+  },
+  wallet: {
+    me: ["wallet", "me"] as const,
+    transactions: (page: number) => ["wallet", "transactions", page] as const,
+  },
+  store: {
+    items: ["store", "items"] as const,
+    inventory: ["store", "inventory"] as const,
   },
 } as const;

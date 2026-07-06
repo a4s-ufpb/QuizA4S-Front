@@ -4,7 +4,14 @@ export type RoomMode = "INDIVIDUAL" | "TEAM";
 export type ScoringMode = "SPEED" | "FIXED";
 export type AdvanceMode = "HOST" | "AUTO";
 export type RoomStatus = "LOBBY" | "IN_QUESTION" | "BETWEEN" | "FINISHED";
-export type GameStyle = "NORMAL" | "FUN";
+export type GameStyle = "NORMAL" | "FUN" | "SURVIVAL" | "LIGHTNING";
+
+export const GAME_STYLE_LABELS: Record<GameStyle, string> = {
+  NORMAL: "Normal",
+  FUN: "Diversão (poderes)",
+  SURVIVAL: "Sobrevivência (quem erra é eliminado)",
+  LIGHTNING: "Relâmpago (tempo decrescente)",
+};
 
 export type QuestionPower =
   | "SCORE_1_5X"
@@ -24,6 +31,8 @@ export interface GameConfig {
   questionCount: number;
   maxPlayersPerTeam?: number | null;
   gameStyle: GameStyle;
+  /** Capacidade máxima da sala (não conta o host). */
+  maxPlayers?: number | null;
 }
 
 export interface PlayerView {
@@ -37,6 +46,12 @@ export interface PlayerView {
   captain: boolean;
   /** UUID da conta real do jogador, se estiver logado (null = convidado). */
   userUuid: string | null;
+  /** Modo Sobrevivência: errou (ou não respondeu) — virou espectador pro resto da partida. */
+  eliminated: boolean;
+  /** Cosméticos equipados (só jogadores logados) — códigos da loja, null = nenhum. */
+  title?: string | null;
+  frame?: string | null;
+  banner?: string | null;
 }
 
 export interface TeamView {
@@ -139,6 +154,7 @@ export const DEFAULT_GAME_CONFIG: GameConfig = {
   questionCount: 10,
   maxPlayersPerTeam: null,
   gameStyle: "NORMAL",
+  maxPlayers: 12,
 };
 
 export const QUESTION_POWER_LABELS: Record<QuestionPower, string> = {

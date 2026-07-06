@@ -38,6 +38,7 @@ import ConfirmBox from "../confirmBox/ConfirmBox";
 import AvatarSelector from "./AvatarSelector";
 import RoomChat from "./RoomChat";
 import RoomConfigForm from "./RoomConfigForm";
+import { TitleBadge, FramedAvatar, bannerClassName } from "../cosmetics/Cosmetic";
 import { getStoredUser } from "../../util/storage";
 import { useMyFriendsQuery } from "../../query/useFriendshipQueries";
 import { useSendRoomInviteMutation } from "../../query/useRoomInviteQueries";
@@ -162,7 +163,6 @@ const Lobby = ({ room }: LobbyProps) => {
                   <Button
                     variant="outlined"
                     size="small"
-                    sx={{ color: "#fff", borderColor: "#fff" }}
                     onClick={(e) => setInviteAnchor(e.currentTarget)}
                   >
                     <BsPersonPlusFill style={{ marginRight: 4 }} /> Convidar amigo
@@ -170,8 +170,8 @@ const Lobby = ({ room }: LobbyProps) => {
                 )}
                 <Button
                   variant="outlined"
+                  color="error"
                   size="small"
-                  sx={{ color: "#fff", borderColor: "#fff" }}
                   onClick={() => setConfirmLeave(true)}
                 >
                   <BsBoxArrowRight style={{ marginRight: 4 }} /> Sair da sala
@@ -263,18 +263,21 @@ const Lobby = ({ room }: LobbyProps) => {
               {state.players.map((p) => (
                 <ListItem
                   key={p.id}
-                  className="mp-player-item"
+                  className={`mp-player-item ${bannerClassName(p.banner)}`}
                   sx={{ display: "flex", alignItems: "center", gap: 1 }}
                 >
-                  {p.avatar ? (
-                    <span style={{ fontSize: "1.4em" }}>{p.avatar}</span>
-                  ) : p.host ? (
-                    <BsStarFill color="orange" title="Líder" />
-                  ) : (
-                    <BsPersonFill color="gray" />
-                  )}
+                  <FramedAvatar code={p.frame} size={30}>
+                    {p.avatar ? (
+                      <span style={{ fontSize: "1.1em" }}>{p.avatar}</span>
+                    ) : p.host ? (
+                      <BsStarFill color="orange" title="Líder" />
+                    ) : (
+                      <BsPersonFill color="gray" />
+                    )}
+                  </FramedAvatar>
                   <Box sx={{ flexGrow: 1 }}>
                     {p.name}
+                    <TitleBadge code={p.title} />
                     {p.id === room.playerId && " (você)"}
                     {isTeamMode && p.teamId && (
                       <Chip

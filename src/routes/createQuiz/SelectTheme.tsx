@@ -9,7 +9,7 @@ const SelectTheme = () => {
   const navigate = useNavigate();
 
   function showCreateQuestion(theme: Theme) {
-    localStorage.setItem("theme", JSON.stringify(theme));
+    sessionStorage.setItem("theme", JSON.stringify(theme));
     navigate(`/create/quiz/${theme.id}/question`);
   }
 

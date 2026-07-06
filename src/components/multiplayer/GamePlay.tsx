@@ -44,6 +44,7 @@ import type { Question as QuestionModel } from "../../types";
 import correctSoundFile from "../../assets/sounds/alternative-success.mp3";
 import errorSoundFile from "../../assets/sounds/alternative-error.mp3";
 import { playSound } from "../../util/sound";
+import { TitleBadge, FramedAvatar, bannerClassName } from "../cosmetics/Cosmetic";
 import "./multiplayer.css";
 
 interface GamePlayProps {
@@ -219,7 +220,8 @@ const GamePlay = ({ room }: GamePlayProps) => {
 
   const me = state!.players.find((p) => p.id === room.playerId);
   const isTeamMode = state!.config.roomMode === "TEAM";
-  const isSpectator = isTeamMode && Boolean(me?.teamId) && !me?.captain;
+  const isEliminated = Boolean(me?.eliminated);
+  const isSpectator = (isTeamMode && Boolean(me?.teamId) && !me?.captain) || isEliminated;
 
   // Identidade estável: broadcasts de estado não relacionados à questão
   // (chat, outro jogador ficando pronto) não devem invalidar o memo do
@@ -388,7 +390,9 @@ const GamePlay = ({ room }: GamePlayProps) => {
 
           {inQuestion && isSpectator && (
             <Typography align="center" color="text.secondary" sx={{ mt: 3 }}>
-              Seu capitão está respondendo...
+              {isEliminated
+                ? "Você foi eliminado — acompanhe o restante da partida como espectador."
+                : "Seu capitão está respondendo..."}
             </Typography>
           )}
           {inQuestion && !isSpectator && selectedId != null && (
@@ -400,88 +404,136 @@ const GamePlay = ({ room }: GamePlayProps) => {
       )}
 
       {showScoreboardOnly && (
-        <Card elevation={2} className="mp-pop" sx={{ mt: 4 }}>
-          <CardHeader title="Placar" sx={{ fontWeight: "bold" }} />
-          <CardContent>
-            {state!.config.roomMode === "TEAM" && (
-              <Box sx={{ mb: 3 }}>
-                {result!.teamScoreboard.map((t) => (
+        <Box sx={{ mt: 4 }}>
+          {room.isHost && state!.config.advanceMode === "HOST" && (
+            <Button
+              fullWidth
+              variant="contained"
+              color="success"
+              onClick={room.next}
+              sx={{ mb: 3 }}
+            >
+              {result!.lastQuestion ? "Ver resultado final" : "Próxima questão"}
+            </Button>
+          )}
+          {state!.config.advanceMode === "AUTO" && (
+            <Typography color="text.secondary" align="center" sx={{ mb: 3 }}>
+              {result!.lastQuestion
+                ? "Finalizando..."
+                : "Próxima questão em instantes..."}
+            </Typography>
+          )}
+
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              flexWrap: "wrap",
+              alignItems: "flex-start",
+            }}
+          >
+            <Card
+              elevation={2}
+              className="mp-pop"
+              sx={{ flex: "2 1 320px", minWidth: 280 }}
+            >
+              <CardHeader title="Placar" sx={{ fontWeight: "bold" }} />
+              <CardContent>
+                {state!.config.roomMode === "TEAM" && (
+                  <Box sx={{ mb: 3 }}>
+                    {result!.teamScoreboard.map((t) => (
+                      <Box
+                        key={t.id}
+                        sx={{ display: "flex", justifyContent: "space-between" }}
+                      >
+                        <span>
+                          {t.avatar && <span style={{ marginRight: 6 }}>{t.avatar}</span>}
+                          {t.name}
+                        </span>
+                        <strong>{t.score}</strong>
+                      </Box>
+                    ))}
+                    <hr />
+                  </Box>
+                )}
+                {scoreboard.slice(0, 5).map((p, i) => (
                   <Box
-                    key={t.id}
-                    sx={{ display: "flex", justifyContent: "space-between" }}
+                    key={p.id}
+                    className={bannerClassName(p.banner)}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      opacity: p.eliminated ? 0.5 : 1,
+                      borderRadius: 1,
+                      px: 0.5,
+                    }}
                   >
-                    <span>
-                      {t.avatar && <span style={{ marginRight: 6 }}>{t.avatar}</span>}
-                      {t.name}
+                    <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      {i < 3 ? (
+                        <span className={`mp-rank-icon mp-rank-${i + 1}`}>
+                          {i + 1}
+                        </span>
+                      ) : (
+                        <span style={{ marginRight: 10 }}>{i + 1}.</span>
+                      )}
+                      {p.avatar && (
+                        <FramedAvatar code={p.frame} size={26}>
+                          <span style={{ fontSize: "0.9em" }}>{p.avatar}</span>
+                        </FramedAvatar>
+                      )}
+                      <span style={{ textDecoration: p.eliminated ? "line-through" : "none" }}>
+                        {p.name}
+                      </span>
+                      <TitleBadge code={p.title} />
+                      {p.id === room.playerId && " (você)"}
+                      {p.eliminated && (
+                        <span style={{ marginLeft: 6, fontSize: "0.8em" }}>💀</span>
+                      )}
                     </span>
-                    <strong>{t.score}</strong>
+                    <strong>{p.score}</strong>
                   </Box>
                 ))}
-                <hr />
-              </Box>
-            )}
-            {scoreboard.slice(0, 5).map((p, i) => (
-              <Box
-                key={p.id}
-                sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
-              >
-                <span style={{ display: "flex", alignItems: "center" }}>
-                  {i < 3 ? (
-                    <span className={`mp-rank-icon mp-rank-${i + 1}`}>
-                      {i + 1}
-                    </span>
-                  ) : (
-                    <span style={{ marginRight: 10 }}>{i + 1}.</span>
-                  )}
-                  {p.avatar && <span style={{ marginRight: 6 }}>{p.avatar}</span>}
-                  {p.name}
-                  {p.id === room.playerId && " (você)"}
-                </span>
-                <strong>{p.score}</strong>
-              </Box>
-            ))}
+              </CardContent>
+            </Card>
+
             {room.isHost && isFunMode && !result!.lastQuestion && (
-              <Box sx={{ mt: 3 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Ativar poder pra próxima questão:
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {(Object.keys(QUESTION_POWER_LABELS) as QuestionPower[]).map((power) => {
-                    const { icon: PowerIcon, color } = POWER_STYLE[power];
-                    return (
-                      <Button
-                        key={power}
-                        size="small"
-                        startIcon={<PowerIcon />}
-                        variant={state!.pendingPowerUp === power ? "contained" : "outlined"}
-                        color={color}
-                        onClick={() =>
-                          room.setPower(state!.pendingPowerUp === power ? null : power)
-                        }
-                      >
-                        {QUESTION_POWER_LABELS[power]}
-                      </Button>
-                    );
-                  })}
-                </Box>
-              </Box>
+              <Card
+                elevation={2}
+                className="mp-pop"
+                sx={{ flex: "1 1 240px", minWidth: 240 }}
+              >
+                <CardHeader title="Poderes" sx={{ fontWeight: "bold" }} />
+                <CardContent>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    Ativar poder pra próxima questão:
+                  </Typography>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    {(Object.keys(QUESTION_POWER_LABELS) as QuestionPower[]).map((power) => {
+                      const { icon: PowerIcon, color } = POWER_STYLE[power];
+                      return (
+                        <Button
+                          key={power}
+                          fullWidth
+                          size="small"
+                          startIcon={<PowerIcon />}
+                          variant={state!.pendingPowerUp === power ? "contained" : "outlined"}
+                          color={color}
+                          sx={{ justifyContent: "flex-start" }}
+                          onClick={() =>
+                            room.setPower(state!.pendingPowerUp === power ? null : power)
+                          }
+                        >
+                          {QUESTION_POWER_LABELS[power]}
+                        </Button>
+                      );
+                    })}
+                  </Box>
+                </CardContent>
+              </Card>
             )}
-            {room.isHost && state!.config.advanceMode === "HOST" && (
-              <Box sx={{ display: "grid", mt: 3 }}>
-                <Button variant="contained" onClick={room.next}>
-                  {result!.lastQuestion ? "Ver resultado final" : "Próxima questão"}
-                </Button>
-              </Box>
-            )}
-            {state!.config.advanceMode === "AUTO" && (
-              <Typography color="text.secondary" align="center" sx={{ mt: 3, mb: 0 }}>
-                {result!.lastQuestion
-                  ? "Finalizando..."
-                  : "Próxima questão em instantes..."}
-              </Typography>
-            )}
-          </CardContent>
-        </Card>
+          </Box>
+        </Box>
       )}
       </Container>
     </div>

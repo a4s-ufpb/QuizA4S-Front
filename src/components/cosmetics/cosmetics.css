@@ -1,0 +1,109 @@
+/* Cosméticos da loja: molduras de avatar, títulos e banners.
+   Alguns são animados via CSS puro (sem libs). */
+
+/* ---------- Molduras (aplicadas num wrapper redondo do avatar) ---------- */
+.cos-frame {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 3px;
+  box-sizing: border-box;
+  line-height: 1;
+}
+
+.cos-frame-gold {
+  background: linear-gradient(135deg, #f9d423, #e6a817);
+  box-shadow: 0 0 6px rgba(230, 168, 23, 0.7);
+}
+
+.cos-frame-silver {
+  background: linear-gradient(135deg, #e2e2e2, #a9a9a9);
+  box-shadow: 0 0 5px rgba(180, 180, 180, 0.7);
+}
+
+.cos-frame-ice {
+  background: linear-gradient(135deg, #a1e9ff, #4fb8e6);
+  box-shadow: 0 0 8px rgba(79, 184, 230, 0.8);
+  animation: cos-ice-glow 2s ease-in-out infinite;
+}
+
+.cos-frame-neon {
+  background: linear-gradient(135deg, #00f0ff, #ff00e0);
+  animation: cos-neon-pulse 1.4s ease-in-out infinite;
+}
+
+.cos-frame-fire {
+  background: linear-gradient(135deg, #ff5f00, #ff0000, #ffcc00);
+  background-size: 200% 200%;
+  animation: cos-fire-flicker 1.2s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(255, 80, 0, 0.8);
+}
+
+.cos-frame-rainbow {
+  background: linear-gradient(135deg, red, orange, yellow, green, blue, violet);
+  background-size: 300% 300%;
+  animation: cos-rainbow-shift 3s linear infinite;
+}
+
+@keyframes cos-neon-pulse {
+  0%, 100% { box-shadow: 0 0 4px #00f0ff, 0 0 8px #ff00e0; }
+  50% { box-shadow: 0 0 10px #00f0ff, 0 0 18px #ff00e0; }
+}
+@keyframes cos-fire-flicker {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes cos-rainbow-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+@keyframes cos-ice-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(79, 184, 230, 0.6); }
+  50% { box-shadow: 0 0 12px rgba(161, 233, 255, 0.95); }
+}
+
+/* ---------- Títulos animados ---------- */
+.cos-title {
+  font-weight: bold;
+  font-size: 0.8em;
+}
+.cos-title-prodigy {
+  background: linear-gradient(90deg, #ffd700, #fff3b0, #ffd700);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: cos-title-shine 2.5s linear infinite;
+}
+.cos-title-immortal {
+  background: linear-gradient(90deg, #b721ff, #21d4fd, #b721ff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: cos-title-shine 2s linear infinite;
+}
+@keyframes cos-title-shine {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ---------- Banners (faixa de fundo de uma linha/card) ---------- */
+.cos-banner-ocean { background: linear-gradient(90deg, rgba(0,105,148,0.22), rgba(0,180,216,0.22)); }
+.cos-banner-sunset { background: linear-gradient(90deg, rgba(255,94,58,0.22), rgba(255,193,7,0.22)); }
+.cos-banner-forest { background: linear-gradient(90deg, rgba(34,139,34,0.22), rgba(120,200,80,0.22)); }
+.cos-banner-galaxy {
+  background: linear-gradient(90deg, rgba(35,7,77,0.3), rgba(120,40,200,0.3), rgba(35,7,77,0.3));
+  background-size: 200% 100%;
+  animation: cos-banner-move 6s linear infinite;
+}
+.cos-banner-aurora {
+  background: linear-gradient(90deg, rgba(0,255,170,0.22), rgba(0,150,255,0.22), rgba(180,0,255,0.22));
+  background-size: 200% 100%;
+  animation: cos-banner-move 5s ease-in-out infinite;
+}
+@keyframes cos-banner-move {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}

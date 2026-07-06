@@ -13,7 +13,8 @@ import {
   Chip,
   Stack,
 } from "@mui/material";
-import { BsPersonPlusFill, BsCheckLg, BsXLg, BsTrash } from "react-icons/bs";
+import { BsPersonPlusFill, BsCheckLg, BsXLg, BsTrash, BsEyeFill } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 import { UserService } from "../../../service/UserService";
 import {
   useMyFriendsQuery,
@@ -27,8 +28,19 @@ import type { User } from "../../../types";
 
 const userService = new UserService();
 
-const Friends = () => {
+interface FriendsProps {
+  /** Chamado ao navegar pra um perfil (ex.: fechar o modal que embrulha esta tela). */
+  onNavigateAway?: () => void;
+}
+
+const Friends = ({ onNavigateAway }: FriendsProps) => {
+  const navigate = useNavigate();
   const myUuid = getStoredUser().uuid;
+
+  function openProfile(userId: string) {
+    onNavigateAway?.();
+    navigate(`/profile/public/${userId}`);
+  }
   const [searchName, setSearchName] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [searching, setSearching] = useState(false);
@@ -147,29 +159,43 @@ const Friends = () => {
               <ListItem
                 key={f.id}
                 secondaryAction={
-                  <IconButton
-                    color="error"
-                    onClick={() => removeMutation.mutate(f.id)}
-                    title="Remover amigo"
-                  >
-                    <BsTrash />
-                  </IconButton>
+                  <Stack direction="row" spacing={0.5}>
+                    <IconButton
+                      color="primary"
+                      onClick={() => openProfile(friend.uuid)}
+                      title="Ver perfil"
+                    >
+                      <BsEyeFill />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => removeMutation.mutate(f.id)}
+                      title="Remover amigo"
+                    >
+                      <BsTrash />
+                    </IconButton>
+                  </Stack>
                 }
               >
-                <ListItemAvatar>
-                  <Avatar />
-                </ListItemAvatar>
-                <ListItemText
-                  primary={friend.name}
-                  secondary={
-                    <Chip
-                      size="small"
-                      label={`Nível ${friend.level ?? 1}`}
-                      color="primary"
-                      variant="outlined"
-                    />
-                  }
-                />
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 2, cursor: "pointer", width: "100%" }}
+                  onClick={() => openProfile(friend.uuid)}
+                >
+                  <ListItemAvatar>
+                    <Avatar />
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={friend.name}
+                    secondary={
+                      <Chip
+                        size="small"
+                        label={`Nível ${friend.level ?? 1}`}
+                        color="primary"
+                        variant="outlined"
+                      />
+                    }
+                  />
+                </Box>
               </ListItem>
             );
           })}

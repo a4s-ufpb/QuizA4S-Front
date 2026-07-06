@@ -1,4 +1,4 @@
-import { useContext, useState, type Dispatch, type SetStateAction } from "react";
+import { useContext, type Dispatch, type SetStateAction } from "react";
 import { AuthenticationContext } from "../../context/AuthenticationContext";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,22 +12,37 @@ import {
   BsPersonPlusFill,
   BsBoxArrowInRight,
   BsGearFill,
+  BsClockHistory,
+  BsPersonHeart,
+  BsAwardFill,
+  BsDiagram3Fill,
+  BsShopWindow,
 } from "react-icons/bs";
 import { getStoredUser } from "../../util/storage";
-import SettingsModal from "../settingsModal/SettingsModal";
+import { clearAuthStorage } from "../../util/token";
 
 import "./Menu.css";
 
 interface MenuProps {
   setMenu: Dispatch<SetStateAction<boolean>>;
   isAuth: boolean;
+  onOpenSettings: () => void;
+  onOpenHistory: () => void;
+  onOpenFriends: () => void;
+  onOpenAchievements: () => void;
 }
 
-const Menu = ({ setMenu, isAuth }: MenuProps) => {
+const Menu = ({
+  setMenu,
+  isAuth,
+  onOpenSettings,
+  onOpenHistory,
+  onOpenFriends,
+  onOpenAchievements,
+}: MenuProps) => {
   const { setAuthenticated } = useContext(AuthenticationContext);
   const navigate = useNavigate();
   const user = isAuth ? getStoredUser() : null;
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   function handleButtonClick(callback: () => void) {
     setMenu(false);
@@ -35,8 +50,7 @@ const Menu = ({ setMenu, isAuth }: MenuProps) => {
   }
 
   function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAuthStorage();
     setAuthenticated(false);
     navigate("/login");
   }
@@ -84,13 +98,43 @@ const Menu = ({ setMenu, isAuth }: MenuProps) => {
           </button>
           <button
             type="button"
+            onClick={() => handleButtonClick(() => navigate("/tournament"))}
+          >
+            <BsDiagram3Fill /> Torneio
+          </button>
+          <button
+            type="button"
             onClick={() => handleButtonClick(() => navigate("/ranking"))}
           >
             <BsTrophyFill /> Ranking
           </button>
           <button
             type="button"
-            onClick={() => handleButtonClick(() => setSettingsOpen(true))}
+            onClick={() => handleButtonClick(() => navigate("/store"))}
+          >
+            <BsShopWindow /> Loja
+          </button>
+          <button
+            type="button"
+            onClick={() => handleButtonClick(onOpenHistory)}
+          >
+            <BsClockHistory /> Histórico Recente
+          </button>
+          <button
+            type="button"
+            onClick={() => handleButtonClick(onOpenFriends)}
+          >
+            <BsPersonHeart /> Amigos
+          </button>
+          <button
+            type="button"
+            onClick={() => handleButtonClick(onOpenAchievements)}
+          >
+            <BsAwardFill /> Conquistas
+          </button>
+          <button
+            type="button"
+            onClick={() => handleButtonClick(onOpenSettings)}
           >
             <BsGearFill /> Configurações
           </button>
@@ -120,7 +164,13 @@ const Menu = ({ setMenu, isAuth }: MenuProps) => {
           </button>
           <button
             type="button"
-            onClick={() => handleButtonClick(() => setSettingsOpen(true))}
+            onClick={() => handleButtonClick(() => navigate("/tournament"))}
+          >
+            <BsDiagram3Fill /> Torneio
+          </button>
+          <button
+            type="button"
+            onClick={() => handleButtonClick(onOpenSettings)}
           >
             <BsGearFill /> Configurações
           </button>
@@ -139,7 +189,6 @@ const Menu = ({ setMenu, isAuth }: MenuProps) => {
         </div>
       )}
 
-      <SettingsModal open={settingsOpen} setOpen={setSettingsOpen} />
     </div>
   );
 };

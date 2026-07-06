@@ -11,7 +11,7 @@ function RankingPage() {
   const [tab, setTab] = useState(0);
 
   function showRanking(theme: Theme) {
-    localStorage.setItem("theme", JSON.stringify(theme));
+    sessionStorage.setItem("theme", JSON.stringify(theme));
     setShowRanking(true);
   }
 

@@ -1,7 +1,6 @@
 import "./Home.css";
 import { useState } from "react";
 import qrCode from "../../assets/qr-code.webp";
-import backgroundImage from "../../assets/background-quiz.webp";
 import { useNavigate } from "react-router-dom";
 import GameModeModal from "../../components/gameMode/GameModeModal";
 
@@ -10,10 +9,7 @@ const Home = () => {
   const [showModes, setShowModes] = useState(false);
 
   return (
-    <div
-      className="container-home"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
-    >
+    <div className="container-home">
       <div className="home">
         <h1 className="home-title">Aprenda se divertindo</h1>
         <p className="home-description">

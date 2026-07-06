@@ -53,10 +53,18 @@ const MatchHistory = () => {
             key={entry.id}
             divider
             secondaryAction={
-              <Chip
-                label={`${entry.score}/${entry.total}`}
-                color={entry.score >= entry.total / 2 ? "success" : "default"}
-              />
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.5 }}>
+                <Chip
+                  size="small"
+                  label={`Pontos: ${entry.score}`}
+                  color={entry.score >= entry.total / 2 ? "success" : "default"}
+                />
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`Questões: ${entry.total}`}
+                />
+              </Box>
             }
           >
             <Box sx={{ mr: 1, color: "primary.main" }}>

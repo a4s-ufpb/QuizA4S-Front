@@ -33,6 +33,27 @@ export interface User {
   likes?: number;
   xp?: number;
   level?: number;
+  coins?: number;
+  equippedTitle?: string | null;
+  equippedFrame?: string | null;
+  equippedBanner?: string | null;
+}
+
+export interface WalletTransactionResponse {
+  id: number;
+  type: "EARN" | "SPEND";
+  amount: number;
+  reason: string;
+  createdAt: string;
+}
+
+export interface StoreItemResponse {
+  code: string;
+  name: string;
+  description: string;
+  category: "TITLE" | "AVATAR_FRAME";
+  price: number;
+  owned: boolean;
 }
 
 export interface FriendshipResponse {
@@ -56,6 +77,18 @@ export interface AchievementResponse {
   name: string;
   description: string;
   unlocked: boolean;
+}
+
+export interface PublicProfileResponse {
+  uuid: string;
+  name: string;
+  likes: number;
+  xp: number;
+  level: number;
+  equippedTitle?: string | null;
+  equippedFrame?: string | null;
+  equippedBanner?: string | null;
+  achievements: AchievementResponse[];
 }
 
 export interface GlobalRankingResponse {

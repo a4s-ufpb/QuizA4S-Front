@@ -5,11 +5,17 @@ import type { Role, User } from "../types";
 
 const userService = new UserService();
 
+// Consultas de usuário não são cacheadas: sempre refazem a chamada e não
+// guardam o resultado, evitando exibir dados de sessão/permissão desatualizados
+// (ex.: cargo, cosméticos, saldo) após uma troca de login.
+const NO_CACHE = { staleTime: 0, gcTime: 0, refetchOnMount: "always" as const };
+
 export function useFindUserQuery(enabled = true) {
   return useQuery({
     queryKey: queryKeys.users.me,
     queryFn: () => userService.findUser(),
     enabled,
+    ...NO_CACHE,
   });
 }
 
@@ -34,6 +40,16 @@ export function useIsAdminQuery(userId: string, enabled = true) {
     queryKey: queryKeys.users.isAdmin(userId),
     queryFn: () => userService.validateIfUserIsAdmin(userId),
     enabled: enabled && Boolean(userId),
+    ...NO_CACHE,
+  });
+}
+
+export function usePublicProfileQuery(userId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.users.publicProfile(userId),
+    queryFn: () => userService.findPublicProfile(userId),
+    enabled: enabled && Boolean(userId),
+    ...NO_CACHE,
   });
 }
 
@@ -47,6 +63,7 @@ export function useAllUsersQuery(
     queryKey: queryKeys.users.list(userId, page, name),
     queryFn: () => userService.findAllUsers(userId, page, name),
     enabled: enabled && Boolean(userId),
+    ...NO_CACHE,
   });
 }
 

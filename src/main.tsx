@@ -22,6 +22,10 @@ import SelectTheme from "./routes/createQuiz/SelectTheme";
 import RankingPage from "./routes/rankingPage/RankingPage";
 import Multiplayer from "./routes/multiplayer/Multiplayer";
 import Room from "./routes/multiplayer/Room";
+import CreateJoinTournament from "./routes/tournament/CreateJoinTournament";
+import TournamentRoom from "./routes/tournament/TournamentRoom";
+import Store from "./routes/store/Store";
+import PublicProfile from "./routes/publicProfile/PublicProfile";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -38,6 +42,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
               <Route path="/theme/quiz/:id" element={<Quiz />} />
               <Route path="/multiplayer" element={<Multiplayer />} />
               <Route path="/room/:code" element={<Room />} />
+              <Route path="/tournament" element={<CreateJoinTournament />} />
+              <Route path="/tournament/:code" element={<TournamentRoom />} />
+              <Route path="/profile/public/:id" element={<PublicProfile />} />
               <Route
                 path="/create/quiz"
                 element={
@@ -83,6 +90,14 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                 element={
                   <PrivateRoute>
                     <RankingPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/store"
+                element={
+                  <PrivateRoute>
+                    <Store />
                   </PrivateRoute>
                 }
               />

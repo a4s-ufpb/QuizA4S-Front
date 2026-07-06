@@ -26,6 +26,7 @@ import { getStoredUser } from "../../util/storage";
 import { addMatchHistoryEntry } from "../../util/matchHistory";
 import { useRecordMatchMutation } from "../../query/useMatchHistoryQueries";
 import { generateResultImage, downloadImage } from "../../util/shareImage";
+import { TitleBadge, FramedAvatar, bannerClassName } from "../cosmetics/Cosmetic";
 import "./multiplayer.css";
 
 interface ResultsViewProps {
@@ -39,6 +40,8 @@ interface PodiumEntry {
   score: number;
   isMe?: boolean;
   userUuid?: string | null;
+  title?: string | null;
+  frame?: string | null;
 }
 
 /** Botão de curtida: só pra jogadores logados, curtindo outra conta real (não convidado). */
@@ -104,7 +107,9 @@ function Podium({ entries, canLike }: { entries: PodiumEntry[]; canLike: boolean
             }}
           >
             <Box sx={{ fontSize: "2.6em", mb: 0.5 }}>
-              {entry.avatar || <BsPersonFill />}
+              <FramedAvatar code={entry.frame} size={52}>
+                <span style={{ fontSize: "0.8em" }}>{entry.avatar || <BsPersonFill />}</span>
+              </FramedAvatar>
             </Box>
             <Typography
               sx={{
@@ -120,6 +125,11 @@ function Podium({ entries, canLike }: { entries: PodiumEntry[]; canLike: boolean
               {entry.name}
               {entry.isMe && " (você)"}
             </Typography>
+            {entry.title && (
+              <Box sx={{ mb: 0.5 }}>
+                <TitleBadge code={entry.title} />
+              </Box>
+            )}
             <Typography sx={{ color: "#fff", mb: 1 }}>{entry.score} pts</Typography>
             {!entry.isMe && (
               <LikeButton targetUserUuid={entry.userUuid} canLike={canLike} />
@@ -168,6 +178,8 @@ const ResultsView = ({ room }: ResultsViewProps) => {
         score: p.score,
         isMe: p.id === room.playerId,
         userUuid: p.userUuid,
+        title: p.title,
+        frame: p.frame,
       }));
 
   const myRank = isTeam
@@ -290,7 +302,7 @@ const ResultsView = ({ room }: ResultsViewProps) => {
             return (
               <ListItem
                 key={p.id}
-                className="mp-rank-item"
+                className={`mp-rank-item ${bannerClassName(p.banner)}`}
                 style={{ animationDelay: `${i * 80}ms` }}
                 sx={{
                   display: "flex",
@@ -298,10 +310,15 @@ const ResultsView = ({ room }: ResultsViewProps) => {
                   alignItems: "center",
                 }}
               >
-                <span style={{ display: "flex", alignItems: "center" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   {rankBadge(rank)}
-                  {p.avatar && <span style={{ marginRight: 6 }}>{p.avatar}</span>}
+                  {p.avatar && (
+                    <FramedAvatar code={p.frame} size={26}>
+                      <span style={{ fontSize: "0.9em" }}>{p.avatar}</span>
+                    </FramedAvatar>
+                  )}
                   {p.name}
+                  <TitleBadge code={p.title} />
                   {p.id === room.playerId && " (você)"}
                 </span>
                 <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
