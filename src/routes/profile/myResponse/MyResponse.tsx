@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+  Alert,
   Box,
   TableContainer,
   Table,
@@ -31,9 +32,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import FilterComponent, {
-  type ResponseFilterData,
-} from "../../../components/filterComponent/FilterComponent";
+import AdvancedSearch, {
+  type AdvancedField,
+  type AdvancedFilterValues,
+} from "../../../components/advancedSearch/AdvancedSearch";
 import Pagination from "../../../components/pagination/Pagination";
 import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
@@ -46,9 +48,12 @@ import {
 import {
   useResponsesQueryChartQuery,
   useResponsesQueryFilterQuery,
+  useUsernamesByCreatorQuery,
+  useThemeNamesByCreatorQuery,
 } from "../../../query/useResponseQueries";
 import QuestionImageGallery from "../../../components/questionImageGallery/QuestionImageGallery";
 import { getOrderedQuestionImages } from "../../../util/questionImages";
+import { getStoredUser } from "../../../util/storage";
 import type { GameMode, Question, ResponseItem } from "../../../types";
 
 const ALTERNATIVE_LABELS = ["A", "B", "C", "D", "E", "F"];
@@ -59,12 +64,51 @@ const MyResponse = () => {
     null
   );
 
-  const [currentDate, setCurrentDate] = useState("");
-  const [finalDate, setFinalDate] = useState("");
-  const [username, setUsername] = useState("");
-  const [themeName, setThemeName] = useState("");
+  const [filters, setFilters] = useState<AdvancedFilterValues>({
+    username: "",
+    themeName: "",
+    currentDate: "",
+    finalDate: "",
+  });
   const [view, setView] = useState<"table" | "chart">("table");
   const [gameMode, setGameMode] = useState<GameMode>("SINGLE_PLAYER");
+  const isMultiplayer = gameMode === "MULTIPLAYER";
+
+  const username = filters.username ?? "";
+  const themeName = filters.themeName ?? "";
+  const currentDate = filters.currentDate ?? "";
+  const finalDate = filters.finalDate ?? "";
+
+  const { uuid: creatorId } = getStoredUser();
+  const usernamesQuery = useUsernamesByCreatorQuery(creatorId);
+  const themeNamesQuery = useThemeNamesByCreatorQuery(creatorId);
+  const usernameOptions = usernamesQuery.data?.success
+    ? usernamesQuery.data.data.map((u) => u.username)
+    : [];
+  const themeOptions = themeNamesQuery.data?.success
+    ? themeNamesQuery.data.data.map((t) => t.themeName)
+    : [];
+
+  const filterFields: AdvancedField[] = [
+    {
+      name: "username",
+      label: "Usuário",
+      type: "autocomplete",
+      placeholder: "Nome do usuário",
+      options: usernameOptions,
+      onFocus: () => usernamesQuery.refetch(),
+    },
+    {
+      name: "themeName",
+      label: "Tema",
+      type: "autocomplete",
+      placeholder: "Nome do tema",
+      options: themeOptions,
+      onFocus: () => themeNamesQuery.refetch(),
+    },
+    { name: "currentDate", label: "Data Inicial", type: "date" },
+    { name: "finalDate", label: "Data Final", type: "date" },
+  ];
 
   const responsesQuery = useResponsesQueryFilterQuery(
     currentPage,
@@ -74,13 +118,16 @@ const MyResponse = () => {
     finalDate,
     gameMode
   );
+  // O gráfico só busca com um tema selecionado — sem esse filtro a query
+  // varria todas as respostas do banco (lenta com muitos dados).
+  const hasThemeFilter = themeName.trim() !== "";
   const chartQuery = useResponsesQueryChartQuery(
     username,
     themeName,
     currentDate,
     finalDate,
     gameMode,
-    view === "chart"
+    view === "chart" && hasThemeFilter
   );
 
   const loading = responsesQuery.isLoading || chartQuery.isLoading;
@@ -112,55 +159,46 @@ const MyResponse = () => {
     }));
   }, [chartQuery.data]);
 
-  // Altera o estados dos parâmetros para realizar a pesquisa
-  function changeData(propsData: ResponseFilterData) {
-    setCurrentPage(0); // volta para a página inicial
-    setUsername(propsData.username);
-    setCurrentDate(propsData.currentDate);
-    setFinalDate(propsData.finalDate);
-    setThemeName(propsData.themeName);
+  function applyFilters(values: AdvancedFilterValues) {
+    setFilters(values);
+    setCurrentPage(0);
   }
 
   return (
     <Box sx={{ py: 4 }}>
-      <FilterComponent onData={changeData} />
-
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 2,
-          mt: 3,
-          mb: 1,
-        }}
-      >
-        <TextField
-          select
-          size="small"
-          label="Modo de jogo"
-          value={gameMode}
-          onChange={(e) => setGameMode(e.target.value as GameMode)}
-          sx={{ minWidth: 180 }}
-        >
-          <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
-          <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
-        </TextField>
-        <ToggleButtonGroup
-          size="small"
-          exclusive
-          value={view}
-          onChange={(_e, newView) => newView && setView(newView)}
-        >
-          <ToggleButton value="table">
-            <BsTable style={{ marginRight: 6 }} /> Tabela
-          </ToggleButton>
-          <ToggleButton value="chart">
-            <BsBarChartFill style={{ marginRight: 6 }} /> Gráfico
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
+      <AdvancedSearch
+        fields={filterFields}
+        values={filters}
+        onChange={applyFilters}
+        leftExtra={
+          <TextField
+            select
+            size="small"
+            label="Modo de jogo"
+            value={gameMode}
+            onChange={(e) => setGameMode(e.target.value as GameMode)}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
+            <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
+          </TextField>
+        }
+        rightExtra={
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={view}
+            onChange={(_e, newView) => newView && setView(newView)}
+          >
+            <ToggleButton value="table">
+              <BsTable style={{ marginRight: 6 }} /> Tabela
+            </ToggleButton>
+            <ToggleButton value="chart">
+              <BsBarChartFill style={{ marginRight: 6 }} /> Gráfico
+            </ToggleButton>
+          </ToggleButtonGroup>
+        }
+      />
 
       {view === "table" ? (
         <>
@@ -170,7 +208,10 @@ const MyResponse = () => {
                 <TableRow>
                   <TableCell>Usuário</TableCell>
                   <TableCell>Tema</TableCell>
-                  <TableCell>Questão</TableCell>
+                  {/* No multiplayer não faz sentido o título da questão (o
+                      jogador responde no ritmo do Kahoot) — mostra só a
+                      alternativa marcada. */}
+                  {!isMultiplayer && <TableCell>Questão</TableCell>}
                   <TableCell>Respondeu</TableCell>
                   <TableCell align="center">Acertou</TableCell>
                 </TableRow>
@@ -186,7 +227,9 @@ const MyResponse = () => {
                     >
                       <TableCell>{response.user.name}</TableCell>
                       <TableCell>{response.question.theme.name}</TableCell>
-                      <TableCell>{response.question.title}</TableCell>
+                      {!isMultiplayer && (
+                        <TableCell>{response.question.title}</TableCell>
+                      )}
                       <TableCell>{response.alternative.text}</TableCell>
                       <TableCell align="center">
                         {response.alternative.correct ? (
@@ -212,6 +255,11 @@ const MyResponse = () => {
             color={"dark"}
           />
         </>
+      ) : !hasThemeFilter ? (
+        <Alert severity="info" sx={{ mt: 1 }}>
+          Selecione um tema no filtro acima (e clique em Filtrar) para exibir o
+          gráfico.
+        </Alert>
       ) : (
         <Paper sx={{ width: "100%", p: 2 }}>
           <ResponsiveContainer width="100%" height={380}>

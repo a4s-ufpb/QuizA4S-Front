@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   Box,
@@ -61,13 +61,8 @@ function MyStatistics() {
     ? themesQuery.data.data.content || []
     : [];
 
-  useEffect(() => {
-    if (themeNamesList.length > 0 && !selectedTheme) {
-      setSelectedTheme(themeNamesList[0].name);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [themeNamesList]);
-
+  // Sem auto-seleção de tema: a busca só dispara depois que o usuário escolhe
+  // um (evita queries pesadas involuntárias ao abrir a aba).
   const statisticsQuery = useResponsesStatisticsQuery(
     selectedTheme,
     userId,
@@ -143,7 +138,11 @@ function MyStatistics() {
         </ToggleButtonGroup>
       </Box>
 
-      {view === "table" ? (
+      {!selectedTheme ? (
+        <Alert severity="info">
+          Selecione um tema acima para exibir as estatísticas.
+        </Alert>
+      ) : view === "table" ? (
         <TableContainer component={Paper} sx={{ width: "100%" }}>
           <Table>
             <TableHead>

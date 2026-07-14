@@ -124,3 +124,16 @@
         border-top-left-radius: 0px;
     }
 }
+
+/* Tema escuro: o menu lateral usava sempre o gradiente claro. */
+[data-theme="dark"] .menu{
+    background: linear-gradient(165deg, #16202e 0%, #0f1620 100%);
+}
+
+[data-theme="dark"] .container-btn-fechar button{
+    color: #fff;
+}
+
+[data-theme="dark"] .container-btn-fechar button:hover{
+    color: red;
+}

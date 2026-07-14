@@ -86,6 +86,7 @@ const Lobby = ({ room }: LobbyProps) => {
   const [showThemes, setShowThemes] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [confirmStart, setConfirmStart] = useState(false);
   const [kickTarget, setKickTarget] = useState<PlayerView | null>(null);
   const [newTeamName, setNewTeamName] = useState("");
   const [inviteAnchor, setInviteAnchor] = useState<HTMLElement | null>(null);
@@ -110,7 +111,8 @@ const Lobby = ({ room }: LobbyProps) => {
     setNewTeamName("");
   }
   const allReady = state.players.filter((p) => !p.host).every((p) => p.ready);
-  const canStart = room.isHost && state.themeId != null && allReady;
+  // O líder pode iniciar mesmo sem todos prontos — com confirmação antes.
+  const canStart = room.isHost && state.themeId != null;
 
   function leaveRoom() {
     room.leave();
@@ -422,21 +424,31 @@ const Lobby = ({ room }: LobbyProps) => {
                   variant="contained"
                   color="success"
                   disabled={!canStart}
-                  onClick={room.start}
+                  onClick={() => {
+                    // Com jogadores ainda não prontos, pede confirmação antes.
+                    if (allReady) room.start();
+                    else setConfirmStart(true);
+                  }}
                 >
                   Iniciar partida
                 </Button>
               </>
             )}
           </Box>
-          {room.isHost && !canStart && (
+          {room.isHost && state.themeId == null && (
             <Typography
               variant="body2"
               sx={{ color: "rgba(255,255,255,0.7)", mt: 1 }}
             >
-              {state.themeId == null
-                ? "Selecione um quiz para poder iniciar."
-                : "Aguardando todos os jogadores ficarem prontos."}
+              Selecione um quiz para poder iniciar.
+            </Typography>
+          )}
+          {room.isHost && state.themeId != null && !allReady && (
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.7)", mt: 1 }}
+            >
+              Ainda há jogadores que não deram pronto.
             </Typography>
           )}
         </Box>
@@ -473,6 +485,19 @@ const Lobby = ({ room }: LobbyProps) => {
             setShowConfig(false);
           }}
           onClose={() => setShowConfig(false)}
+        />
+      )}
+
+      {confirmStart && (
+        <ConfirmBox
+          title="Ainda há jogadores que não estão prontos. Deseja iniciar a partida mesmo assim?"
+          textBtn1="Sim, iniciar"
+          textBtn2="Cancelar"
+          onClickBtn1={() => {
+            setConfirmStart(false);
+            room.start();
+          }}
+          onClickBtn2={() => setConfirmStart(false)}
         />
       )}
 

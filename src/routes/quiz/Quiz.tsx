@@ -122,7 +122,7 @@ const Quiz = () => {
 
     alternatives.forEach((node) => {
       const alt = node as HTMLElement;
-      alt.classList.remove("correct-answer", "wrong-answer");
+      alt.classList.remove("correct-answer", "wrong-answer", "alternative-selected");
 
       if (alt.getAttribute("value") === "true") {
         alt.style.backgroundColor = green;
@@ -132,6 +132,10 @@ const Quiz = () => {
         alt.style.color = white;
       }
     });
+
+    // Borda demarcando qual alternativa o jogador marcou (some junto com o
+    // reset ao carregar a próxima questão).
+    event.currentTarget.classList.add("alternative-selected");
 
     if (isCorrect) {
       event.currentTarget.classList.add("correct-answer");
@@ -160,6 +164,8 @@ const Quiz = () => {
 
     setShowFeedback(true);
 
+    // Pausa maior (era 2s) pro jogador ver com calma se acertou/errou e qual
+    // era a alternativa correta antes de avançar.
     setTimeout(() => {
       setShowFeedback(false);
       setClickEnabled(true);
@@ -186,7 +192,7 @@ const Quiz = () => {
       }
 
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }, 2000);
+    }, 3500);
 
     if (token) {
       postResponse(user.uuid, questionId, alternativeId as number);

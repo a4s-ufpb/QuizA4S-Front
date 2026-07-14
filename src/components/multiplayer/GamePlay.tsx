@@ -6,7 +6,12 @@ import {
   CardContent,
   CardHeader,
   Container,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
   LinearProgress,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import {
@@ -18,6 +23,11 @@ import {
   BsLightbulbFill,
   BsArrowsMove,
   BsCashCoin,
+  BsCheckLg,
+  BsStarFill,
+  BsBarChartFill,
+  BsSkipForwardFill,
+  BsEyeFill,
 } from "react-icons/bs";
 import type { IconType } from "react-icons";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
@@ -58,7 +68,9 @@ const ANSWER_COLORS = [
   "success",
 ] as const;
 
-const REVEAL_DURATION_MS = 2000;
+// Tempo com a questão ainda visível após o resultado, pro jogador ver se
+// acertou ou errou antes da tela mudar (era 2s — curto demais em sala de aula).
+const REVEAL_DURATION_MS = 4000;
 
 const ALTERNATIVE_LETTERS = ["A", "B", "C", "D", "E", "F"];
 
@@ -98,9 +110,7 @@ const AlternativesGrid = memo(function AlternativesGrid({
       {alternatives.map((alt, i) => {
         const isSelected = selectedId === alt.id;
         const isCorrect = correctAlternativeId === alt.id;
-        const color: (typeof ANSWER_COLORS)[number] | "inherit" = isSelected
-          ? "inherit"
-          : ANSWER_COLORS[i % ANSWER_COLORS.length];
+        const color = ANSWER_COLORS[i % ANSWER_COLORS.length];
         // Só a alternativa clicada recebe a animação (scale/shake),
         // igual ao quiz single-player — as demais só mudam de cor.
         const revealClass = revealing && isSelected
@@ -112,13 +122,23 @@ const AlternativesGrid = memo(function AlternativesGrid({
           <Button
             key={alt.id}
             variant="contained"
-            color={color === "inherit" ? undefined : color}
+            color={color}
             size="large"
             className={`mp-answer-btn ${revealClass}`}
             sx={{
               justifyContent: "flex-start",
               textAlign: "left",
               py: 2,
+              // Borda demarcando a alternativa que o jogador selecionou —
+              // permanece visível também durante o reveal verde/vermelho.
+              ...(isSelected && {
+                border: "3px solid #fff",
+                boxShadow: "0 0 0 3px rgba(0,0,0,0.35)",
+                "&.Mui-disabled": {
+                  border: "3px solid #fff",
+                  boxShadow: "0 0 0 3px rgba(0,0,0,0.35)",
+                },
+              }),
               // Os botões ficam `disabled` durante o reveal (resposta já
               // enviada) — sem o override de "&.Mui-disabled" o tema aplica
               // a opacidade/cor cinza padrão por cima e o verde/vermelho não
@@ -128,24 +148,162 @@ const AlternativesGrid = memo(function AlternativesGrid({
                   ? {
                       bgcolor: "#5bcebf",
                       color: "#fff",
-                      "&.Mui-disabled": { bgcolor: "#5bcebf", color: "#fff" },
+                      "&.Mui-disabled": {
+                        bgcolor: "#5bcebf",
+                        color: "#fff",
+                        ...(isSelected && {
+                          border: "3px solid #fff",
+                          boxShadow: "0 0 0 3px rgba(0,0,0,0.35)",
+                        }),
+                      },
                     }
                   : {
                       bgcolor: "#d9434f",
                       color: "#fff",
-                      "&.Mui-disabled": { bgcolor: "#d9434f", color: "#fff" },
+                      "&.Mui-disabled": {
+                        bgcolor: "#d9434f",
+                        color: "#fff",
+                        ...(isSelected && {
+                          border: "3px solid #fff",
+                          boxShadow: "0 0 0 3px rgba(0,0,0,0.35)",
+                        }),
+                      },
                     })),
             }}
             disabled={selectedId != null || !inQuestion || isSpectator}
             onClick={() => onPick(alt.id)}
           >
-            {hideTexts ? ALTERNATIVE_LETTERS[i] : alt.text}
+            <Box
+              component="span"
+              className="mp-answer-letter"
+              sx={{
+                flex: "0 0 auto",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 30,
+                height: 30,
+                mr: 1.5,
+                borderRadius: "50%",
+                bgcolor: "rgba(255,255,255,0.85)",
+                color: "#01416a",
+                fontWeight: "bold",
+              }}
+            >
+              {ALTERNATIVE_LETTERS[i]}
+            </Box>
+            {!hideTexts && <span>{alt.text}</span>}
           </Button>
         );
       })}
     </Box>
   );
 });
+
+interface AnswerDistributionChartProps {
+  result: NonNullable<UseGameRoom["result"]>;
+  /** Alternativas do QuestionView (define a cor de cada barra, igual aos botões). */
+  questionAlternatives: AlternativeView[];
+}
+
+/**
+ * Gráfico de barras estilo Kahoot exibido após cada questão: uma coluna por
+ * alternativa, com a mesma cor do botão correspondente, a contagem de
+ * jogadores que a marcaram e um check na correta.
+ */
+function AnswerDistributionChart({
+  result,
+  questionAlternatives,
+}: AnswerDistributionChartProps) {
+  const counts = result.alternatives ?? [];
+  if (counts.length === 0) return null;
+  const maxCount = Math.max(1, ...counts.map((a) => a.count));
+
+  return (
+    <Card elevation={2} className="mp-pop" sx={{ mb: 3 }}>
+      <CardHeader title="Como a turma respondeu" sx={{ fontWeight: "bold" }} />
+      <CardContent>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            gap: { xs: 1.5, sm: 3 },
+            minHeight: 180,
+          }}
+        >
+          {counts.map((alt, i) => {
+            // Mesma cor do botão da alternativa na questão (posição no QuestionView).
+            const questionIndex = questionAlternatives.findIndex(
+              (a) => a.id === alt.id
+            );
+            const colorIndex = questionIndex >= 0 ? questionIndex : i;
+            const color = ANSWER_COLORS[colorIndex % ANSWER_COLORS.length];
+            const barHeight = 24 + (alt.count / maxCount) * 120;
+            return (
+              <Box
+                key={alt.id}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 0.5,
+                  flex: "1 1 0",
+                  maxWidth: 120,
+                }}
+              >
+                <Typography sx={{ fontWeight: "bold", display: "flex", alignItems: "center", gap: 0.5 }}>
+                  {alt.count}
+                  {alt.correct && <BsCheckLg color="#2e7d32" aria-label="alternativa correta" />}
+                </Typography>
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: barHeight,
+                    borderRadius: "6px 6px 0 0",
+                    bgcolor: `${color}.main`,
+                    transition: "height 0.4s ease",
+                    ...(alt.correct && { outline: "3px solid #2e7d32" }),
+                  }}
+                />
+                <Box
+                  sx={{
+                    width: "100%",
+                    px: 0.75,
+                    py: 0.5,
+                    borderRadius: 1,
+                    bgcolor: `${color}.main`,
+                    color: "#fff",
+                    fontSize: "0.8em",
+                    textAlign: "center",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 0.5,
+                  }}
+                >
+                  <strong>{ALTERNATIVE_LETTERS[colorIndex] ?? ""}</strong>
+                  <span
+                    style={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  >
+                    {alt.text}
+                  </span>
+                  {alt.correct && <BsCheckLg aria-hidden />}
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+}
 
 const GamePlay = ({ room }: GamePlayProps) => {
   const { question, result, state } = room;
@@ -157,11 +315,18 @@ const GamePlay = ({ room }: GamePlayProps) => {
   const [feedback, setFeedback] = useState<{ message: string; color: string } | null>(
     null
   );
+  // Entre questões (estilo Kahoot): primeiro o gráfico de respostas, depois o
+  // placar — a troca é local em cada tela (o líder tem os botões de avanço).
+  const [betweenView, setBetweenView] = useState<"chart" | "scoreboard">("chart");
+  // Modal de prévia da próxima questão (só o líder, ao clicar no olho).
+  const [showNextPreview, setShowNextPreview] = useState(false);
 
   // Reinicia a seleção e o cronômetro (com o tempo cheio) a cada nova questão,
   // evitando o frame inicial em "0s" antes do primeiro tick assíncrono.
   useEffect(() => {
     setSelectedId(null);
+    setBetweenView("chart");
+    setShowNextPreview(false);
     if (question) setRemaining(question.timeSeconds);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question?.index]);
@@ -235,11 +400,12 @@ const GamePlay = ({ room }: GamePlayProps) => {
     [selectedId, inQuestion, isSpectator, room]
   );
 
-  const canAdvance =
-    state!.status === "BETWEEN" &&
-    result != null &&
-    room.isHost &&
-    state!.config.advanceMode === "HOST";
+  // Avanço é sempre manual pelo líder (o modo automático foi descontinuado).
+  const canAdvance = state!.status === "BETWEEN" && result != null && room.isHost;
+  // Prévia da próxima questão (backend só envia entre questões e havendo próxima).
+  const nextPreview = state!.nextQuestion;
+  const hasNext = Boolean(nextPreview);
+  const skippedCount = state!.skippedCount;
 
   // Atalhos de teclado: 1-6 escolhem a alternativa, espaço avança a questão (host).
   useEffect(() => {
@@ -294,16 +460,39 @@ const GamePlay = ({ room }: GamePlayProps) => {
           alignItems: "center",
           mb: 2,
           flex: "0 0 auto",
+          // Os botões flutuantes de tela cheia/modo TV ficam no topo esquerdo em
+          // posição absoluta. No mobile e no tablet (até ~1199px) a Container é
+          // quase full-width e não sobra margem lateral, então eles cobrem o
+          // "Questão X de N" — empurra a linha pra baixo até lg (desktop), onde
+          // a Container centraliza e sobra espaço à esquerda.
+          mt: { xs: 6, lg: 0 },
+          flexWrap: "wrap",
+          gap: 1,
         }}
       >
         <Typography color="text.secondary">
           Questão {question.index + 1} de {question.total}
         </Typography>
-        {inQuestion && (
-          <span className={`fw-bold fs-5 mp-timer ${remaining <= 5 ? "low" : ""}`}>
-            {remaining}s
-          </span>
-        )}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {me && (!me.host || state!.players.length === 1) && (
+            <Typography
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                fontWeight: "bold",
+                color: "warning.main",
+              }}
+            >
+              <BsStarFill aria-hidden /> {me.score} pts
+            </Typography>
+          )}
+          {inQuestion && (
+            <span className={`fw-bold fs-5 mp-timer ${remaining <= 5 ? "low" : ""}`}>
+              {remaining}s
+            </span>
+          )}
+        </Box>
       </Box>
       {inQuestion && (
         <LinearProgress
@@ -403,26 +592,93 @@ const GamePlay = ({ room }: GamePlayProps) => {
         </>
       )}
 
-      {showScoreboardOnly && (
+      {showScoreboardOnly && betweenView === "chart" && (
         <Box sx={{ mt: 4 }}>
-          {room.isHost && state!.config.advanceMode === "HOST" && (
-            <Button
-              fullWidth
-              variant="contained"
-              color="success"
-              onClick={room.next}
-              sx={{ mb: 3 }}
+          <AnswerDistributionChart
+            result={result!}
+            questionAlternatives={question.alternatives}
+          />
+          <Button
+            fullWidth
+            variant="contained"
+            color="info"
+            onClick={() => setBetweenView("scoreboard")}
+          >
+            Exibir placar
+          </Button>
+        </Box>
+      )}
+
+      {showScoreboardOnly && betweenView === "scoreboard" && (
+        <Box sx={{ mt: 4 }}>
+          {/* Jogadores (não-líder): avisa quando o líder pulou questões. */}
+          {!room.isHost && skippedCount > 0 && (
+            <Typography
+              align="center"
+              sx={{ mb: 2, color: "#fff", fontWeight: "bold" }}
             >
-              {result!.lastQuestion ? "Ver resultado final" : "Próxima questão"}
-            </Button>
-          )}
-          {state!.config.advanceMode === "AUTO" && (
-            <Typography color="text.secondary" align="center" sx={{ mb: 3 }}>
-              {result!.lastQuestion
-                ? "Finalizando..."
-                : "Próxima questão em instantes..."}
+              O líder pulou {skippedCount}{" "}
+              {skippedCount === 1 ? "questão" : "questões"} — aguarde a próxima.
             </Typography>
           )}
+          {canAdvance && hasNext && (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1,
+                mb: 1,
+                flexWrap: "wrap",
+              }}
+            >
+              <Typography sx={{ color: "#fff", fontWeight: "bold" }}>
+                Próxima questão: {nextPreview!.title}
+              </Typography>
+              <Tooltip title="Pré-visualizar a próxima questão">
+                <IconButton
+                  size="small"
+                  onClick={() => setShowNextPreview(true)}
+                  sx={{ color: "#fff" }}
+                  aria-label="Pré-visualizar próxima questão"
+                >
+                  <BsEyeFill />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          )}
+          {canAdvance && (
+            <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={room.next}
+                sx={{ flex: "2 1 200px" }}
+              >
+                {hasNext ? "Próxima questão" : "Ver resultado final"}
+              </Button>
+              {hasNext && (
+                <Button
+                  variant="contained"
+                  color="warning"
+                  startIcon={<BsSkipForwardFill />}
+                  onClick={room.skip}
+                  sx={{ flex: "1 1 160px" }}
+                >
+                  Pular questão
+                </Button>
+              )}
+            </Box>
+          )}
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<BsBarChartFill />}
+            onClick={() => setBetweenView("chart")}
+            sx={{ mb: 2, color: "#fff", borderColor: "rgba(255,255,255,0.7)" }}
+          >
+            Ver gráfico de respostas
+          </Button>
 
           <Box
             sx={{
@@ -534,6 +790,58 @@ const GamePlay = ({ room }: GamePlayProps) => {
             )}
           </Box>
         </Box>
+      )}
+
+      {/* Prévia da próxima questão — só o líder abre pelo olho; os jogadores
+          nunca veem a questão até o líder clicar em "Próxima questão". */}
+      {nextPreview && (
+        <Dialog
+          open={showNextPreview}
+          onClose={() => setShowNextPreview(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Próxima questão (prévia)</DialogTitle>
+          <DialogContent>
+            <Typography variant="h6" align="center" sx={{ mb: 2 }}>
+              {nextPreview.title}
+            </Typography>
+            {(() => {
+              const previewImages = getOrderedQuestionImages({
+                imageUrl: nextPreview.imageUrl,
+                imageOneUrl: nextPreview.imageOneUrl,
+                imageTwoUrl: nextPreview.imageTwoUrl,
+                imagesOrder: nextPreview.imagesOrder,
+              } as QuestionModel);
+              return (
+                previewImages.length > 0 && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      mb: 2,
+                      height: 220,
+                    }}
+                  >
+                    <QuestionImageGallery images={previewImages} />
+                  </Box>
+                )
+              );
+            })()}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {nextPreview.alternatives.map((alt, i) => (
+                <Card key={alt.id} variant="outlined">
+                  <CardContent
+                    sx={{ display: "flex", alignItems: "center", gap: 1, py: 1.5 }}
+                  >
+                    <strong>{ALTERNATIVE_LETTERS[i]}</strong>
+                    <span>{alt.text}</span>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          </DialogContent>
+        </Dialog>
       )}
       </Container>
     </div>

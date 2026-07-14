@@ -183,6 +183,17 @@
   background: linear-gradient(160deg, #78b9f2 0%, #3f7fd6 100%);
 }
 
+/* Em tela cheia o gradiente claro acima sobrescrevia o tema escuro e a
+   aplicação parecia "voltar" pro modo claro — mantém o fundo escuro. */
+[data-theme="dark"] .mp-room:fullscreen,
+[data-theme="dark"] .mp-room:-webkit-full-screen {
+  background: linear-gradient(160deg, #16202e 0%, #0f1620 60%, #0a0f16 100%);
+}
+
+[data-theme="dark"] .mp-room::backdrop {
+  background: linear-gradient(160deg, #16202e 0%, #0f1620 60%, #0a0f16 100%);
+}
+
 .mp-question-card {
   width: 100%;
 }
@@ -243,6 +254,48 @@
 .mp-quiz-external {
   width: 100%;
   min-height: 100dvh;
+}
+
+/* Tela de saída (sala encerrada / removido) — visual gamificado. */
+.mp-exit-screen {
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(160deg, #78b9f2 0%, #3f7fd6 60%, #0055cc 100%);
+}
+
+[data-theme="dark"] .mp-exit-screen {
+  background: linear-gradient(160deg, #16202e 0%, #0f1620 60%, #0a0f16 100%);
+}
+
+.mp-exit-card {
+  width: 100%;
+  max-width: 460px;
+  text-align: center;
+  padding: 40px 30px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(63, 127, 214, 0.55) 0%, rgba(0, 85, 204, 0.55) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mp-exit-icon {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1em;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.15);
 }
 
 .mp-countdown-overlay {

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+  Alert,
   Box,
   TableContainer,
   Table,
@@ -22,15 +23,18 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { BsTable, BsBarChartFill } from "react-icons/bs";
-import FilterStatistic, {
-  type StatisticFilterData,
-} from "../../../components/filterStatistic/FilterStatistic";
+import AdvancedSearch, {
+  type AdvancedField,
+  type AdvancedFilterValues,
+} from "../../../components/advancedSearch/AdvancedSearch";
 import Pagination from "../../../components/pagination/Pagination";
 import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
 import {
   useAllStatisticByCreatorForChartQuery,
   useAllStatisticByCreatorQuery,
+  useDistinctStudentNameByCreatorIdQuery,
+  useDistinctThemeNameByCreatorIdQuery,
 } from "../../../query/useStatisticQueries";
 import { getStoredUser } from "../../../util/storage";
 
@@ -43,12 +47,49 @@ function MyStatisticConclusion() {
   const [currentPage, setCurrentPage] = useState(0);
   const [view, setView] = useState<"table" | "chart">("table");
 
-  const [studentName, setStudentName] = useState("");
-  const [themeName, setThemeName] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [filters, setFilters] = useState<AdvancedFilterValues>({
+    studentName: "",
+    themeName: "",
+    startDate: "",
+    endDate: "",
+  });
+
+  const studentName = filters.studentName ?? "";
+  const themeName = filters.themeName ?? "";
+  const startDate = filters.startDate ?? "";
+  const endDate = filters.endDate ?? "";
 
   const { uuid: creatorId } = getStoredUser();
+
+  const studentNamesQuery = useDistinctStudentNameByCreatorIdQuery(creatorId);
+  const themeNamesQuery = useDistinctThemeNameByCreatorIdQuery(creatorId);
+  const studentOptions = studentNamesQuery.data?.success
+    ? studentNamesQuery.data.data.map((s) => s.studentName)
+    : [];
+  const themeOptions = themeNamesQuery.data?.success
+    ? themeNamesQuery.data.data.map((t) => t.themeName)
+    : [];
+
+  const filterFields: AdvancedField[] = [
+    {
+      name: "studentName",
+      label: "Usuário",
+      type: "autocomplete",
+      placeholder: "Nome do usuário",
+      options: studentOptions,
+      onFocus: () => studentNamesQuery.refetch(),
+    },
+    {
+      name: "themeName",
+      label: "Tema",
+      type: "autocomplete",
+      placeholder: "Nome do tema",
+      options: themeOptions,
+      onFocus: () => themeNamesQuery.refetch(),
+    },
+    { name: "startDate", label: "Data Início", type: "date" },
+    { name: "endDate", label: "Data Fim", type: "date" },
+  ];
 
   const statisticQuery = useAllStatisticByCreatorQuery(
     currentPage,
@@ -58,13 +99,16 @@ function MyStatisticConclusion() {
     startDate,
     endDate
   );
+  // O gráfico só busca com um tema selecionado — sem esse filtro a query
+  // varria todas as estatísticas do banco (lenta com muitos dados).
+  const hasThemeFilter = themeName.trim() !== "";
   const chartQuery = useAllStatisticByCreatorForChartQuery(
     creatorId,
     studentName,
     themeName,
     startDate,
     endDate,
-    view === "chart"
+    view === "chart" && hasThemeFilter
   );
 
   const loading = statisticQuery.isLoading || chartQuery.isLoading;
@@ -92,39 +136,33 @@ function MyStatisticConclusion() {
     }));
   }, [chartQuery.data]);
 
-  // Função chamada pelo FilterStatistic para atualizar os filtros
-  const handleFilter = ({
-    studentName,
-    themeName,
-    startDate,
-    endDate,
-  }: StatisticFilterData) => {
-    setStudentName(studentName);
-    setThemeName(themeName);
-    setStartDate(startDate);
-    setEndDate(endDate);
-    setCurrentPage(0); // Reseta a página ao aplicar novos filtros
-  };
+  function applyFilters(values: AdvancedFilterValues) {
+    setFilters(values);
+    setCurrentPage(0);
+  }
 
   return (
     <Box sx={{ py: 4 }}>
-      <FilterStatistic onFilter={handleFilter} />
-
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3, mb: 1 }}>
-        <ToggleButtonGroup
-          size="small"
-          exclusive
-          value={view}
-          onChange={(_e, newView) => newView && setView(newView)}
-        >
-          <ToggleButton value="table">
-            <BsTable style={{ marginRight: 6 }} /> Tabela
-          </ToggleButton>
-          <ToggleButton value="chart">
-            <BsBarChartFill style={{ marginRight: 6 }} /> Gráfico
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
+      <AdvancedSearch
+        fields={filterFields}
+        values={filters}
+        onChange={applyFilters}
+        rightExtra={
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={view}
+            onChange={(_e, newView) => newView && setView(newView)}
+          >
+            <ToggleButton value="table">
+              <BsTable style={{ marginRight: 6 }} /> Tabela
+            </ToggleButton>
+            <ToggleButton value="chart">
+              <BsBarChartFill style={{ marginRight: 6 }} /> Gráfico
+            </ToggleButton>
+          </ToggleButtonGroup>
+        }
+      />
 
       {view === "table" ? (
         <>
@@ -165,6 +203,11 @@ function MyStatisticConclusion() {
             color={"dark"}
           />
         </>
+      ) : !hasThemeFilter ? (
+        <Alert severity="info" sx={{ mt: 1 }}>
+          Selecione um tema no filtro acima (e clique em Filtrar) para exibir o
+          gráfico.
+        </Alert>
       ) : (
         <Paper sx={{ width: "100%", p: 2 }}>
           <ResponsiveContainer width="100%" height={380}>

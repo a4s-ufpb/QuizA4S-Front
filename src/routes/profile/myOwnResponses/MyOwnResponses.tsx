@@ -5,8 +5,6 @@ import {
   CardContent,
   Typography,
   TextField,
-  Button,
-  Stack,
   TableContainer,
   Table,
   TableHead,
@@ -24,19 +22,40 @@ import {
 import Pagination from "../../../components/pagination/Pagination";
 import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
+import AdvancedSearch, {
+  type AdvancedField,
+  type AdvancedFilterValues,
+} from "../../../components/advancedSearch/AdvancedSearch";
 import {
   useMyResponsesQuery,
   useMySummaryQuery,
 } from "../../../query/useResponseQueries";
 import type { GameMode } from "../../../types";
 
+const FILTER_FIELDS: AdvancedField[] = [
+  { name: "themeName", label: "Tema", type: "text", placeholder: "Filtrar por tema" },
+  { name: "startDate", label: "Data Inicial", type: "date" },
+  { name: "endDate", label: "Data Final", type: "date" },
+];
+
 const MyOwnResponses = () => {
   const [currentPage, setCurrentPage] = useState(0);
 
-  const [themeName, setThemeName] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [filters, setFilters] = useState<AdvancedFilterValues>({
+    themeName: "",
+    startDate: "",
+    endDate: "",
+  });
   const [gameMode, setGameMode] = useState<GameMode>("SINGLE_PLAYER");
+
+  const themeName = filters.themeName ?? "";
+  const startDate = filters.startDate ?? "";
+  const endDate = filters.endDate ?? "";
+
+  function applyFilters(values: AdvancedFilterValues) {
+    setFilters(values);
+    setCurrentPage(0);
+  }
 
   const responsesQuery = useMyResponsesQuery(
     currentPage,
@@ -62,51 +81,26 @@ const MyOwnResponses = () => {
         totalWrongAnswers: 0,
       };
 
-  function applyFilter() {
-    setCurrentPage(0);
-  }
-
   return (
     <Box sx={{ py: 4 }}>
-      <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 3 }}>
-        <TextField
-          select
-          label="Modo de jogo"
-          value={gameMode}
-          onChange={(e) => setGameMode(e.target.value as GameMode)}
-          sx={{ minWidth: 180 }}
-          fullWidth
-        >
-          <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
-          <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
-        </TextField>
-        <TextField
-          label="Tema"
-          placeholder="Filtrar por tema"
-          value={themeName}
-          onChange={(e) => setThemeName(e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Data Inicial"
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          fullWidth
-        />
-        <TextField
-          label="Data Final"
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          fullWidth
-        />
-        <Button variant="contained" onClick={applyFilter} sx={{ minWidth: 120 }}>
-          Filtrar
-        </Button>
-      </Stack>
+      <AdvancedSearch
+        fields={FILTER_FIELDS}
+        values={filters}
+        onChange={applyFilters}
+        leftExtra={
+          <TextField
+            select
+            size="small"
+            label="Modo de jogo"
+            value={gameMode}
+            onChange={(e) => setGameMode(e.target.value as GameMode)}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
+            <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
+          </TextField>
+        }
+      />
 
       <Box
         sx={{

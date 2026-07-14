@@ -14,7 +14,7 @@ import {
   Typography,
   type SelectChangeEvent,
 } from "@mui/material";
-import type { AdvanceMode, GameConfig, GameStyle, ScoringMode } from "../../types/game";
+import type { GameConfig, GameStyle, ScoringMode } from "../../types/game";
 import { GAME_STYLE_LABELS } from "../../types/game";
 
 interface RoomConfigFormProps {
@@ -76,21 +76,6 @@ const RoomConfigForm = ({ config, onSave, onClose }: RoomConfigFormProps) => {
             </Select>
           </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="advance-mode-label">Avanço das questões</InputLabel>
-            <Select
-              labelId="advance-mode-label"
-              label="Avanço das questões"
-              value={draft.advanceMode}
-              onChange={(e: SelectChangeEvent) =>
-                update("advanceMode", e.target.value as AdvanceMode)
-              }
-            >
-              <MenuItem value="HOST">Manual (o líder avança)</MenuItem>
-              <MenuItem value="AUTO">Automático (após o tempo)</MenuItem>
-            </Select>
-          </FormControl>
-
           <div>
             <Typography gutterBottom>
               Tempo por questão: {formatTime(draft.questionTimeSeconds)}
@@ -126,7 +111,12 @@ const RoomConfigForm = ({ config, onSave, onClose }: RoomConfigFormProps) => {
         <Button variant="outlined" color="secondary" onClick={onClose}>
           Cancelar
         </Button>
-        <Button variant="contained" onClick={() => onSave(draft)}>
+        <Button
+          variant="contained"
+          // Avanço automático foi descontinuado: o líder sempre passa as
+          // questões manualmente.
+          onClick={() => onSave({ ...draft, advanceMode: "HOST" })}
+        >
           Salvar regras
         </Button>
       </DialogActions>

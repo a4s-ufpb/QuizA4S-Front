@@ -21,3 +21,24 @@
     cursor: pointer;
 }
 
+/* Header mais compacto no mobile: libera espaço vertical pro conteúdo. */
+@media (max-width: 650px) {
+    .header {
+        height: 60px;
+        padding: 8px 14px;
+    }
+
+    .header h1 {
+        font-size: 1.25em;
+    }
+
+    .logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    .header-buttons svg {
+        font-size: 0.9em;
+    }
+}
+

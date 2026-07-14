@@ -1,12 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Container, Alert, Button, Typography } from "@mui/material";
-import { BsArrowsFullscreen, BsFullscreenExit, BsEaselFill } from "react-icons/bs";
+import { Box, Container, Alert, Typography, Tooltip } from "@mui/material";
+import {
+  BsArrowsFullscreen,
+  BsFullscreenExit,
+  BsEaselFill,
+  BsDoorClosedFill,
+  BsPersonDashFill,
+} from "react-icons/bs";
 import { useGameRoom } from "../../hooks/useGameRoom";
 import Loading from "../loading/Loading";
 import Lobby from "./Lobby";
 import GamePlay from "./GamePlay";
 import ResultsView from "./ResultsView";
+import RoomExitScreen from "./RoomExitScreen";
 
 interface RoomConnectedProps {
   code: string;
@@ -68,27 +75,24 @@ const RoomConnected = ({ code, avatar }: RoomConnectedProps) => {
 
   if (room.kicked) {
     return (
-      <Container sx={{ py: 5, textAlign: "center" }}>
-        <Alert severity="warning" sx={{ mb: 2 }}>
-          Você foi removido da sala pelo líder.
-        </Alert>
-        <Button variant="contained" onClick={() => navigate("/multiplayer")}>
-          Voltar
-        </Button>
-      </Container>
+      <RoomExitScreen
+        icon={<BsPersonDashFill size={64} />}
+        title="Você saiu da sala"
+        message="O líder removeu você desta partida."
+        accent="#f0a92b"
+        onBack={() => navigate("/multiplayer")}
+      />
     );
   }
 
   if (room.closed) {
     return (
-      <Container sx={{ py: 5, textAlign: "center" }}>
-        <Alert severity="info" sx={{ mb: 2 }}>
-          A sala foi encerrada.
-        </Alert>
-        <Button variant="contained" onClick={() => navigate("/multiplayer")}>
-          Voltar
-        </Button>
-      </Container>
+      <RoomExitScreen
+        icon={<BsDoorClosedFill size={64} />}
+        title="Sala encerrada"
+        message="Esta partida foi encerrada. Crie ou entre em uma nova sala para jogar de novo!"
+        onBack={() => navigate("/multiplayer")}
+      />
     );
   }
 
@@ -111,30 +115,50 @@ const RoomConnected = ({ code, avatar }: RoomConnectedProps) => {
       ref={containerRef}
     >
       {(status === "IN_QUESTION" || status === "BETWEEN") && (
-        <button
-          type="button"
-          className="mp-fullscreen-btn"
-          onClick={toggleFullscreen}
-          title={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-          aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+        <Tooltip
+          title={
+            isFullscreen
+              ? "Sair da tela cheia"
+              : "Tela cheia: expande o quiz para ocupar a tela inteira"
+          }
+          placement="right"
+          // Renderiza o popper dentro do container: em tela cheia, elementos
+          // anexados ao <body> (fora do elemento fullscreen) não aparecem.
+          slotProps={{ popper: { container: containerRef.current } }}
         >
-          {isFullscreen ? (
-            <BsFullscreenExit size={18} />
-          ) : (
-            <BsArrowsFullscreen size={18} />
-          )}
-        </button>
+          <button
+            type="button"
+            className="mp-fullscreen-btn"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+          >
+            {isFullscreen ? (
+              <BsFullscreenExit size={18} />
+            ) : (
+              <BsArrowsFullscreen size={18} />
+            )}
+          </button>
+        </Tooltip>
       )}
       {(status === "IN_QUESTION" || status === "BETWEEN") && (
-        <button
-          type="button"
-          className={`mp-fullscreen-btn mp-presentation-btn ${presentationMode ? "active" : ""}`}
-          onClick={() => setPresentationMode((prev) => !prev)}
-          title={presentationMode ? "Sair do modo apresentação" : "Modo apresentação (telão)"}
-          aria-label={presentationMode ? "Sair do modo apresentação" : "Modo apresentação (telão)"}
+        <Tooltip
+          title={
+            presentationMode
+              ? "Sair do modo TV"
+              : "Modo TV: aumenta fontes e botões para projeção em telão"
+          }
+          placement="right"
+          slotProps={{ popper: { container: containerRef.current } }}
         >
-          <BsEaselFill size={18} />
-        </button>
+          <button
+            type="button"
+            className={`mp-fullscreen-btn mp-presentation-btn ${presentationMode ? "active" : ""}`}
+            onClick={() => setPresentationMode((prev) => !prev)}
+            aria-label={presentationMode ? "Sair do modo TV" : "Modo TV (telão)"}
+          >
+            <BsEaselFill size={18} />
+          </button>
+        </Tooltip>
       )}
 
       {room.error && (

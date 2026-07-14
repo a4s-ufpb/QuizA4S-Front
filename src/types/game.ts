@@ -64,6 +64,17 @@ export interface TeamView {
   captainId: string | null;
 }
 
+/** Prévia da próxima questão (só o líder exibe, entre questões). */
+export interface NextQuestionPreview {
+  id: number;
+  title: string;
+  imageUrl?: string;
+  imageOneUrl?: string;
+  imageTwoUrl?: string;
+  imagesOrder?: string;
+  alternatives: AlternativeView[];
+}
+
 export interface RoomState {
   code: string;
   hostId: string;
@@ -78,6 +89,10 @@ export interface RoomState {
   totalQuestions: number;
   /** Poder armado (modo Diversão) pra próxima questão — só o líder escolhe. */
   pendingPowerUp: QuestionPower | null;
+  /** Prévia da próxima questão (BETWEEN, só quando há próxima) — só o líder usa. */
+  nextQuestion: NextQuestionPreview | null;
+  /** Quantas questões o líder pulou desde o último resultado (aviso aos jogadores). */
+  skippedCount: number;
 }
 
 export interface AlternativeView {
@@ -109,6 +124,14 @@ export interface PlayerAnswerView {
   correct: boolean;
 }
 
+/** Quantos jogadores marcaram cada alternativa (gráfico estilo Kahoot pós-questão). */
+export interface AlternativeCountView {
+  id: number;
+  text: string;
+  count: number;
+  correct: boolean;
+}
+
 export interface QuestionResult {
   correctAlternativeId: number | null;
   index: number;
@@ -117,6 +140,16 @@ export interface QuestionResult {
   scoreboard: PlayerView[];
   teamScoreboard: TeamView[];
   answers: PlayerAnswerView[];
+  /** Distribuição de respostas por alternativa, na mesma ordem do QuestionView. */
+  alternatives: AlternativeCountView[];
+  /** Título da próxima questão (null na última) — o líder vê no placar pra decidir pular. */
+  nextQuestionTitle: string | null;
+}
+
+/** Erro direcionado a um jogador específico (o tópico STOMP é da sala inteira). */
+export interface TargetedError {
+  message: string;
+  targetPlayerId: string | null;
 }
 
 export interface ChatMessage {

@@ -62,12 +62,17 @@
 .container-quiz-finished-btn {
   display: flex;
   align-items: center;
-  gap: 2em;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1em;
   margin-top: 1.5em;
+  width: 100%;
 }
 
 .quiz-finished-btn {
-  width: 130px;
+  flex: 1 1 auto;
+  min-width: 110px;
+  max-width: 160px;
   height: 45px;
   border-radius: 10px;
   border: none;
@@ -100,7 +105,7 @@
   }
 
   .quiz-finished-btn {
-    width: 120px;
+    min-width: 90px;
     font-size: 1em;
   }
 }

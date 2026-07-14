@@ -1,5 +1,11 @@
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { Box, Button } from "@mui/material";
+import type { Dispatch, SetStateAction } from "react";
+import { Box, Button, Tooltip } from "@mui/material";
+import {
+  BsChevronDoubleLeft,
+  BsChevronLeft,
+  BsChevronRight,
+  BsChevronDoubleRight,
+} from "react-icons/bs";
 
 interface PaginationProps {
   totalPages: number;
@@ -14,23 +20,20 @@ const Pagination = ({
   setCurrentPage,
   color,
 }: PaginationProps) => {
-  const [isFirstPage, setIsFirstPage] = useState(true);
-  const [isLastPage, setIsLastPage] = useState(false);
-
-  useEffect(() => {
-    setIsFirstPage(currentPage === 0);
-    setIsLastPage(currentPage === totalPages - 1);
-  }, [currentPage, totalPages]);
-
-  function alterPage(direction: "prev" | "next") {
-    if (direction === "prev" && !isFirstPage) {
-      setCurrentPage(currentPage - 1);
-    } else if (direction === "next" && !isLastPage) {
-      setCurrentPage(currentPage + 1);
-    }
-  }
+  const isFirstPage = currentPage === 0;
+  const isLastPage = totalPages === 0 || currentPage === totalPages - 1;
 
   const textColor = color || "white";
+  const buttonSx = {
+    color: textColor,
+    borderColor: textColor,
+    minWidth: { xs: 40, sm: 64 },
+    px: { xs: 1, sm: 2 },
+  };
+
+  function goTo(page: number) {
+    setCurrentPage(Math.max(0, Math.min(totalPages - 1, page)));
+  }
 
   return (
     <Box
@@ -38,29 +41,70 @@ const Pagination = ({
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        gap: { xs: 0.5, sm: 1 },
+        flexWrap: "wrap",
         my: 4,
         color: textColor,
       }}
     >
-      <Button
-        variant="outlined"
-        sx={{ mr: 2, color: textColor, borderColor: textColor }}
-        onClick={() => alterPage("prev")}
-        disabled={isFirstPage}
+      <Tooltip title="Primeira página">
+        <span>
+          <Button
+            variant="outlined"
+            sx={buttonSx}
+            onClick={() => goTo(0)}
+            disabled={isFirstPage}
+            aria-label="Primeira página"
+          >
+            <BsChevronDoubleLeft />
+          </Button>
+        </span>
+      </Tooltip>
+      <Tooltip title="Página anterior">
+        <span>
+          <Button
+            variant="outlined"
+            sx={buttonSx}
+            onClick={() => goTo(currentPage - 1)}
+            disabled={isFirstPage}
+            aria-label="Página anterior"
+          >
+            <BsChevronLeft />
+          </Button>
+        </span>
+      </Tooltip>
+      <Box
+        component="span"
+        sx={{ mx: { xs: 1, sm: 2 }, whiteSpace: "nowrap", fontSize: { xs: "0.9em", sm: "1em" } }}
       >
-        Anterior
-      </Button>
-      <Box component="span" sx={{ mx: 3 }}>
-        Página {currentPage + 1} de {totalPages}
+        Página {totalPages === 0 ? 0 : currentPage + 1} de {totalPages}
       </Box>
-      <Button
-        variant="outlined"
-        sx={{ color: textColor, borderColor: textColor }}
-        onClick={() => alterPage("next")}
-        disabled={isLastPage || totalPages === 0}
-      >
-        Próximo
-      </Button>
+      <Tooltip title="Próxima página">
+        <span>
+          <Button
+            variant="outlined"
+            sx={buttonSx}
+            onClick={() => goTo(currentPage + 1)}
+            disabled={isLastPage}
+            aria-label="Próxima página"
+          >
+            <BsChevronRight />
+          </Button>
+        </span>
+      </Tooltip>
+      <Tooltip title="Última página">
+        <span>
+          <Button
+            variant="outlined"
+            sx={buttonSx}
+            onClick={() => goTo(totalPages - 1)}
+            disabled={isLastPage}
+            aria-label="Última página"
+          >
+            <BsChevronDoubleRight />
+          </Button>
+        </span>
+      </Tooltip>
     </Box>
   );
 };

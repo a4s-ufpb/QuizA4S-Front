@@ -10,6 +10,7 @@ import type {
   QuestionResult,
   QuestionView,
   RoomState,
+  TargetedError,
 } from "../types/game";
 
 export interface UseGameRoom {
@@ -40,6 +41,8 @@ export interface UseGameRoom {
   start: () => void;
   answer: (alternativeId: number) => void;
   next: () => void;
+  /** Líder descarta a próxima questão (vendo o título dela no placar) sem jogá-la. */
+  skip: () => void;
   leave: () => void;
 }
 
@@ -114,9 +117,19 @@ export function useGameRoom(code: string, joinAvatar?: string): UseGameRoom {
         case "ROOM_CLOSED":
           setClosed(true);
           break;
-        case "ERROR":
+        case "ERROR": {
+          // Erros podem vir direcionados a um jogador específico (objeto com
+          // targetPlayerId) — o tópico é da sala inteira, então ignora os que
+          // não são pra mim (ex.: "A partida já começou" na reconexão de outro).
+          if (event.data && typeof event.data === "object") {
+            const targeted = event.data as TargetedError;
+            if (targeted.targetPlayerId && targeted.targetPlayerId !== playerId) break;
+            setError(targeted.message);
+            break;
+          }
           setError(String(event.data));
           break;
+        }
         case "COUNTDOWN":
           setCountdown(event.data as number);
           break;
@@ -204,6 +217,7 @@ export function useGameRoom(code: string, joinAvatar?: string): UseGameRoom {
       send("answer", { code, playerId, alternativeId });
     },
     next: () => send("next", { code, hostId: playerId }),
+    skip: () => send("skip", { code, hostId: playerId }),
     leave: () => send("leave", { code, playerId }),
   };
 }

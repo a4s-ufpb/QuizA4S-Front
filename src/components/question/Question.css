@@ -112,7 +112,30 @@
   background-color: #ffffffab;
 }
 
+/* Borda demarcando a alternativa que o jogador marcou (single-player). */
+.alternatives li.alternative-selected {
+  outline: 4px solid #fff;
+  outline-offset: -1px;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.35);
+}
+
 @media (max-width: 900px) {
+  /* No mobile as alternativas viram 1 coluna e ocupam quase toda a altura da
+     viewport — com a altura travada em 100dvh a imagem era espremida a quase
+     nada (e "respirava" com o scroll, porque o dvh muda com a barra do
+     navegador). Libera a altura pra página rolar e garante um tamanho mínimo
+     legível pra imagem. */
+  .question {
+    height: auto;
+    min-height: calc(100dvh - 120px);
+  }
+
+  .question-image-area {
+    flex: 0 0 auto;
+    min-height: 260px;
+    height: 260px;
+  }
+
   .question-title {
     font-size: 1.8em;
   }

@@ -20,6 +20,7 @@ import {
 } from "react-icons/bs";
 import { getStoredUser } from "../../util/storage";
 import { clearAuthStorage } from "../../util/token";
+import { TitleBadge, FramedAvatar, bannerClassName } from "../cosmetics/Cosmetic";
 
 import "./Menu.css";
 
@@ -64,9 +65,14 @@ const Menu = ({
       </div>
 
       {isAuth && user && (
-        <div className="menu-user-header">
-          <BsPersonCircle className="menu-user-avatar" />
+        <div
+          className={`menu-user-header ${bannerClassName(user.equippedBanner)}`}
+        >
+          <FramedAvatar code={user.equippedFrame} size={56}>
+            <BsPersonCircle className="menu-user-avatar" />
+          </FramedAvatar>
           <span className="menu-user-name">{user.name}</span>
+          {user.equippedTitle && <TitleBadge code={user.equippedTitle} />}
         </div>
       )}
 

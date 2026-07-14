@@ -113,3 +113,11 @@
     width: 95%;
   }
 }
+
+@media (max-width: 900px) {
+  /* Conteúdo mais alto que a viewport + align-items:center cortava o topo
+     (a imagem/questão rolam agora que a altura ficou livre no mobile). */
+  .container-quiz-external {
+    align-items: flex-start;
+  }
+}
