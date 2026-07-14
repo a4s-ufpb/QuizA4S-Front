@@ -1,9 +1,11 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { BsTrashFill, BsPencilSquare } from "react-icons/bs";
 import ConfirmBox from "../confirmBox/ConfirmBox";
-import UpdateBox from "../updateBox/UpdateBox";
 import Loading from "../loading/Loading";
 import InformationBox from "../informationBox/InformationBox";
+import ThemeFormDialog, {
+  type ThemeFormValues,
+} from "../themeForm/ThemeFormDialog";
 import { DEFAULT_IMG } from "../../vite-env";
 import { useNavigate } from "react-router-dom";
 import {
@@ -30,8 +32,9 @@ const Theme = ({ themes, setThemes, setCurrentPage }: ThemeProps) => {
   const loading = removeThemeMutation.isPending || updateThemeMutation.isPending;
 
   const [isConfirmBox, setConfirmBox] = useState(false);
-  const [isUpdateBox, setUpdateBox] = useState(false);
   const [isInformationBox, setInformationBox] = useState(false);
+  const [editingTheme, setEditingTheme] = useState<ThemeModel | null>(null);
+  const [themeId, setThemeId] = useState(0);
 
   const [informationData, setInformationData] = useState<InformationData>({
     text: "",
@@ -39,41 +42,9 @@ const Theme = ({ themes, setThemes, setCurrentPage }: ThemeProps) => {
     color: "",
   });
 
-  const [themeId, setThemeId] = useState(0);
-  const [newName, setNewName] = useState("");
-  const [newUrl, setNewUrl] = useState("");
-
-  const inputs = [
-    {
-      label: "Novo nome",
-      type: "text",
-      placeholder: "Digite o nome do tema",
-      value: newName,
-      maxLength: 70,
-      minLength: 3,
-    },
-    {
-      label: "URL da Imagem",
-      type: "text",
-      placeholder: "Digite a url da imagem",
-      value: newUrl,
-      maxLength: 255,
-      minLength: 0,
-    },
-  ];
-
-  function showConfirmBox(id: number, name: string, imageUrl: string) {
+  function showConfirmBox(id: number) {
     setThemeId(id);
-    setNewName(name);
-    setNewUrl(imageUrl);
     setConfirmBox(true);
-  }
-
-  function showUpdateBox(id: number, name: string, imageUrl: string) {
-    setThemeId(id);
-    setNewName(name);
-    setNewUrl(imageUrl);
-    setUpdateBox(true);
   }
 
   async function removeTheme() {
@@ -90,15 +61,16 @@ const Theme = ({ themes, setThemes, setCurrentPage }: ThemeProps) => {
     setConfirmBox(false);
   }
 
-  const newTheme = {
-    name: newName,
-    imageUrl: newUrl,
-  };
-
-  async function updateTheme() {
+  async function updateTheme(values: ThemeFormValues) {
+    if (!editingTheme) return;
     const response = await updateThemeMutation.mutateAsync({
-      themeId,
-      themeUpdate: newTheme,
+      themeId: editingTheme.id,
+      themeUpdate: {
+        name: values.name,
+        imageUrl: values.imageUrl,
+        description: values.description,
+        materials: values.materials,
+      },
     });
 
     if (!response.success) {
@@ -106,48 +78,27 @@ const Theme = ({ themes, setThemes, setCurrentPage }: ThemeProps) => {
       return;
     }
 
+    // Reflete as alterações na listagem sem refetch.
+    setThemes(
+      themes.map((theme) =>
+        theme.id === editingTheme.id ? response.data : theme
+      )
+    );
     activeInformationBox(false, "Tema atualizado com sucesso");
-    setUpdateBox(false);
+    setEditingTheme(null);
   }
 
   function activeInformationBox(isFail: boolean, message: string) {
-    if (isFail) {
-      setInformationData((prevData) => {
-        return {
-          ...prevData,
-          text: message,
-          color: "red",
-          icon: "exclamation",
-        };
-      });
-      setInformationBox(true);
-    } else {
-      setInformationData((prevData) => {
-        return { ...prevData, text: message, color: "green", icon: "check" };
-      });
-      setInformationBox(true);
-    }
-  }
-
-  function changeValue(value: string, label: string) {
-    switch (label) {
-      case "Novo nome":
-        setNewName(value);
-        return;
-      case "URL da Imagem":
-        setNewUrl(value);
-        return;
-      default:
-        return "";
-    }
+    setInformationData({
+      text: message,
+      color: isFail ? "red" : "green",
+      icon: isFail ? "exclamation" : "check",
+    });
+    setInformationBox(true);
   }
 
   function showQuestions(id: number, name: string, imageUrl: string) {
-    const theme = {
-      id,
-      name,
-      imageUrl,
-    };
+    const theme = { id, name, imageUrl };
     sessionStorage.setItem("theme", JSON.stringify(theme));
     navigate(`/profile/theme/${id}/question`);
   }
@@ -178,16 +129,8 @@ const Theme = ({ themes, setThemes, setCurrentPage }: ThemeProps) => {
               </button>
             </div>
             <div className="theme-action">
-              <BsTrashFill
-                onClick={() =>
-                  showConfirmBox(theme.id, theme.name, theme.imageUrl)
-                }
-              />
-              <BsPencilSquare
-                onClick={() =>
-                  showUpdateBox(theme.id, theme.name, theme.imageUrl)
-                }
-              />
+              <BsTrashFill onClick={() => showConfirmBox(theme.id)} />
+              <BsPencilSquare onClick={() => setEditingTheme(theme)} />
             </div>
           </div>
         ))}
@@ -205,15 +148,23 @@ const Theme = ({ themes, setThemes, setCurrentPage }: ThemeProps) => {
           onClickBtn2={() => setConfirmBox(false)}
         />
       )}
-      {isUpdateBox && (
-        <UpdateBox
-          title="Atualizar Tema"
-          inputs={inputs}
-          onChange={changeValue}
-          onClickSave={updateTheme}
-          onClickCancel={() => setUpdateBox(false)}
+
+      {editingTheme && (
+        <ThemeFormDialog
+          title="Atualizar tema"
+          submitLabel="Salvar"
+          loading={updateThemeMutation.isPending}
+          initial={{
+            name: editingTheme.name,
+            imageUrl: editingTheme.imageUrl,
+            description: editingTheme.description ?? "",
+            materials: editingTheme.materials ?? [],
+          }}
+          onClose={() => setEditingTheme(null)}
+          onSubmit={updateTheme}
         />
       )}
+
       {isInformationBox && (
         <InformationBox
           text={informationData.text}

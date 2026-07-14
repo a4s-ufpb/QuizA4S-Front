@@ -274,7 +274,8 @@ function AnswerDistributionChart({
                     borderRadius: 1,
                     bgcolor: `${color}.main`,
                     color: "#fff",
-                    fontSize: "0.8em",
+                    fontSize: "1em",
+                    fontWeight: "bold",
                     textAlign: "center",
                     display: "flex",
                     alignItems: "center",
@@ -282,18 +283,8 @@ function AnswerDistributionChart({
                     gap: 0.5,
                   }}
                 >
-                  <strong>{ALTERNATIVE_LETTERS[colorIndex] ?? ""}</strong>
-                  <span
-                    style={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                    }}
-                  >
-                    {alt.text}
-                  </span>
+                  {/* Só a letra da alternativa (A, B, C...) para leitura rápida. */}
+                  <span>{ALTERNATIVE_LETTERS[colorIndex] ?? ""}</span>
                   {alt.correct && <BsCheckLg aria-hidden />}
                 </Box>
               </Box>

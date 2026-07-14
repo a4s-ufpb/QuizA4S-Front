@@ -103,10 +103,23 @@ export interface RoomInviteResponse {
 
 export type GameMode = "SINGLE_PLAYER" | "MULTIPLAYER";
 
+export type MaterialType = "VIDEO" | "FILE" | "SITE";
+
+export interface Material {
+  id?: number;
+  name: string;
+  link: string;
+  type: MaterialType;
+}
+
 export interface Theme {
   id: number;
   name: string;
   imageUrl: string;
+  /** Conteúdos abordados pelo tema (texto livre). */
+  description?: string | null;
+  /** Materiais de apoio associados ao tema. */
+  materials?: Material[];
 }
 
 export interface Alternative {
