@@ -28,7 +28,6 @@ import {
   BsQuestionCircleFill,
   BsClockFill,
   BsPencilFill,
-  BsPersonPlusFill,
 } from "react-icons/bs";
 import type { UseGameRoom } from "../../hooks/useGameRoom";
 import type { PlayerView } from "../../types/game";
@@ -39,9 +38,6 @@ import AvatarSelector from "./AvatarSelector";
 import RoomChat from "./RoomChat";
 import RoomConfigForm from "./RoomConfigForm";
 import { TitleBadge, FramedAvatar, bannerClassName } from "../cosmetics/Cosmetic";
-import { getStoredUser } from "../../util/storage";
-import { useMyFriendsQuery } from "../../query/useFriendshipQueries";
-import { useSendRoomInviteMutation } from "../../query/useRoomInviteQueries";
 import "./multiplayer.css";
 
 interface LobbyProps {
@@ -89,10 +85,6 @@ const Lobby = ({ room }: LobbyProps) => {
   const [confirmStart, setConfirmStart] = useState(false);
   const [kickTarget, setKickTarget] = useState<PlayerView | null>(null);
   const [newTeamName, setNewTeamName] = useState("");
-  const [inviteAnchor, setInviteAnchor] = useState<HTMLElement | null>(null);
-  const isLoggedIn = Boolean(getStoredUser().uuid);
-  const myFriendsQuery = useMyFriendsQuery(isLoggedIn);
-  const sendInviteMutation = useSendRoomInviteMutation();
   const [avatarTarget, setAvatarTarget] = useState<AvatarTarget | null>(null);
 
   const state = room.state!;
@@ -161,15 +153,6 @@ const Lobby = ({ room }: LobbyProps) => {
                 Sala <span className="mp-code-chip">{state.code}</span>
               </Typography>
               <Box sx={{ display: "flex", gap: 1 }}>
-                {isLoggedIn && (
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={(e) => setInviteAnchor(e.currentTarget)}
-                  >
-                    <BsPersonPlusFill style={{ marginRight: 4 }} /> Convidar amigo
-                  </Button>
-                )}
                 <Button
                   variant="outlined"
                   color="error"
@@ -181,49 +164,6 @@ const Lobby = ({ room }: LobbyProps) => {
               </Box>
             </Box>
 
-            <Popover
-              open={Boolean(inviteAnchor)}
-              anchorEl={inviteAnchor}
-              onClose={() => setInviteAnchor(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            >
-              <Box sx={{ p: 2, minWidth: 220 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Convidar amigo pra sala
-                </Typography>
-                {(myFriendsQuery.data?.success ? myFriendsQuery.data.data : [])
-                  .length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">
-                    Você ainda não tem amigos adicionados.
-                  </Typography>
-                ) : (
-                  (myFriendsQuery.data?.success ? myFriendsQuery.data.data : []).map(
-                    (f) => {
-                      const myUuid = getStoredUser().uuid;
-                      const friend =
-                        f.requester.uuid === myUuid ? f.addressee : f.requester;
-                      return (
-                        <Button
-                          key={f.id}
-                          fullWidth
-                          size="small"
-                          sx={{ justifyContent: "flex-start", mb: 0.5 }}
-                          onClick={() => {
-                            sendInviteMutation.mutate({
-                              targetId: friend.uuid,
-                              roomCode: state.code,
-                            });
-                            setInviteAnchor(null);
-                          }}
-                        >
-                          {friend.name}
-                        </Button>
-                      );
-                    }
-                  )
-                )}
-              </Box>
-            </Popover>
             <Typography sx={{ color: "#000", fontWeight: "bold", mt: 1, mb: 1.5 }}>
               {state.themeName || "Nenhum quiz selecionado"}
             </Typography>

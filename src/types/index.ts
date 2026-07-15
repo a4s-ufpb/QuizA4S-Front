@@ -96,11 +96,6 @@ export interface GlobalRankingResponse {
   totalScore: number;
 }
 
-export interface RoomInviteResponse {
-  fromName: string;
-  roomCode: string;
-}
-
 export type GameMode = "SINGLE_PLAYER" | "MULTIPLAYER";
 
 export type MaterialType = "VIDEO" | "FILE" | "SITE";

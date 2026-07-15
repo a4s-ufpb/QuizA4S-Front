@@ -89,9 +89,6 @@ export const queryKeys = {
     mine: (page: number) => ["match-history", "mine", page] as const,
     achievements: ["match-history", "achievements"] as const,
   },
-  roomInvite: {
-    mine: ["room-invite", "mine"] as const,
-  },
   userSearch: {
     byName: (name: string) => ["users", "search", name] as const,
   },
