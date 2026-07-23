@@ -22,7 +22,14 @@ export function createAppTheme(mode: PaletteMode): Theme {
       },
     },
     typography: {
+      // Corpo/UI em Poppins; títulos em Unbounded para um visual gamificado.
       fontFamily: "'Poppins', sans-serif",
+      h1: { fontFamily: "'Unbounded', 'Poppins', sans-serif", fontWeight: 800 },
+      h2: { fontFamily: "'Unbounded', 'Poppins', sans-serif", fontWeight: 800 },
+      h3: { fontFamily: "'Unbounded', 'Poppins', sans-serif", fontWeight: 700 },
+      h4: { fontFamily: "'Unbounded', 'Poppins', sans-serif", fontWeight: 700 },
+      h5: { fontFamily: "'Unbounded', 'Poppins', sans-serif", fontWeight: 600 },
+      h6: { fontFamily: "'Unbounded', 'Poppins', sans-serif", fontWeight: 600 },
     },
     shape: {
       borderRadius: 10,

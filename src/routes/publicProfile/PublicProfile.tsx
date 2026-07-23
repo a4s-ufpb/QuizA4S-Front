@@ -11,7 +11,7 @@ import { BsPersonCircle, BsHandThumbsUpFill, BsAwardFill, BsLockFill } from "rea
 import Loading from "../../components/loading/Loading";
 import NotFoundComponent from "../../components/notFound/NotFoundComponent";
 import { usePublicProfileQuery } from "../../query/useUserQueries";
-import { TitleBadge, FramedAvatar, bannerClassName } from "../../components/cosmetics/Cosmetic";
+import { TitleBadge, FramedAvatar, bannerClassName, PlayerName } from "../../components/cosmetics/Cosmetic";
 
 const PublicProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,7 +52,14 @@ const PublicProfile = () => {
             <FramedAvatar code={profile.equippedFrame} size={96}>
               <BsPersonCircle size={80} color="#3f7fd6" />
             </FramedAvatar>
-            <Typography variant="h6">{profile.name}</Typography>
+            <Typography variant="h6" component="div">
+              <PlayerName
+                name={profile.name}
+                font={profile.equippedFont}
+                style={profile.equippedNameStyle}
+                effect={profile.equippedNameEffect}
+              />
+            </Typography>
             {profile.equippedTitle && <TitleBadge code={profile.equippedTitle} />}
             <Typography
               sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "primary.main", fontWeight: "bold" }}

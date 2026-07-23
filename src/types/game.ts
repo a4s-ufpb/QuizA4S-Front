@@ -33,6 +33,8 @@ export interface GameConfig {
   gameStyle: GameStyle;
   /** Capacidade máxima da sala (não conta o host). */
   maxPlayers?: number | null;
+  /** Quando true, o criador da sala também joga e pontua (não fica só de apresentador). */
+  hostPlays?: boolean | null;
 }
 
 export interface PlayerView {
@@ -52,6 +54,9 @@ export interface PlayerView {
   title?: string | null;
   frame?: string | null;
   banner?: string | null;
+  font?: string | null;
+  nameStyle?: string | null;
+  nameEffect?: string | null;
   /** Nº de questões acertadas na partida (base de XP/moedas/histórico). */
   correctCount: number;
 }
@@ -190,6 +195,7 @@ export const DEFAULT_GAME_CONFIG: GameConfig = {
   maxPlayersPerTeam: null,
   gameStyle: "NORMAL",
   maxPlayers: 12,
+  hostPlays: false,
 };
 
 export const QUESTION_POWER_LABELS: Record<QuestionPower, string> = {

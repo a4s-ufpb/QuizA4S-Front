@@ -3,7 +3,7 @@ import { BsGithub, BsLinkedin, BsBoxArrowUpRight } from "react-icons/bs";
 import LogoA4s from "../../assets/logo-a4s-footer.webp";
 
 const devPhoto =
-  "https://media.licdn.com/dms/image/v2/D4E03AQFE9DfXaqCLXw/profile-displayphoto-scale_400_400/B4EZ08ZIxcGkAg-/0/1774834717278?e=1784764800&v=beta&t=bqEfp5ItHEiMUjbUpaYeYGuq7YPo_KDafmDvVNknqmk";
+  "https://media.licdn.com/dms/image/v2/D4E03AQFE9DfXaqCLXw/profile-displayphoto-scale_400_400/B4EZ08ZIxcGkAg-/0/1774834717278?e=1786579200&v=beta&t=UvNcisuZ-9PAWRHehZPXuu6ZvnFXTkrBony36yPOZUw";
 
 const usefulLinks = [
   { label: "Página do projeto A4S", href: "https://a4s.dev.br/" },

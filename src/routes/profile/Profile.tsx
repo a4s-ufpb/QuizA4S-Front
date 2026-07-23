@@ -10,7 +10,7 @@ import {
   LinearProgress,
 } from "@mui/material";
 import { BsPersonCircle, BsHandThumbsUpFill, BsCoin } from "react-icons/bs";
-import { TitleBadge, FramedAvatar, bannerClassName } from "../../components/cosmetics/Cosmetic";
+import { TitleBadge, FramedAvatar, bannerClassName, PlayerName } from "../../components/cosmetics/Cosmetic";
 import MyTheme from "./myTheme/MyTheme";
 import MyOwnResponses from "./myOwnResponses/MyOwnResponses";
 import MyResponse from "./myResponse/MyResponse";
@@ -47,6 +47,9 @@ const Profile = () => {
   const equippedTitle = findUserQuery.data?.success ? findUserQuery.data.data.equippedTitle : null;
   const equippedFrame = findUserQuery.data?.success ? findUserQuery.data.data.equippedFrame : null;
   const equippedBanner = findUserQuery.data?.success ? findUserQuery.data.data.equippedBanner : null;
+  const equippedFont = findUserQuery.data?.success ? findUserQuery.data.data.equippedFont : null;
+  const equippedNameStyle = findUserQuery.data?.success ? findUserQuery.data.data.equippedNameStyle : null;
+  const equippedNameEffect = findUserQuery.data?.success ? findUserQuery.data.data.equippedNameEffect : null;
   const xpIntoLevel = xp % 100;
   const updateUserMutation = useUpdateUserMutation();
   const removeUserMutation = useRemoveUserMutation();
@@ -309,8 +312,13 @@ const Profile = () => {
             >
               {coins} moedas <BsCoin />
             </Typography>
-            <Typography variant="h6" sx={{ mb: 0, mt: -1 }}>
-              {name}
+            <Typography variant="h6" component="div" sx={{ mb: 0, mt: -1 }}>
+              <PlayerName
+                name={name}
+                font={equippedFont}
+                style={equippedNameStyle}
+                effect={equippedNameEffect}
+              />
             </Typography>
             <Typography color="text.secondary">{email}</Typography>
             <Box sx={{ width: "100%" }}>

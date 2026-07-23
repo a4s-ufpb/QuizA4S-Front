@@ -146,7 +146,6 @@ const FormTemplate = ({
     register,
     handleSubmit: onSubmit,
     formState: { errors },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = useForm<FormValues>({ resolver: yupResolver(resolverSchema) as any });
 
   return (

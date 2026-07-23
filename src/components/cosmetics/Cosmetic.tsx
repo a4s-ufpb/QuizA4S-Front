@@ -1,6 +1,54 @@
-import type { ReactNode } from "react";
-import { titleLabel, titleClass, frameClass, bannerClass } from "../../util/cosmetics";
+import type { CSSProperties, ReactNode } from "react";
+import {
+  titleLabel,
+  titleClass,
+  frameClass,
+  bannerClass,
+  fontFamily,
+  nameStyleClass,
+  nameEffectClass,
+  isPerLetterEffect,
+} from "../../util/cosmetics";
 import "./cosmetics.css";
+
+/**
+ * Nome do jogador com os cosméticos de nome aplicados (fonte, estilo e efeito).
+ * Tudo CSS puro — o efeito "onda" quebra o nome em letras para a animação
+ * escalonada. Sem cosméticos, renderiza o nome normal.
+ */
+export function PlayerName({
+  name,
+  font,
+  style,
+  effect,
+  sx,
+}: {
+  name: string;
+  font?: string | null;
+  style?: string | null;
+  effect?: string | null;
+  sx?: CSSProperties;
+}) {
+  const className = `cos-name ${nameStyleClass(style)} ${nameEffectClass(effect)}`.trim();
+  const inline: CSSProperties = { fontFamily: fontFamily(font), ...sx };
+
+  if (isPerLetterEffect(effect)) {
+    return (
+      <span className={className} style={inline}>
+        {Array.from(name).map((ch, i) => (
+          <span key={i} className="cos-name-letter" style={{ ["--i" as string]: i } as CSSProperties}>
+            {ch === " " ? " " : ch}
+          </span>
+        ))}
+      </span>
+    );
+  }
+  return (
+    <span className={className} style={inline}>
+      {name}
+    </span>
+  );
+}
 
 /** Título equipado exibido ao lado do nome (ou nada, se não houver). */
 export function TitleBadge({ code }: { code?: string | null }) {

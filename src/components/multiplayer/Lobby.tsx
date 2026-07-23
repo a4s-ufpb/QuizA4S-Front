@@ -37,7 +37,7 @@ import ConfirmBox from "../confirmBox/ConfirmBox";
 import AvatarSelector from "./AvatarSelector";
 import RoomChat from "./RoomChat";
 import RoomConfigForm from "./RoomConfigForm";
-import { TitleBadge, FramedAvatar, bannerClassName } from "../cosmetics/Cosmetic";
+import { TitleBadge, FramedAvatar, bannerClassName, PlayerName } from "../cosmetics/Cosmetic";
 import "./multiplayer.css";
 
 interface LobbyProps {
@@ -91,6 +91,9 @@ const Lobby = ({ room }: LobbyProps) => {
   const me = state.players.find((p) => p.id === room.playerId);
   const isTeamMode = state.config.roomMode === "TEAM";
   const maxPerTeam = state.config.maxPlayersPerTeam ?? null;
+  // Sala de confronto de torneio: avança sozinha (AUTO) e começa quando os dois
+  // adversários entram — sem controles de líder (quiz/regras/iniciar).
+  const isTournamentMatch = state.config.advanceMode === "AUTO";
 
   function teamPlayerCount(teamId: string) {
     return state.players.filter((p) => p.teamId === teamId).length;
@@ -218,7 +221,7 @@ const Lobby = ({ room }: LobbyProps) => {
                     )}
                   </FramedAvatar>
                   <Box sx={{ flexGrow: 1 }}>
-                    {p.name}
+                    <PlayerName name={p.name} font={p.font} style={p.nameStyle} effect={p.nameEffect} />
                     <TitleBadge code={p.title} />
                     {p.id === room.playerId && " (você)"}
                     {isTeamMode && p.teamId && (
@@ -338,58 +341,66 @@ const Lobby = ({ room }: LobbyProps) => {
             </Card>
           )}
 
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-            {me && !me.host && (
-              <Button
-                variant={me.ready ? "outlined" : "contained"}
-                color="success"
-                onClick={() => room.setReady(!me.ready)}
-              >
-                {me.ready ? "Cancelar pronto" : "Estou pronto"}
-              </Button>
-            )}
-            {room.isHost && (
-              <>
-                <Button variant="contained" color="primary" onClick={() => setShowThemes(true)}>
-                  {state.themeId ? "Trocar quiz" : "Selecionar quiz"}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => setShowConfig(true)}
-                >
-                  Regras
-                </Button>
-                <Button
-                  variant="contained"
-                  color="success"
-                  disabled={!canStart}
-                  onClick={() => {
-                    // Com jogadores ainda não prontos, pede confirmação antes.
-                    if (allReady) room.start();
-                    else setConfirmStart(true);
-                  }}
-                >
-                  Iniciar partida
-                </Button>
-              </>
-            )}
-          </Box>
-          {room.isHost && state.themeId == null && (
-            <Typography
-              variant="body2"
-              sx={{ color: "rgba(255,255,255,0.7)", mt: 1 }}
-            >
-              Selecione um quiz para poder iniciar.
+          {isTournamentMatch ? (
+            <Typography sx={{ color: "rgba(255,255,255,0.85)", fontWeight: "bold" }}>
+              Aguardando o adversário entrar — a partida começa automaticamente.
             </Typography>
-          )}
-          {room.isHost && state.themeId != null && !allReady && (
-            <Typography
-              variant="body2"
-              sx={{ color: "rgba(255,255,255,0.7)", mt: 1 }}
-            >
-              Ainda há jogadores que não deram pronto.
-            </Typography>
+          ) : (
+            <>
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                {me && !me.host && (
+                  <Button
+                    variant={me.ready ? "outlined" : "contained"}
+                    color="success"
+                    onClick={() => room.setReady(!me.ready)}
+                  >
+                    {me.ready ? "Cancelar pronto" : "Estou pronto"}
+                  </Button>
+                )}
+                {room.isHost && (
+                  <>
+                    <Button variant="contained" color="primary" onClick={() => setShowThemes(true)}>
+                      {state.themeId ? "Trocar quiz" : "Selecionar quiz"}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => setShowConfig(true)}
+                    >
+                      Regras
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      disabled={!canStart}
+                      onClick={() => {
+                        // Com jogadores ainda não prontos, pede confirmação antes.
+                        if (allReady) room.start();
+                        else setConfirmStart(true);
+                      }}
+                    >
+                      Iniciar partida
+                    </Button>
+                  </>
+                )}
+              </Box>
+              {room.isHost && state.themeId == null && (
+                <Typography
+                  variant="body2"
+                  sx={{ color: "rgba(255,255,255,0.7)", mt: 1 }}
+                >
+                  Selecione um quiz para poder iniciar.
+                </Typography>
+              )}
+              {room.isHost && state.themeId != null && !allReady && (
+                <Typography
+                  variant="body2"
+                  sx={{ color: "rgba(255,255,255,0.7)", mt: 1 }}
+                >
+                  Ainda há jogadores que não deram pronto.
+                </Typography>
+              )}
+            </>
           )}
         </Box>
 
@@ -403,7 +414,7 @@ const Lobby = ({ room }: LobbyProps) => {
         onClose={() => setShowThemes(false)}
         fullWidth
         maxWidth="lg"
-        slotProps={{ paper: { sx: { bgcolor: "#1a1a2e" } } }}
+        slotProps={{ paper: { sx: { bgcolor: "#4d4d4d" } } }}
       >
         <DialogTitle sx={{ color: "#fff" }}>Selecionar quiz</DialogTitle>
         <DialogContent>

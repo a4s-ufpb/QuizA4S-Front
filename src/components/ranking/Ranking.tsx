@@ -62,7 +62,12 @@ const Ranking = ({ navigatePath, setShowRanking }: RankingProps) => {
                       <span className={`rank-icon rank-${index + 1}`}>
                         {index + 1}
                       </span>
-                      {score.user.name}
+                      <span
+                        style={{ color: "#1976d2", textDecoration: "underline", cursor: "pointer" }}
+                        onClick={() => navigate(`/profile/public/${score.user.uuid}`)}
+                      >
+                        {score.user.name}
+                      </span>
                     </TableCell>
                     <TableCell align="center">{score.result}</TableCell>
                   </TableRow>

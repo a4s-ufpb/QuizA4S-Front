@@ -15,10 +15,10 @@
   background: linear-gradient(160deg, #16202e 0%, #0f1620 60%, #0a0f16 100%);
 }
 
+.quiz-back-btn,
 .fullscreen-btn {
   position: absolute;
   top: 3em;
-  left: 16px;
   z-index: 10;
   width: 44px;
   height: 44px;
@@ -36,9 +36,24 @@
     background 0.2s ease;
 }
 
+.quiz-back-btn {
+  left: 16px;
+}
+
+.fullscreen-btn {
+  left: 68px;
+}
+
+.quiz-back-btn:hover,
 .fullscreen-btn:hover {
   background: #fff;
   transform: scale(1.08);
+}
+
+@media (max-width: 768px) {
+  .fullscreen-btn {
+    display: none;
+  }
 }
 
 .container-quiz {

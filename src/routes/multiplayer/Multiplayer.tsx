@@ -12,11 +12,18 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   FormControl,
+  FormControlLabel,
+  FormLabel,
+  RadioGroup,
+  Radio,
   InputLabel,
   Select,
   MenuItem,
+  Tooltip,
+  IconButton,
   type SelectChangeEvent,
 } from "@mui/material";
+import { BsQuestionCircle } from "react-icons/bs";
 import { GameService } from "../../service/GameService";
 import { getGuestId, getGuestName, setGuestName } from "../../util/guest";
 import { getStoredUser } from "../../util/storage";
@@ -40,6 +47,7 @@ const Multiplayer = () => {
   const capacityOptions = isAdmin ? [12, 24, 48] : isLoggedIn ? [12, 24] : [12];
   const teamSizeOptions = isAdmin ? [2, 3, 4] : isLoggedIn ? [2, 3] : [2];
 
+  const [tab, setTab] = useState<"create" | "join">("create");
   const [name, setName] = useState(
     isLoggedIn ? loggedUser.name : getGuestName()
   );
@@ -49,6 +57,9 @@ const Multiplayer = () => {
   const [roomMode, setRoomMode] = useState<RoomMode>("INDIVIDUAL");
   const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(2);
   const [maxPlayers, setMaxPlayers] = useState(12);
+  // Modo do criador: "espectador" (só apresenta, padrão Kahoot) ou "player"
+  // (também joga e pontua). Envia config.hostPlays ao backend.
+  const [creatorMode, setCreatorMode] = useState<"spectator" | "player">("spectator");
 
   function persistName(): boolean {
     if (isLoggedIn) {
@@ -80,6 +91,7 @@ const Multiplayer = () => {
         maxPlayersPerTeam: roomMode === "TEAM" ? maxPlayersPerTeam : null,
         gameStyle: "NORMAL",
         maxPlayers,
+        hostPlays: creatorMode === "player",
       },
     });
     setLoading(false);
@@ -133,6 +145,22 @@ const Multiplayer = () => {
             </Alert>
           )}
 
+          <ToggleButtonGroup
+            exclusive
+            fullWidth
+            value={tab}
+            onChange={(_e, newTab) => {
+              if (newTab) {
+                setTab(newTab);
+                setError("");
+              }
+            }}
+            sx={{ mb: 3 }}
+          >
+            <ToggleButton value="create">Criar Sala</ToggleButton>
+            <ToggleButton value="join">Entrar na Sala</ToggleButton>
+          </ToggleButtonGroup>
+
           {isLoggedIn ? (
             <Typography align="center" sx={{ mb: 3 }}>
               Jogando como <strong>{name}</strong>
@@ -149,89 +177,105 @@ const Multiplayer = () => {
             />
           )}
 
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            Modo da sala
-          </Typography>
-          <ToggleButtonGroup
-            exclusive
-            fullWidth
-            value={roomMode}
-            onChange={(_e, newMode) => newMode && setRoomMode(newMode)}
-            sx={{ mb: 2 }}
-          >
-            <ToggleButton value="INDIVIDUAL">Todos contra todos</ToggleButton>
-            <ToggleButton value="TEAM">Equipes</ToggleButton>
-          </ToggleButtonGroup>
+          {tab === "create" ? (
+            <>
+              <FormControl sx={{ mb: 2, display: "block" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <FormLabel id="creator-mode-label">Modo do criador da sala</FormLabel>
+                  <Tooltip
+                    title="Participar do quiz: você joga e pontua junto com os demais, mantendo os controles de líder. Modo espectador: você só apresenta as questões e conduz a partida, sem pontuar."
+                    arrow
+                  >
+                    <IconButton size="small" aria-label="Explicação dos modos do criador">
+                      <BsQuestionCircle />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+                <RadioGroup
+                  aria-labelledby="creator-mode-label"
+                  value={creatorMode}
+                  onChange={(e) => setCreatorMode(e.target.value as "spectator" | "player")}
+                >
+                  <FormControlLabel value="player" control={<Radio />} label="Participar do quiz" />
+                  <FormControlLabel value="spectator" control={<Radio />} label="Modo espectador" />
+                </RadioGroup>
+              </FormControl>
 
-          <FormControl fullWidth sx={{ mb: roomMode === "TEAM" ? 2 : 3 }}>
-            <InputLabel id="capacity-label">Capacidade máxima (jogadores)</InputLabel>
-            <Select
-              labelId="capacity-label"
-              label="Capacidade máxima (jogadores)"
-              value={maxPlayers}
-              onChange={(e: SelectChangeEvent<number>) => setMaxPlayers(Number(e.target.value))}
-            >
-              {capacityOptions.map((n) => (
-                <MenuItem key={n} value={n}>
-                  {n}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {roomMode === "TEAM" && (
-            <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel id="team-size-label">
-                Jogadores por equipe
-              </InputLabel>
-              <Select
-                labelId="team-size-label"
-                label="Jogadores por equipe"
-                value={maxPlayersPerTeam}
-                onChange={(e: SelectChangeEvent<number>) =>
-                  setMaxPlayersPerTeam(Number(e.target.value))
-                }
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Modo da sala
+              </Typography>
+              <ToggleButtonGroup
+                exclusive
+                fullWidth
+                value={roomMode}
+                onChange={(_e, newMode) => newMode && setRoomMode(newMode)}
+                sx={{ mb: 2 }}
               >
-                {teamSizeOptions.map((n) => (
-                  <MenuItem key={n} value={n}>
-                    {n}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                <ToggleButton value="INDIVIDUAL">Todos contra todos</ToggleButton>
+                <ToggleButton value="TEAM">Equipes</ToggleButton>
+              </ToggleButtonGroup>
+
+              <FormControl fullWidth sx={{ mb: roomMode === "TEAM" ? 2 : 3 }}>
+                <InputLabel id="capacity-label">Capacidade máxima (jogadores)</InputLabel>
+                <Select
+                  labelId="capacity-label"
+                  label="Capacidade máxima (jogadores)"
+                  value={maxPlayers}
+                  onChange={(e: SelectChangeEvent<number>) => setMaxPlayers(Number(e.target.value))}
+                >
+                  {capacityOptions.map((n) => (
+                    <MenuItem key={n} value={n}>
+                      {n}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {roomMode === "TEAM" && (
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                  <InputLabel id="team-size-label">Jogadores por equipe</InputLabel>
+                  <Select
+                    labelId="team-size-label"
+                    label="Jogadores por equipe"
+                    value={maxPlayersPerTeam}
+                    onChange={(e: SelectChangeEvent<number>) =>
+                      setMaxPlayersPerTeam(Number(e.target.value))
+                    }
+                  >
+                    {teamSizeOptions.map((n) => (
+                      <MenuItem key={n} value={n}>
+                        {n}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+
+              <Box sx={{ display: "grid" }}>
+                <Button variant="contained" size="large" onClick={createRoom}>
+                  Criar sala
+                </Button>
+              </Box>
+            </>
+          ) : (
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <TextField
+                placeholder="Código"
+                value={code}
+                slotProps={{
+                  htmlInput: {
+                    maxLength: 6,
+                    style: { textTransform: "uppercase", letterSpacing: "2px" },
+                  },
+                }}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                sx={{ flex: 7 }}
+              />
+              <Button variant="contained" onClick={joinRoom} sx={{ flex: 5 }}>
+                Entrar
+              </Button>
+            </Box>
           )}
-
-          <Box sx={{ display: "grid", mb: 3 }}>
-            <Button variant="contained" size="large" onClick={createRoom}>
-              Criar sala
-            </Button>
-          </Box>
-
-          <Typography align="center" color="text.secondary" sx={{ mb: 2 }}>
-            ou entre em uma sala
-          </Typography>
-
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <TextField
-              placeholder="Código"
-              value={code}
-              slotProps={{
-                htmlInput: {
-                  maxLength: 6,
-                  style: { textTransform: "uppercase", letterSpacing: "2px" },
-                },
-              }}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              sx={{ flex: 7 }}
-            />
-            <Button
-              variant="outlined"
-              onClick={joinRoom}
-              sx={{ flex: 5 }}
-            >
-              Entrar
-            </Button>
-          </Box>
 
           {loading && <Loading />}
         </CardContent>

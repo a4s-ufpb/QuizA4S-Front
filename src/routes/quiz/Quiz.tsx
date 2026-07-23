@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { BsArrowsFullscreen, BsFullscreenExit } from "react-icons/bs";
+import { BsArrowsFullscreen, BsFullscreenExit, BsArrowLeft } from "react-icons/bs";
 import Question from "../../components/question/Question";
 import InformationBox from "../../components/informationBox/InformationBox";
 import Loading from "../../components/loading/Loading";
@@ -69,9 +69,11 @@ const Quiz = () => {
       setTextAlert("Cadastre no mínimo 5 questões para jogar esse quiz");
       setInformationAlert(true);
     } else {
-      // Tenta iniciar em tela cheia (pode ser bloqueado sem gesto do usuário;
-      // nesse caso o botão no canto superior esquerdo permite ativar).
-      containerRef.current?.requestFullscreen?.().catch(() => {});
+      // Em desktop tenta entrar em tela cheia automaticamente; mobile fica sem.
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
+      if (!isMobile) {
+        containerRef.current?.requestFullscreen?.().catch(() => {});
+      }
     }
   }, [questionsQuery.data]);
 
@@ -232,6 +234,15 @@ const Quiz = () => {
 
   return (
     <div className="container-quiz-external" ref={containerRef}>
+      <button
+        type="button"
+        className="quiz-back-btn"
+        onClick={() => { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); navigate("/theme"); }}
+        title="Voltar"
+        aria-label="Voltar"
+      >
+        <BsArrowLeft size={20} />
+      </button>
       <button
         type="button"
         className="fullscreen-btn"

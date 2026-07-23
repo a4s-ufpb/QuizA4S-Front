@@ -24,4 +24,37 @@ export class TournamentService extends BaseService {
       hostId,
     });
   }
+
+  configure(code: string, hostId: string) {
+    return this.handleRequest<TournamentState>("post", `/tournament/${code}/configure`, {
+      hostId,
+    });
+  }
+
+  reopen(code: string, hostId: string) {
+    return this.handleRequest<TournamentState>("post", `/tournament/${code}/reopen`, {
+      hostId,
+    });
+  }
+
+  setRoundTheme(code: string, hostId: string, roundIndex: number, themeId: number) {
+    return this.handleRequest<TournamentState>("post", `/tournament/${code}/round-theme`, {
+      hostId,
+      roundIndex,
+      themeId,
+    });
+  }
+
+  kick(code: string, hostId: string, targetId: string) {
+    return this.handleRequest<TournamentState>("post", `/tournament/${code}/kick`, {
+      hostId,
+      targetId,
+    });
+  }
+
+  leave(code: string, playerId: string) {
+    return this.handleRequest<TournamentState>("post", `/tournament/${code}/leave`, {
+      playerId,
+    });
+  }
 }

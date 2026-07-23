@@ -18,7 +18,6 @@ import {
 import { getGuestId, getGuestName, setGuestName } from "../../util/guest";
 import { getStoredUser } from "../../util/storage";
 import Loading from "../../components/loading/Loading";
-import { useAllThemesQuery } from "../../query/useThemeQueries";
 import {
   useCreateTournamentMutation,
   useJoinTournamentMutation,
@@ -28,23 +27,20 @@ const CreateJoinTournament = () => {
   const navigate = useNavigate();
   const createMutation = useCreateTournamentMutation();
   const joinMutation = useJoinTournamentMutation();
-  const themesQuery = useAllThemesQuery("", 0);
-  const themes = themesQuery.data?.success ? themesQuery.data.data.content : [];
 
   const loggedUser = getStoredUser();
   const isLoggedIn = Boolean(localStorage.getItem("token") && loggedUser?.name);
 
   const [name, setName] = useState(isLoggedIn ? loggedUser.name : getGuestName());
   const [tournamentName, setTournamentName] = useState("");
-  const [themeId, setThemeId] = useState<number | "">("");
   const [questionCount, setQuestionCount] = useState(10);
   const [questionTimeSeconds, setQuestionTimeSeconds] = useState(30);
-  const [maxPlayers, setMaxPlayers] = useState(12);
+  const [maxPlayers, setMaxPlayers] = useState(8);
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
 
-  // Torneio: convidado até 12 jogadores; logado pode 12 ou 24.
-  const capacityOptions = isLoggedIn ? [12, 24] : [12];
+  // Chaveamento sem "bye": convidado joga com 4 ou 8; logado também pode 16.
+  const capacityOptions = isLoggedIn ? [4, 8, 16] : [4, 8];
 
   function persistName(): boolean {
     if (isLoggedIn) {
@@ -66,16 +62,14 @@ const CreateJoinTournament = () => {
       setError("Digite um nome para o torneio.");
       return;
     }
-    if (!themeId) {
-      setError("Selecione um quiz.");
-      return;
-    }
 
+    // O quiz não é mais escolhido aqui: o organizador define o quiz de cada
+    // rodada no lobby, depois de travar as chaves.
     const response = await createMutation.mutateAsync({
       hostId: getGuestId(),
       hostName: name.trim(),
       name: tournamentName.trim(),
-      themeId: Number(themeId),
+      themeId: null,
       questionCount,
       questionTimeSeconds,
       maxPlayers,
@@ -157,24 +151,6 @@ const CreateJoinTournament = () => {
             sx={{ mb: 2 }}
           />
 
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel id="tournament-theme-label">Quiz</InputLabel>
-            <Select
-              labelId="tournament-theme-label"
-              label="Quiz"
-              value={themeId}
-              onChange={(e: SelectChangeEvent<number | "">) =>
-                setThemeId(e.target.value === "" ? "" : Number(e.target.value))
-              }
-            >
-              {themes.map((t) => (
-                <MenuItem key={t.id} value={t.id}>
-                  {t.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
           <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
             <FormControl fullWidth>
               <InputLabel id="question-count-label">Questões</InputLabel>
@@ -184,7 +160,7 @@ const CreateJoinTournament = () => {
                 value={questionCount}
                 onChange={(e: SelectChangeEvent<number>) => setQuestionCount(Number(e.target.value))}
               >
-                {[5, 10, 15, 20].map((n) => (
+                {[5, 10].map((n) => (
                   <MenuItem key={n} value={n}>
                     {n}
                   </MenuItem>

@@ -1,7 +1,15 @@
 // Tipos do modo torneio (espelham os DTOs do backend em quizapi/game).
 
-export type TournamentStatus = "LOBBY" | "IN_PROGRESS" | "FINISHED";
+export type TournamentStatus = "LOBBY" | "CONFIGURING" | "IN_PROGRESS" | "FINISHED";
 export type MatchStatus = "PENDING" | "WAITING_PLAYERS" | "IN_PROGRESS" | "DONE" | "BYE";
+
+/** Quiz escolhido para uma rodada do chaveamento (themeId null = ainda não escolhido). */
+export interface RoundThemeView {
+  roundIndex: number;
+  label: string;
+  themeId: number | null;
+  themeName: string | null;
+}
 
 export interface TournamentPlayerView {
   id: string;
@@ -11,6 +19,9 @@ export interface TournamentPlayerView {
   title?: string | null;
   frame?: string | null;
   banner?: string | null;
+  font?: string | null;
+  nameStyle?: string | null;
+  nameEffect?: string | null;
 }
 
 export interface MatchView {
@@ -32,7 +43,18 @@ export interface TournamentState {
   players: TournamentPlayerView[];
   rounds: MatchView[][];
   championId: string | null;
+  /** Capacidade máxima configurada (4/8/16). */
+  maxPlayers: number;
+  /** Nº de jogadores fixado ao travar as chaves (0 no lobby). */
+  bracketSize: number;
+  /** Quiz de cada rodada (só após travar as chaves). */
+  roundThemes: RoundThemeView[];
 }
+
+/** Evento empurrado pelo backend no tópico STOMP do torneio. */
+export type TournamentEvent =
+  | { type: "STATE"; data: TournamentState }
+  | { type: "CLOSED" };
 
 export interface CreateTournamentRequest {
   hostId: string;

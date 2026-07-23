@@ -17,10 +17,11 @@ import {
   BsAwardFill,
   BsDiagram3Fill,
   BsShopWindow,
+  BsArrowLeft,
 } from "react-icons/bs";
 import { getStoredUser } from "../../util/storage";
 import { clearAuthStorage } from "../../util/token";
-import { TitleBadge, FramedAvatar, bannerClassName } from "../cosmetics/Cosmetic";
+import { TitleBadge, FramedAvatar, bannerClassName, PlayerName } from "../cosmetics/Cosmetic";
 
 import "./Menu.css";
 
@@ -59,8 +60,8 @@ const Menu = ({
   return (
     <div className="menu">
       <div className="container-btn-fechar">
-        <button type="button" onClick={() => setMenu(false)}>
-          X
+        <button type="button" className="menu-btn-close" onClick={() => setMenu(false)} title="Fechar menu">
+          <BsArrowLeft size={20} />
         </button>
       </div>
 
@@ -69,9 +70,16 @@ const Menu = ({
           className={`menu-user-header ${bannerClassName(user.equippedBanner)}`}
         >
           <FramedAvatar code={user.equippedFrame} size={56}>
-            <BsPersonCircle className="menu-user-avatar" />
+            <BsPersonCircle size={38} color="#fff" />
           </FramedAvatar>
-          <span className="menu-user-name">{user.name}</span>
+          <span className="menu-user-name">
+            <PlayerName
+              name={user.name}
+              font={user.equippedFont}
+              style={user.equippedNameStyle}
+              effect={user.equippedNameEffect}
+            />
+          </span>
           {user.equippedTitle && <TitleBadge code={user.equippedTitle} />}
         </div>
       )}

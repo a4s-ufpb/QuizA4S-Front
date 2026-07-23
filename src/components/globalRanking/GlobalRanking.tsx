@@ -70,7 +70,7 @@ const GlobalRanking = () => {
                     onClick={() => navigate(`/profile/public/${entry.user.uuid}`)}
                   >
                     <Avatar sx={{ width: 28, height: 28 }} />
-                    {entry.user.name}
+                    <span style={{ color: "#1976d2", textDecoration: "underline" }}>{entry.user.name}</span>
                   </TableCell>
                   <TableCell align="right">{entry.totalScore.toFixed(2)}</TableCell>
                 </TableRow>

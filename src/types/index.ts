@@ -37,6 +37,9 @@ export interface User {
   equippedTitle?: string | null;
   equippedFrame?: string | null;
   equippedBanner?: string | null;
+  equippedFont?: string | null;
+  equippedNameStyle?: string | null;
+  equippedNameEffect?: string | null;
 }
 
 export interface WalletTransactionResponse {
@@ -51,9 +54,11 @@ export interface StoreItemResponse {
   code: string;
   name: string;
   description: string;
-  category: "TITLE" | "AVATAR_FRAME";
+  category: "TITLE" | "AVATAR_FRAME" | "BANNER" | "FONT" | "NAME_STYLE" | "NAME_EFFECT";
   price: number;
   owned: boolean;
+  /** Nível mínimo do usuário para desbloquear a compra. */
+  requiredLevel: number;
 }
 
 export interface FriendshipResponse {
@@ -88,6 +93,9 @@ export interface PublicProfileResponse {
   equippedTitle?: string | null;
   equippedFrame?: string | null;
   equippedBanner?: string | null;
+  equippedFont?: string | null;
+  equippedNameStyle?: string | null;
+  equippedNameEffect?: string | null;
   achievements: AchievementResponse[];
 }
 

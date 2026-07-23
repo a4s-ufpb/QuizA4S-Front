@@ -1,6 +1,5 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { TournamentService } from "../service/TournamentService";
-import { queryKeys } from "./queryKeys";
 import type { CreateTournamentRequest } from "../types/tournament";
 
 const tournamentService = new TournamentService();
@@ -34,11 +33,46 @@ export function useStartTournamentMutation() {
   });
 }
 
-export function useTournamentStateQuery(code: string, enabled = true) {
-  return useQuery({
-    queryKey: queryKeys.tournament.state(code),
-    queryFn: () => tournamentService.getState(code),
-    enabled: enabled && Boolean(code),
-    refetchInterval: enabled ? 3000 : false,
+export function useConfigureTournamentMutation() {
+  return useMutation({
+    mutationFn: ({ code, hostId }: { code: string; hostId: string }) =>
+      tournamentService.configure(code, hostId),
+  });
+}
+
+export function useReopenTournamentMutation() {
+  return useMutation({
+    mutationFn: ({ code, hostId }: { code: string; hostId: string }) =>
+      tournamentService.reopen(code, hostId),
+  });
+}
+
+export function useSetRoundThemeMutation() {
+  return useMutation({
+    mutationFn: ({
+      code,
+      hostId,
+      roundIndex,
+      themeId,
+    }: {
+      code: string;
+      hostId: string;
+      roundIndex: number;
+      themeId: number;
+    }) => tournamentService.setRoundTheme(code, hostId, roundIndex, themeId),
+  });
+}
+
+export function useKickTournamentPlayerMutation() {
+  return useMutation({
+    mutationFn: ({ code, hostId, targetId }: { code: string; hostId: string; targetId: string }) =>
+      tournamentService.kick(code, hostId, targetId),
+  });
+}
+
+export function useLeaveTournamentMutation() {
+  return useMutation({
+    mutationFn: ({ code, playerId }: { code: string; playerId: string }) =>
+      tournamentService.leave(code, playerId),
   });
 }

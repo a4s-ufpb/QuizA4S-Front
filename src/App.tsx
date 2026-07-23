@@ -1,6 +1,6 @@
 // Components
 import Header from "./components/header/Header";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Footer from "./components/footer/Footer";
 import { useContext } from "react";
 import { AuthenticationContext } from "./context/AuthenticationContext";
@@ -13,11 +13,13 @@ import "./App.css";
 function App() {
   const { isAuthenticated, loading } = useContext(AuthenticationContext);
   const showFooter = useFooter();
+  const location = useLocation();
+  const showHeader = !location.pathname.startsWith("/quiz/");
 
   return (
     <div className="app">
       {loading && <Loading />}
-      <Header isAuth={isAuthenticated} />
+      {showHeader && <Header isAuth={isAuthenticated} />}
       <Outlet />
       {showFooter && <Footer />}
     </div>

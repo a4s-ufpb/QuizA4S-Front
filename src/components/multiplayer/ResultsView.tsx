@@ -165,8 +165,12 @@ const ResultsView = ({ room, tournamentCode }: ResultsViewProps) => {
   // individual, e só quem está logado pode curtir.
   const canLike = !isTeam && Boolean(getStoredUser().uuid);
 
+  // O líder entra no placar quando joga (sozinho ou modo "criador participa" —
+  // sempre nas salas de torneio). Sem isso, um líder vencedor era ocultado e o
+  // 2º colocado aparecia como campeão da chave.
+  const hostCounts = state.config.hostPlays || state.players.length === 1;
   const players = [...state.players]
-    .filter((p) => !p.host || state.players.length === 1)
+    .filter((p) => !p.host || hostCounts)
     .sort((a, b) => b.score - a.score);
   const teams = [...state.teams].sort((a, b) => b.score - a.score);
 

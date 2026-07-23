@@ -377,7 +377,15 @@ const GamePlay = ({ room }: GamePlayProps) => {
   const me = state!.players.find((p) => p.id === room.playerId);
   const isTeamMode = state!.config.roomMode === "TEAM";
   const isEliminated = Boolean(me?.eliminated);
-  const isSpectator = (isTeamMode && Boolean(me?.teamId) && !me?.captain) || isEliminated;
+  const soloPlayer = state!.players.length === 1;
+  // O líder joga quando está sozinho ou quando o modo "criador participa"
+  // (hostPlays) está ativo — inclusive nas salas de torneio. Caso contrário é
+  // apresentador (espectador): não responde nem pontua.
+  const hostPlays = Boolean(state!.config.hostPlays);
+  const isHostSpectator = Boolean(me?.host) && !hostPlays && !soloPlayer;
+  const iPlay = !isHostSpectator;
+  const isSpectator =
+    isHostSpectator || (isTeamMode && Boolean(me?.teamId) && !me?.captain) || isEliminated;
 
   // Identidade estável: broadcasts de estado não relacionados à questão
   // (chat, outro jogador ficando pronto) não devem invalidar o memo do
@@ -391,8 +399,13 @@ const GamePlay = ({ room }: GamePlayProps) => {
     [selectedId, inQuestion, isSpectator, room]
   );
 
-  // Avanço é sempre manual pelo líder (o modo automático foi descontinuado).
-  const canAdvance = state!.status === "BETWEEN" && result != null && room.isHost;
+  // Avanço manual pelo líder nas salas normais (HOST). Nas salas de torneio
+  // (AUTO) as questões avançam sozinhas por tempo — sem controles de líder.
+  const canAdvance =
+    state!.status === "BETWEEN" &&
+    result != null &&
+    room.isHost &&
+    state!.config.advanceMode === "HOST";
   // Prévia da próxima questão (backend só envia entre questões e havendo próxima).
   const nextPreview = state!.nextQuestion;
   const hasNext = Boolean(nextPreview);
@@ -465,7 +478,7 @@ const GamePlay = ({ room }: GamePlayProps) => {
           Questão {question.index + 1} de {question.total}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {me && (!me.host || state!.players.length === 1) && (
+          {me && iPlay && (
             <Typography
               sx={{
                 display: "flex",
@@ -572,7 +585,9 @@ const GamePlay = ({ room }: GamePlayProps) => {
             <Typography align="center" color="text.secondary" sx={{ mt: 3 }}>
               {isEliminated
                 ? "Você foi eliminado — acompanhe o restante da partida como espectador."
-                : "Seu capitão está respondendo..."}
+                : isHostSpectator
+                  ? "Você está apresentando — os jogadores estão respondendo."
+                  : "Seu capitão está respondendo..."}
             </Typography>
           )}
           {inQuestion && !isSpectator && selectedId != null && (
