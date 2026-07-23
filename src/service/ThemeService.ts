@@ -2,8 +2,8 @@ import { BaseService } from "./BaseService";
 import type { Page, Theme } from "../types";
 
 export class ThemeService extends BaseService {
-  insertTheme(theme: Partial<Theme>) {
-    return this.handleRequest<Theme>("post", "/theme", theme);
+  insertTheme(formData: FormData) {
+    return this.handleMultipartRequest<Theme>("post", "/theme", formData);
   }
 
   removeTheme(themeId: number) {
@@ -28,7 +28,7 @@ export class ThemeService extends BaseService {
     return this.handleRequest<Theme>("get", `/theme/${idTheme}`);
   }
 
-  updateTheme(themeId: number, themeUpdate: Partial<Theme>) {
-    return this.handleRequest<Theme>("patch", `/theme/${themeId}`, themeUpdate);
+  updateTheme(themeId: number, formData: FormData) {
+    return this.handleMultipartRequest<Theme>("patch", `/theme/${themeId}`, formData);
   }
 }

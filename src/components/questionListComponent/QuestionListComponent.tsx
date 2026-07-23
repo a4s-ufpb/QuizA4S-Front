@@ -38,7 +38,10 @@ function QuestionListComponent({ onEditQuestion }: QuestionListComponentProps) {
 
   const questionsQuery = useAllQuestionsByThemeQuery(idTheme);
   const loading = questionsQuery.isLoading;
-  const questions = questionsQuery.data?.success ? questionsQuery.data.data : [];
+  // Item 4: exibe por ordem de criação (id crescente)
+  const questions = questionsQuery.data?.success
+    ? [...questionsQuery.data.data].sort((a, b) => a.id - b.id)
+    : [];
 
   function activeQuestionBox(question: Question) {
     setQuestionData(question);

@@ -49,7 +49,6 @@ import {
   MAX_IMAGE_SIZE_BYTES,
   MAX_TOTAL_IMAGES_SIZE_BYTES,
   MAX_UPLOAD_IMAGES,
-  getQuestionImageBySlot,
   type ImageSlotKey,
 } from "../../util/questionImages";
 
@@ -67,15 +66,6 @@ const IMAGE_SLOT_LABELS: Record<ImageSlotKey, string> = {
   IMAGE_1: "Upload 1",
   IMAGE_2: "Upload 2",
 };
-
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
 
 function isValidImageUrl(url: string): boolean {
   if (!url) return true;
@@ -99,34 +89,37 @@ const CreateQuestions = () => {
 
   const [loading, setLoading] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
-
   const [showSearchImage, setSearchImage] = useState(false);
 
   const [informationBoxData, setInformationBoxData] = useState<InformationData>(
-    {
-      text: "",
-      color: "red",
-      icon: "exclamation",
-    }
+    { text: "", color: "red", icon: "exclamation" }
   );
 
   const idTheme = getStoredTheme().id;
 
+  // Text fields + server-side URLs (populated in edit mode)
   const [question, setQuestion] = useState<{
     title: string;
     imageUrl: string;
     imageOneUrl: string;
     imageTwoUrl: string;
-  }>({
-    title: "",
-    imageUrl: "",
-    imageOneUrl: "",
-    imageTwoUrl: "",
-  });
+  }>({ title: "", imageUrl: "", imageOneUrl: "", imageTwoUrl: "" });
 
   const [imagesOrder, setImagesOrder] = useState<ImageSlotKey[]>([
     ...ALL_IMAGE_SLOTS,
   ]);
+
+  // File objects for new uploads (do not store base64)
+  const [uploadFileObjects, setUploadFileObjects] = useState<{
+    IMAGE_1?: File;
+    IMAGE_2?: File;
+  }>({});
+
+  // Blob URLs for preview of newly uploaded files
+  const [blobUrls, setBlobUrls] = useState<{
+    IMAGE_1?: string;
+    IMAGE_2?: string;
+  }>({});
 
   const [uploadedFileNames, setUploadedFileNames] = useState<{
     IMAGE_1?: string;
@@ -143,12 +136,46 @@ const CreateQuestions = () => {
     { text: "", correct: false },
   ]);
 
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(
-    null
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [originalAlternativeIds, setOriginalAlternativeIds] = useState<number[]>([]);
+
+  // Returns the display URL for a given slot (blob URL for new uploads, server URL for existing)
+  function getDisplayImageBySlot(slot: ImageSlotKey): string | undefined {
+    if (slot === "URL") return question.imageUrl || undefined;
+    if (slot === "IMAGE_1") return blobUrls.IMAGE_1 || question.imageOneUrl || undefined;
+    return blobUrls.IMAGE_2 || question.imageTwoUrl || undefined;
+  }
+
+  const presentImageSlots = imagesOrder.filter((slot) =>
+    Boolean(getDisplayImageBySlot(slot))
   );
-  const [originalAlternativeIds, setOriginalAlternativeIds] = useState<
-    number[]
-  >([]);
+
+  function buildQuestionFormData(isEdit = false): FormData {
+    const fd = new FormData();
+    fd.append("title", question.title);
+
+    if (question.imageUrl) fd.append("imageUrl", question.imageUrl);
+    else if (isEdit) fd.append("imageUrl", "");
+
+    if (uploadFileObjects.IMAGE_1) {
+      fd.append("imageFile1", uploadFileObjects.IMAGE_1);
+    } else if (isEdit) {
+      fd.append("imageOneUrl", question.imageOneUrl || "");
+    }
+
+    if (uploadFileObjects.IMAGE_2) {
+      fd.append("imageFile2", uploadFileObjects.IMAGE_2);
+    } else if (isEdit) {
+      fd.append("imageTwoUrl", question.imageTwoUrl || "");
+    }
+
+    const presentSlots = imagesOrder.filter((slot) =>
+      Boolean(getDisplayImageBySlot(slot))
+    );
+    fd.append("imagesOrder", presentSlots.join(","));
+
+    return fd;
+  }
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -167,19 +194,16 @@ const CreateQuestions = () => {
 
   async function postQuestion() {
     setLoading(true);
-    const presentSlots = imagesOrder.filter((slot) =>
-      Boolean(getQuestionImageBySlot(question, slot))
-    );
+    const formData = buildQuestionFormData(false);
 
     const questionResponse = await insertQuestionMutation.mutateAsync({
-      question: { ...question, imagesOrder: presentSlots.join(",") },
+      formData,
       idTheme,
     });
     setLoading(false);
 
     if (!questionResponse.success) {
       activeInformationBox(true, questionResponse.message);
-      setLoading(false);
       return;
     }
 
@@ -197,7 +221,6 @@ const CreateQuestions = () => {
     if (!alternativeResponse.success) {
       activeInformationBox(true, alternativeResponse.message);
       removeQuestion(idQuestion);
-      setLoading(false);
       return;
     }
 
@@ -209,13 +232,11 @@ const CreateQuestions = () => {
     if (!editingQuestion) return;
 
     setLoading(true);
-    const presentSlots = imagesOrder.filter((slot) =>
-      Boolean(getQuestionImageBySlot(question, slot))
-    );
+    const formData = buildQuestionFormData(true);
 
     const questionResponse = await updateQuestionMutation.mutateAsync({
       questionId: editingQuestion.id,
-      questionUpdate: { ...question, imagesOrder: presentSlots.join(",") },
+      formData,
     });
 
     if (!questionResponse.success) {
@@ -244,6 +265,9 @@ const CreateQuestions = () => {
     ]);
 
     setLoading(false);
+    // Item 3: limpa o card "Editando Questão" após salvar
+    setEditingQuestion(null);
+    setOriginalAlternativeIds([]);
     activeInformationBox(false, "Questão atualizada com sucesso!");
     clearForm();
   }
@@ -255,7 +279,6 @@ const CreateQuestions = () => {
 
     if (!questionResponse.success) {
       activeInformationBox(true, questionResponse.message);
-      setLoading(false);
     }
   }
 
@@ -278,6 +301,11 @@ const CreateQuestions = () => {
       (slot) => !orderFromField.includes(slot)
     );
     setImagesOrder([...orderFromField, ...missingSlots]);
+
+    // Clear any pending uploads when starting edit
+    Object.values(blobUrls).forEach((url) => { if (url) URL.revokeObjectURL(url); });
+    setBlobUrls({});
+    setUploadFileObjects({});
     setUploadedFileNames({});
 
     const questionAlternatives = questionToEdit.alternatives ?? [];
@@ -307,14 +335,14 @@ const CreateQuestions = () => {
   }
 
   function clearForm() {
-    setQuestion({
-      title: "",
-      imageUrl: "",
-      imageOneUrl: "",
-      imageTwoUrl: "",
-    });
-    setImagesOrder([...ALL_IMAGE_SLOTS]);
+    // Revoke blob URLs before clearing
+    Object.values(blobUrls).forEach((url) => { if (url) URL.revokeObjectURL(url); });
+    setBlobUrls({});
+    setUploadFileObjects({});
     setUploadedFileNames({});
+
+    setQuestion({ title: "", imageUrl: "", imageOneUrl: "", imageTwoUrl: "" });
+    setImagesOrder([...ALL_IMAGE_SLOTS]);
 
     setAlternatives([
       { text: "", correct: false },
@@ -335,10 +363,7 @@ const CreateQuestions = () => {
   ) => {
     setAlternatives((prevAlternatives) => {
       const updatedAlternatives = [...prevAlternatives];
-      updatedAlternatives[index] = {
-        ...updatedAlternatives[index],
-        [field]: data,
-      };
+      updatedAlternatives[index] = { ...updatedAlternatives[index], [field]: data };
       return updatedAlternatives;
     });
   };
@@ -370,37 +395,52 @@ const CreateQuestions = () => {
     setSearchImage(false);
   }
 
-  async function processImageFiles(fileList: File[]) {
-    const files = fileList.slice(0, MAX_UPLOAD_IMAGES);
+  // Item 2: fill next empty upload slot instead of overwriting
+  function processImageFiles(fileList: File[]) {
+    if (fileList.length === 0) return;
 
-    if (files.length === 0) return;
+    // Find empty upload slots in order
+    const emptySlots: Array<"IMAGE_1" | "IMAGE_2"> = [];
+    if (!blobUrls.IMAGE_1 && !question.imageOneUrl) emptySlots.push("IMAGE_1");
+    if (!blobUrls.IMAGE_2 && !question.imageTwoUrl) emptySlots.push("IMAGE_2");
 
-    const oversizedFile = files.find((file) => file.size > MAX_IMAGE_SIZE_BYTES);
+    if (emptySlots.length === 0) {
+      activeInformationBox(
+        true,
+        "Máximo de 2 imagens de upload atingido. Remova uma para adicionar outra."
+      );
+      return;
+    }
+
+    const filesToAssign = fileList.slice(0, Math.min(emptySlots.length, MAX_UPLOAD_IMAGES));
+
+    const oversizedFile = filesToAssign.find((f) => f.size > MAX_IMAGE_SIZE_BYTES);
     if (oversizedFile) {
       activeInformationBox(true, "Cada imagem deve ter no máximo 2MB");
       return;
     }
 
-    const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+    const totalSize = filesToAssign.reduce((sum, f) => sum + f.size, 0);
     if (totalSize > MAX_TOTAL_IMAGES_SIZE_BYTES) {
-      activeInformationBox(
-        true,
-        "O total das imagens enviadas deve ser de no máximo 4MB"
-      );
+      activeInformationBox(true, "O total das imagens enviadas deve ser de no máximo 4MB");
       return;
     }
 
-    const dataUrls = await Promise.all(files.map(readFileAsDataUrl));
+    const updatedBlobUrls = { ...blobUrls };
+    const updatedFileObjects = { ...uploadFileObjects };
+    const updatedFileNames = { ...uploadedFileNames };
 
-    setQuestion((prevQuestion) => ({
-      ...prevQuestion,
-      imageOneUrl: dataUrls[0] ?? "",
-      imageTwoUrl: dataUrls[1] ?? "",
-    }));
-    setUploadedFileNames({
-      IMAGE_1: files[0]?.name,
-      IMAGE_2: files[1]?.name,
+    filesToAssign.forEach((file, i) => {
+      const slot = emptySlots[i];
+      if (updatedBlobUrls[slot]) URL.revokeObjectURL(updatedBlobUrls[slot]!);
+      updatedBlobUrls[slot] = URL.createObjectURL(file);
+      updatedFileObjects[slot] = file;
+      updatedFileNames[slot] = file.name;
     });
+
+    setBlobUrls(updatedBlobUrls);
+    setUploadFileObjects(updatedFileObjects);
+    setUploadedFileNames(updatedFileNames);
   }
 
   function handleImagesUpload(e: ChangeEvent<HTMLInputElement>) {
@@ -424,18 +464,21 @@ const CreateQuestions = () => {
       return;
     }
 
-    setQuestion((prevQuestion) => ({
-      ...prevQuestion,
+    const slotKey = slot as "IMAGE_1" | "IMAGE_2";
+    if (blobUrls[slotKey]) URL.revokeObjectURL(blobUrls[slotKey]!);
+    setBlobUrls((prev) => ({ ...prev, [slotKey]: undefined }));
+    setUploadFileObjects((prev) => ({ ...prev, [slotKey]: undefined }));
+    setUploadedFileNames((prev) => ({ ...prev, [slotKey]: undefined }));
+    // Also clear server URL if any (edit mode)
+    setQuestion((prev) => ({
+      ...prev,
       [slot === "IMAGE_1" ? "imageOneUrl" : "imageTwoUrl"]: "",
     }));
-    setUploadedFileNames((prev) => ({ ...prev, [slot]: undefined }));
   }
 
   function moveImage(slot: ImageSlotKey, direction: -1 | 1) {
     setImagesOrder((prevOrder) => {
-      const present = prevOrder.filter((s) =>
-        Boolean(getQuestionImageBySlot(question, s))
-      );
+      const present = prevOrder.filter((s) => Boolean(getDisplayImageBySlot(s)));
       const currentIndex = present.indexOf(slot);
       const newIndex = currentIndex + direction;
 
@@ -456,26 +499,12 @@ const CreateQuestions = () => {
 
   function activeInformationBox(isFail: boolean, message: string) {
     if (isFail) {
-      setInformationBoxData((prevData) => {
-        return {
-          ...prevData,
-          text: message,
-          color: "red",
-          icon: "exclamation",
-        };
-      });
-      setInformationBox(true);
+      setInformationBoxData({ text: message, color: "red", icon: "exclamation" });
     } else {
-      setInformationBoxData((prevData) => {
-        return { ...prevData, text: message, color: "green", icon: "check" };
-      });
-      setInformationBox(true);
+      setInformationBoxData({ text: message, color: "green", icon: "check" });
     }
+    setInformationBox(true);
   }
-
-  const presentImageSlots = imagesOrder.filter((slot) =>
-    Boolean(getQuestionImageBySlot(question, slot))
-  );
 
   return (
     <div className="container-create-questions">
@@ -624,7 +653,7 @@ const CreateQuestions = () => {
                     </Typography>
                     <Stack spacing={1}>
                       {presentImageSlots.map((slot, index) => {
-                        const imageSrc = getQuestionImageBySlot(question, slot);
+                        const imageSrc = getDisplayImageBySlot(slot);
                         const label =
                           slot === "URL"
                             ? IMAGE_SLOT_LABELS[slot]
@@ -703,9 +732,7 @@ const CreateQuestions = () => {
                       <TextField
                         placeholder="Digite o texto da alternativa"
                         value={alternative.text}
-                        onChange={(e) =>
-                          changeAlternative(index, "text", e.target.value)
-                        }
+                        onChange={(e) => changeAlternative(index, "text", e.target.value)}
                         multiline
                         minRows={1}
                         maxRows={6}
@@ -746,7 +773,14 @@ const CreateQuestions = () => {
           </CardContent>
         </Card>
 
-        <Button type="submit" form="create-question-form" variant="contained" size="large" fullWidth sx={{ mt: 2 }}>
+        <Button
+          type="submit"
+          form="create-question-form"
+          variant="contained"
+          size="large"
+          fullWidth
+          sx={{ mt: 2 }}
+        >
           {editingQuestion ? "Salvar Alterações" : "Criar Questão"}
         </Button>
       </Container>
@@ -761,10 +795,7 @@ const CreateQuestions = () => {
         />
       )}
       {showSearchImage && (
-        <SearchImage
-          setSearchImage={setSearchImage}
-          getUrlOfImage={getUrlOfImage}
-        />
+        <SearchImage setSearchImage={setSearchImage} getUrlOfImage={getUrlOfImage} />
       )}
       <Modal open={Boolean(previewImage)} onClose={() => setPreviewImage(null)}>
         <Box

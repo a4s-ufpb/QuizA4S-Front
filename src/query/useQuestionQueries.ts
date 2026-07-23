@@ -78,12 +78,12 @@ export function useInsertQuestionMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
-      question,
+      formData,
       idTheme,
     }: {
-      question: Partial<Question>;
+      formData: FormData;
       idTheme: number;
-    }) => questionService.insertQuestion(question, idTheme),
+    }) => questionService.insertQuestion(formData, idTheme),
     onSuccess: () => invalidateQuestions(queryClient),
   });
 }
@@ -93,11 +93,11 @@ export function useUpdateQuestionMutation() {
   return useMutation({
     mutationFn: ({
       questionId,
-      questionUpdate,
+      formData,
     }: {
       questionId: number;
-      questionUpdate: Partial<Question>;
-    }) => questionService.updateQuestion(questionId, questionUpdate),
+      formData: FormData;
+    }) => questionService.updateQuestion(questionId, formData),
     onSuccess: () => invalidateQuestions(queryClient),
   });
 }

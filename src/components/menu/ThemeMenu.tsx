@@ -37,12 +37,17 @@ const ThemeMenu = ({ setThemeMenu }: ThemeMenuProps) => {
   }
 
   async function handleSubmit(values: ThemeFormValues) {
-    const response = await insertThemeMutation.mutateAsync({
-      name: values.name,
-      imageUrl: values.imageUrl,
-      description: values.description,
-      materials: values.materials,
-    });
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("description", values.description ?? "");
+    formData.append("materials", JSON.stringify(values.materials));
+    if (values.imageFile) {
+      formData.append("imageFile", values.imageFile);
+    } else if (values.imageUrl) {
+      formData.append("imageUrl", values.imageUrl);
+    }
+
+    const response = await insertThemeMutation.mutateAsync(formData);
     if (response.success) {
       activeInformationBox(false, "Tema criado com sucesso");
       navigateCreateQuestion(response.data);

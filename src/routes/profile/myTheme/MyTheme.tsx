@@ -43,8 +43,11 @@ const MyTheme = () => {
   const activeQuery = isAdmin ? allThemesQuery : creatorThemesQuery;
   const loading = isAdminQuery.isLoading || activeQuery.isLoading;
 
-  // A busca em texto (SearchComponent) já traz o resultado pronto da API e
-  // sobrescreve `themes` diretamente; fora isso, `themes` reflete a query.
+  // Item 7: URL correta para admin usa /theme (todos), não-admin usa /theme/creator
+  const searchUrl = isAdmin
+    ? `/theme?page=${currentPage}&name=`
+    : `/theme/creator?page=${currentPage}&name=`;
+
   useEffect(() => {
     if (activeQuery.data?.success) {
       setThemes(activeQuery.data.data.content || []);
@@ -60,10 +63,11 @@ const MyTheme = () => {
       <SearchComponent
         placeholder="Digite o nome de um tema"
         setData={setThemes}
-        url={`/theme/creator?page=${currentPage}&name=`}
+        url={searchUrl}
         setCurrentPage={setCurrentPage}
         setTotalPages={setTotalPages}
         onSearch={changeName}
+        searchOnButton
       />
 
       <Theme themes={themes} setThemes={setThemes} setCurrentPage={setCurrentPage} />

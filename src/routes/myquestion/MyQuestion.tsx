@@ -8,32 +8,30 @@ import {
   CardMedia,
   CardContent,
   Typography,
-  Button,
   IconButton,
   Tooltip,
 } from "@mui/material";
-import { BsPlusCircleFill, BsPencilSquare, BsTrashFill } from "react-icons/bs";
+import { BsPlusCircleFill, BsPencilSquare, BsTrashFill, BsEyeFill } from "react-icons/bs";
 import Pagination from "../../components/pagination/Pagination";
 import SearchComponent from "../../components/searchComponent/SearchComponent";
 import Loading from "../../components/loading/Loading";
 import InformationBox from "../../components/informationBox/InformationBox";
 import ConfirmBox from "../../components/confirmBox/ConfirmBox";
-import UpdateBox from "../../components/updateBox/UpdateBox";
 import NotFoundComponent from "../../components/notFound/NotFoundComponent";
-import MyAlternative from "./MyAlternative";
+import QuestionBoxComponent from "../../components/questionBoxComponent/QuestionBoxComponent";
+import QuestionEditDialog from "./QuestionEditDialog";
 import { DEFAULT_IMG } from "../../vite-env";
 import {
   useQuestionsByCreatorQuery,
   useRemoveQuestionMutation,
-  useUpdateQuestionMutation,
 } from "../../query/useQuestionQueries";
 import { useNavigate } from "react-router-dom";
 import { getStoredTheme } from "../../util/storage";
-import type { Alternative, InformationData, Question } from "../../types";
+import { getOrderedQuestionImages } from "../../util/questionImages";
+import type { InformationData, Question } from "../../types";
 
 const MyQuestion = () => {
   const removeQuestionMutation = useRemoveQuestionMutation();
-  const updateQuestionMutation = useUpdateQuestionMutation();
   const navigate = useNavigate();
   const { id: themeId, name: themeName, imageUrl: themeUrl } = getStoredTheme();
 
@@ -41,7 +39,6 @@ const MyQuestion = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isConfirmBox, setConfirmBox] = useState(false);
-  const [isUpdateBox, setUpdateBox] = useState(false);
   const [isInformationBox, setInformationBox] = useState(false);
   const [informationData, setInformationData] = useState<InformationData>({
     text: "",
@@ -50,49 +47,21 @@ const MyQuestion = () => {
   });
   const [questionTitle, setQuestionTitle] = useState("");
   const [questionId, setQuestionId] = useState(0);
-  const [newQuestion, setNewQuestion] = useState<{
-    title: string;
-    imageUrl: string;
-  }>({
-    title: "",
-    imageUrl: "",
-  });
-  const [alternatives, setAlternatives] = useState<Alternative[]>([]);
-  const [isShowAlternatives, setShowAlternatives] = useState(false);
 
-  const inputs = [
-    {
-      label: "Novo título",
-      type: "text",
-      placeholder: "Digite o título da questão",
-      value: newQuestion.title,
-      maxLength: 1500,
-      minLength: 4,
-    },
-    {
-      label: "URL da Imagem",
-      type: "text",
-      placeholder: "Digite a url da imagem",
-      value: newQuestion.imageUrl,
-      maxLength: 255,
-      minLength: 0,
-    },
-  ];
+  // Item 5: estado para o modal de visualização (olho)
+  const [viewQuestion, setViewQuestion] = useState<Question | null>(null);
+  // Item 5: estado para o dialog de edição completa
+  const [editQuestion, setEditQuestion] = useState<Question | null>(null);
 
   function changeName(propsQuestionTitle: string) {
     setQuestionTitle(propsQuestionTitle);
   }
 
-  const questionsQuery = useQuestionsByCreatorQuery(
-    themeId,
-    currentPage,
-    questionTitle
-  );
+  const questionsQuery = useQuestionsByCreatorQuery(themeId, currentPage, questionTitle);
   const loading = questionsQuery.isLoading;
 
   useEffect(() => {
     if (!questionsQuery.data) return;
-
     if (!questionsQuery.data.success) {
       activeInformationBox(true, questionsQuery.data.message);
       return;
@@ -101,82 +70,38 @@ const MyQuestion = () => {
     setQuestions(questionsQuery.data.data.content);
   }, [questionsQuery.data]);
 
-  function changeValue(value: string, label: string) {
-    switch (label) {
-      case "Novo título":
-        setNewQuestion({ ...newQuestion, title: value });
-        return;
-      case "URL da Imagem":
-        setNewQuestion({ ...newQuestion, imageUrl: value });
-        return;
-      default:
-        return "";
-    }
-  }
-
-  function showConfirmBox(id: number, title: string, imageUrl: string) {
+  function showConfirmBox(id: number) {
     setQuestionId(id);
-    setNewQuestion({ title: title, imageUrl: imageUrl });
     setConfirmBox(true);
-  }
-
-  function showUpdateBox(id: number, title: string, imageUrl: string) {
-    setQuestionId(id);
-    setNewQuestion({ title: title, imageUrl: imageUrl });
-    setUpdateBox(true);
   }
 
   async function removeQuestion() {
     const response = await removeQuestionMutation.mutateAsync(questionId);
-
     if (!response.success) {
       activeInformationBox(true, response.message);
       return;
     }
-
     activeInformationBox(false, "Questão removida com sucesso!");
     setConfirmBox(false);
   }
 
-  async function updateQuestion() {
-    const response = await updateQuestionMutation.mutateAsync({
-      questionId,
-      questionUpdate: newQuestion,
-    });
-    if (!response.success) {
-      activeInformationBox(true, response.message);
-      return;
-    }
-
-    activeInformationBox(false, "Questão atualizada com sucesso");
-    setUpdateBox(false);
-  }
-
   function activeInformationBox(isFail: boolean, message: string) {
     if (isFail) {
-      setInformationData((prevData) => ({
-        ...prevData,
-        text: message,
-      }));
-      setInformationBox(true);
+      setInformationData((prev) => ({ ...prev, text: message, color: "red", icon: "exclamation" }));
     } else {
-      setInformationData((prevData) => ({
-        ...prevData,
-        text: message,
-        color: "green",
-        icon: "check",
-      }));
-      setInformationBox(true);
+      setInformationData((prev) => ({ ...prev, text: message, color: "green", icon: "check" }));
     }
-  }
-
-  function showAlternatives(questionAlternatives: Alternative[] = []) {
-    setAlternatives(questionAlternatives);
-    setShowAlternatives(true);
+    setInformationBox(true);
   }
 
   function navigateForRegisterQuestions() {
     navigate(`/create/quiz/${themeId}/question`);
+  }
+
+  // Item 5: "Editar Questão" vindo do QuestionBoxComponent abre o QuestionEditDialog
+  function handleEditFromView(question: Question) {
+    setViewQuestion(null);
+    setEditQuestion(question);
   }
 
   return (
@@ -200,20 +125,11 @@ const MyQuestion = () => {
             src={themeUrl == null || themeUrl === "" ? DEFAULT_IMG : themeUrl}
             alt="image-theme"
             loading="lazy"
-            sx={{
-              width: "60px",
-              height: "60px",
-              objectFit: "cover",
-              borderRadius: "10px",
-            }}
+            sx={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "10px" }}
           />
           <div>
-            <Typography variant="h6" sx={{ mb: 0 }}>
-              {themeName}
-            </Typography>
-            <Typography variant="h5" sx={{ mt: 1 }}>
-              Minhas questões
-            </Typography>
+            <Typography variant="h6" sx={{ mb: 0 }}>{themeName}</Typography>
+            <Typography variant="h5" sx={{ mt: 1 }}>Minhas questões</Typography>
           </div>
         </CardContent>
       </Card>
@@ -230,67 +146,45 @@ const MyQuestion = () => {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "1fr 1fr",
-            md: "1fr 1fr 1fr",
-            lg: "1fr 1fr 1fr 1fr",
-          },
+          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr", lg: "1fr 1fr 1fr 1fr" },
           gap: 3,
           mt: 3,
         }}
       >
         {questions &&
-          questions.map((question) => (
-            <Card
-              key={question.id}
-              elevation={2}
-              sx={{ height: "100%", display: "flex", flexDirection: "column" }}
-            >
-              <CardMedia
-                component="img"
-                image={
-                  question.imageUrl == null || question.imageUrl === ""
-                    ? DEFAULT_IMG
-                    : question.imageUrl
-                }
-                alt="image-question"
-                sx={{
-                  height: "150px",
-                  objectFit: "cover",
-                }}
-              />
-              <CardContent
-                sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
+          questions.map((question) => {
+            // Item 5: exibe a primeira imagem na ordem definida (URL ou upload)
+            const firstImage = getOrderedQuestionImages(question)[0] || DEFAULT_IMG;
+            return (
+              <Card
+                key={question.id}
+                elevation={2}
+                sx={{ height: "100%", display: "flex", flexDirection: "column" }}
               >
-                <Typography sx={{ flexGrow: 1 }}>{question.title}</Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mt: 2,
-                  }}
-                >
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => showAlternatives(question.alternatives)}
-                  >
-                    Alternativas
-                  </Button>
-                  <Box sx={{ display: "flex", gap: 1 }}>
+                <CardMedia
+                  component="img"
+                  image={firstImage}
+                  alt="image-question"
+                  sx={{ height: "150px", objectFit: "cover" }}
+                />
+                <CardContent sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+                  <Typography sx={{ flexGrow: 1 }}>{question.title}</Typography>
+                  <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", mt: 2, gap: 1 }}>
+                    {/* Item 5: botão olho abre modal de visualização */}
+                    <Tooltip title="Visualizar">
+                      <IconButton
+                        size="small"
+                        color="info"
+                        onClick={() => setViewQuestion(question)}
+                      >
+                        <BsEyeFill />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Editar">
                       <IconButton
                         size="small"
                         color="warning"
-                        onClick={() =>
-                          showUpdateBox(
-                            question.id,
-                            question.title,
-                            question.imageUrl
-                          )
-                        }
+                        onClick={() => setEditQuestion(question)}
                       >
                         <BsPencilSquare />
                       </IconButton>
@@ -299,22 +193,16 @@ const MyQuestion = () => {
                       <IconButton
                         size="small"
                         color="error"
-                        onClick={() =>
-                          showConfirmBox(
-                            question.id,
-                            question.title,
-                            question.imageUrl
-                          )
-                        }
+                        onClick={() => showConfirmBox(question.id)}
                       >
                         <BsTrashFill />
                       </IconButton>
                     </Tooltip>
                   </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
       </Box>
 
       {!loading && questions.length === 0 && (
@@ -347,11 +235,26 @@ const MyQuestion = () => {
         </IconButton>
       </Tooltip>
 
-      {isShowAlternatives && (
-        <MyAlternative
-          alternatives={alternatives}
-          setAlternatives={setAlternatives}
-          setShowAlternatives={setShowAlternatives}
+      {/* Item 5: modal de visualização (olho) */}
+      {viewQuestion && (
+        <QuestionBoxComponent
+          setQuestionBox={(val) => { if (!val) setViewQuestion(null); }}
+          question={viewQuestion}
+          setQuestion={(q) => setViewQuestion(typeof q === "function" ? q(viewQuestion) : q)}
+          onEditQuestion={handleEditFromView}
+        />
+      )}
+
+      {/* Item 5: dialog de edição completa */}
+      {editQuestion && (
+        <QuestionEditDialog
+          question={editQuestion}
+          open={Boolean(editQuestion)}
+          onClose={() => setEditQuestion(null)}
+          onSaved={() => {
+            setEditQuestion(null);
+            questionsQuery.refetch();
+          }}
         />
       )}
 
@@ -362,15 +265,6 @@ const MyQuestion = () => {
           textBtn2="Não"
           onClickBtn1={removeQuestion}
           onClickBtn2={() => setConfirmBox(false)}
-        />
-      )}
-      {isUpdateBox && (
-        <UpdateBox
-          title="Atualizar Questão"
-          inputs={inputs}
-          onChange={changeValue}
-          onClickSave={updateQuestion}
-          onClickCancel={() => setUpdateBox(false)}
         />
       )}
       {isInformationBox && (

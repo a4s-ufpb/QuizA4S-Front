@@ -3,7 +3,7 @@
     height: 100%;
     padding: 45px 10px;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
     flex-direction: column;
     gap: 1em;

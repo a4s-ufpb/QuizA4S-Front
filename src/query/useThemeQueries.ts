@@ -36,7 +36,7 @@ export function useThemeByIdQuery(id: number, enabled = true) {
 export function useInsertThemeMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (theme: Partial<Theme>) => themeService.insertTheme(theme),
+    mutationFn: (formData: FormData) => themeService.insertTheme(formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.themes.all });
     },
@@ -48,11 +48,11 @@ export function useUpdateThemeMutation() {
   return useMutation({
     mutationFn: ({
       themeId,
-      themeUpdate,
+      formData,
     }: {
       themeId: number;
-      themeUpdate: Partial<Theme>;
-    }) => themeService.updateTheme(themeId, themeUpdate),
+      formData: FormData;
+    }) => themeService.updateTheme(themeId, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.themes.all });
     },

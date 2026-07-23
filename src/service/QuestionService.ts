@@ -2,12 +2,8 @@ import { BaseService } from "./BaseService";
 import type { Page, Question, QuizQuestion } from "../types";
 
 export class QuestionService extends BaseService {
-  insertQuestion(question: Partial<Question>, idTheme: number) {
-    return this.handleRequest<Question>(
-      "post",
-      `/question/${idTheme}`,
-      question
-    );
+  insertQuestion(formData: FormData, idTheme: number) {
+    return this.handleMultipartRequest<Question>("post", `/question/${idTheme}`, formData);
   }
 
   findQuestionById(questionId: number) {
@@ -18,12 +14,8 @@ export class QuestionService extends BaseService {
     return this.handleRequest<void>("delete", `/question/${questionId}`);
   }
 
-  updateQuestion(questionId: number, questionUpdate: Partial<Question>) {
-    return this.handleRequest<Question>(
-      "patch",
-      `/question/${questionId}`,
-      questionUpdate
-    );
+  updateQuestion(questionId: number, formData: FormData) {
+    return this.handleMultipartRequest<Question>("patch", `/question/${questionId}`, formData);
   }
 
   find10QuestionsByThemeId(themeId: string | number) {

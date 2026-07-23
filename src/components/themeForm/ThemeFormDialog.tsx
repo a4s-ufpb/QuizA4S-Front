@@ -30,6 +30,7 @@ import type { Material, MaterialType } from "../../types";
 export interface ThemeFormValues {
   name: string;
   imageUrl: string;
+  imageFile?: File;
   description: string;
   materials: Material[];
 }
@@ -57,15 +58,6 @@ export function materialTypeIcon(type: MaterialType) {
   return <BsGlobe2 />;
 }
 
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
 /**
  * Modal reutilizável para criar/editar um tema: nome, imagem (URL, upload ou
  * pesquisa), texto de conteúdos e lista de materiais de apoio.
@@ -86,6 +78,8 @@ const ThemeFormDialog = ({
   );
   const [imageMode, setImageMode] = useState<"url" | "upload">("url");
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [searchImage, setSearchImage] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -94,10 +88,13 @@ const ThemeFormDialog = ({
     if (!next) return;
     setImageMode(next);
     setImageUrl("");
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setUploadedFile(null);
     setUploadedFileName(null);
   }
 
-  async function handleFileUpload(e: ChangeEvent<HTMLInputElement>) {
+  function handleFileUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
@@ -106,14 +103,19 @@ const ThemeFormDialog = ({
       return;
     }
     setFileError(null);
-    const dataUrl = await readFileAsDataUrl(file);
-    setImageUrl(dataUrl);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    const blobUrl = URL.createObjectURL(file);
+    setPreviewUrl(blobUrl);
+    setUploadedFile(file);
     setUploadedFileName(file.name);
   }
 
   function removeImage() {
-    setImageUrl("");
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setUploadedFile(null);
     setUploadedFileName(null);
+    setImageUrl("");
   }
 
   function addMaterial() {
@@ -143,7 +145,8 @@ const ThemeFormDialog = ({
 
     onSubmit({
       name: name.trim(),
-      imageUrl,
+      imageUrl: imageMode === "url" ? imageUrl : "",
+      imageFile: imageMode === "upload" ? (uploadedFile ?? undefined) : undefined,
       description: description.trim(),
       materials: cleanMaterials,
     });
@@ -237,14 +240,14 @@ const ThemeFormDialog = ({
               </Typography>
             )}
 
-            {imageUrl && (
+            {(imageMode === "url" ? imageUrl : previewUrl) && (
               <Box sx={{ position: "relative", mt: 2, width: "fit-content" }}>
                 <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
                   Preview
                 </Typography>
                 <Box
                   component="img"
-                  src={imageUrl}
+                  src={imageMode === "url" ? imageUrl : previewUrl!}
                   alt="preview do tema"
                   sx={{
                     width: 160,

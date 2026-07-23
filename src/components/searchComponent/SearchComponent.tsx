@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
-import { Box, TextField, InputAdornment, Typography } from "@mui/material";
+import { Box, Button, TextField, InputAdornment, Typography, Stack } from "@mui/material";
 import { BsSearch } from "react-icons/bs";
 import { ApiFetch } from "../../util/ApiFetch";
 import Loading from "../loading/Loading";
@@ -12,6 +12,9 @@ interface SearchComponentProps {
   setData: Dispatch<SetStateAction<any[]>>;
   setTotalPages: Dispatch<SetStateAction<number>>;
   setCurrentPage: Dispatch<SetStateAction<number>>;
+  /** Quando true, a busca só dispara ao clicar no botão "Filtrar" */
+  searchOnButton?: boolean;
+  buttonLabel?: string;
 }
 
 const SearchComponent = ({
@@ -22,23 +25,19 @@ const SearchComponent = ({
   setData,
   setTotalPages,
   setCurrentPage,
+  searchOnButton = false,
+  buttonLabel = "Filtrar",
 }: SearchComponentProps) => {
   const apiFetch = new ApiFetch();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function searchDataName(value: string) {
-    const inputName = value;
-
-    if (onSearch) {
-      onSearch(inputName);
-    }
-
-    setName(inputName);
+  async function doSearch(value: string) {
+    if (onSearch) onSearch(value);
 
     setLoading(true);
     const response = await apiFetch.getPages(
-      `${url}${inputName}`,
+      `${url}${value}`,
       "Nenhum tema encontrado!"
     );
 
@@ -55,6 +54,14 @@ const SearchComponent = ({
     setData(response.data);
   }
 
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setName(value);
+    if (!searchOnButton) {
+      doSearch(value);
+    }
+  }
+
   return (
     <Box sx={{ mb: 4 }}>
       {title && (
@@ -62,24 +69,32 @@ const SearchComponent = ({
           {title}
         </Typography>
       )}
-      <TextField
-        fullWidth
-        placeholder={placeholder}
-        value={name}
-        onChange={(e: ChangeEvent<HTMLInputElement>) =>
-          searchDataName(e.target.value)
-        }
-        sx={{ bgcolor: "background.paper", borderRadius: 1, boxShadow: 1 }}
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <BsSearch />
-              </InputAdornment>
-            ),
-          },
-        }}
-      />
+      <Stack direction="row" spacing={1}>
+        <TextField
+          fullWidth
+          placeholder={placeholder}
+          value={name}
+          onChange={handleChange}
+          onKeyDown={(e) => {
+            if (searchOnButton && e.key === "Enter") doSearch(name);
+          }}
+          sx={{ bgcolor: "background.paper", borderRadius: 1, boxShadow: 1 }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <BsSearch />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        {searchOnButton && (
+          <Button variant="contained" onClick={() => doSearch(name)} sx={{ whiteSpace: "nowrap" }}>
+            {buttonLabel}
+          </Button>
+        )}
+      </Stack>
       {loading && <Loading />}
     </Box>
   );

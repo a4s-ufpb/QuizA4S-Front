@@ -63,14 +63,19 @@ const Theme = ({ themes, setThemes, setCurrentPage }: ThemeProps) => {
 
   async function updateTheme(values: ThemeFormValues) {
     if (!editingTheme) return;
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("description", values.description ?? "");
+    formData.append("materials", JSON.stringify(values.materials));
+    if (values.imageFile) {
+      formData.append("imageFile", values.imageFile);
+    } else if (values.imageUrl) {
+      formData.append("imageUrl", values.imageUrl);
+    }
+
     const response = await updateThemeMutation.mutateAsync({
       themeId: editingTheme.id,
-      themeUpdate: {
-        name: values.name,
-        imageUrl: values.imageUrl,
-        description: values.description,
-        materials: values.materials,
-      },
+      formData,
     });
 
     if (!response.success) {

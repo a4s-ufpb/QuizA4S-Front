@@ -112,9 +112,17 @@ function MyStatisticConclusion() {
   );
 
   const loading = statisticQuery.isLoading || chartQuery.isLoading;
-  const statisticList = statisticQuery.data?.success
+  const rawStatisticList = statisticQuery.data?.success
     ? statisticQuery.data.data.content
     : [];
+  // Item 6: mais recente primeiro
+  const statisticList = useMemo(
+    () =>
+      [...rawStatisticList].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      ),
+    [rawStatisticList]
+  );
   const totalPages = statisticQuery.data?.success
     ? statisticQuery.data.data.totalPages
     : 0;
