@@ -403,12 +403,14 @@ const Lobby = ({ room }: LobbyProps) => {
         onClose={() => setShowThemes(false)}
         fullWidth
         maxWidth="lg"
+        slotProps={{ paper: { sx: { bgcolor: "#1a1a2e" } } }}
       >
-        <DialogTitle>Selecionar quiz</DialogTitle>
+        <DialogTitle sx={{ color: "#fff" }}>Selecionar quiz</DialogTitle>
         <DialogContent>
           <ThemeTemplate
             path="/theme"
             title="Escolha o tema do quiz"
+            searchOnButton
             onClickFunction={(theme) => {
               room.changeQuiz(theme.id);
               setShowThemes(false);

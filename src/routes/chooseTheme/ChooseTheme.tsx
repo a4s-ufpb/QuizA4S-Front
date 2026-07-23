@@ -22,6 +22,7 @@ const ChooseTheme = () => {
         path={baseUrl}
         onClickFunction={setSelectedTheme}
         title="Escolha o Tema do seu Quiz"
+        searchOnButton
       />
 
       <ThemeDetailsDialog

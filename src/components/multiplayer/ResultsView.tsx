@@ -31,6 +31,7 @@ import "./multiplayer.css";
 
 interface ResultsViewProps {
   room: UseGameRoom;
+  tournamentCode?: string;
 }
 
 interface PodiumEntry {
@@ -155,7 +156,7 @@ function rankBadge(index: number) {
 }
 
 /** Tela final: pódio (top 3) + ranking dos demais, com confete ao entrar. */
-const ResultsView = ({ room }: ResultsViewProps) => {
+const ResultsView = ({ room, tournamentCode }: ResultsViewProps) => {
   const navigate = useNavigate();
   const recordMatchMutation = useRecordMatchMutation();
   const state = room.state!;
@@ -348,9 +349,15 @@ const ResultsView = ({ room }: ResultsViewProps) => {
         className="mp-final-scoreboard"
         sx={{ display: "flex", gap: 1, justifyContent: "center", flexWrap: "wrap" }}
       >
-        <Button variant="outlined" color="secondary" onClick={() => navigate("/multiplayer")}>
-          Sair
-        </Button>
+        {tournamentCode ? (
+          <Button variant="contained" color="primary" onClick={() => navigate(`/tournament/${tournamentCode}`)}>
+            Voltar ao torneio
+          </Button>
+        ) : (
+          <Button variant="outlined" color="secondary" onClick={() => navigate("/multiplayer")}>
+            Sair
+          </Button>
+        )}
       </Box>
     </Container>
   );

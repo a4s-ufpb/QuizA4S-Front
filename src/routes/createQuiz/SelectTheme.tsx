@@ -19,6 +19,7 @@ const SelectTheme = () => {
         path={path}
         onClickFunction={showCreateQuestion}
         title="Escolha o Tema de suas Questões"
+        searchOnButton
       />
     </div>
   );

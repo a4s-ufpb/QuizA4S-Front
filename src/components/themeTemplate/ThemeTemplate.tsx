@@ -12,12 +12,14 @@ interface ThemeTemplateProps {
   path: string;
   onClickFunction: (theme: Theme) => void;
   title: string;
+  searchOnButton?: boolean;
 }
 
 const ThemeTemplate = ({
   path,
   onClickFunction,
   title,
+  searchOnButton = false,
 }: ThemeTemplateProps) => {
   const apiFetch = new ApiFetch();
 
@@ -63,6 +65,7 @@ const ThemeTemplate = ({
         setCurrentPage={setCurrentPage}
         setData={setThemes}
         setTotalPages={setTotalPages}
+        searchOnButton={searchOnButton}
       />
 
       <Box

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Box,
   Container,
@@ -24,6 +24,8 @@ import RoomConnected from "../../components/multiplayer/RoomConnected";
 const Room = () => {
   const { code } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const tournamentCode = searchParams.get("tournament") ?? undefined;
 
   const loggedUser = getStoredUser();
   const isLoggedIn = Boolean(
@@ -109,7 +111,7 @@ const Room = () => {
     );
   }
 
-  return <RoomConnected code={code} avatar={avatar} />;
+  return <RoomConnected code={code} avatar={avatar} tournamentCode={tournamentCode} />;
 };
 
 export default Room;

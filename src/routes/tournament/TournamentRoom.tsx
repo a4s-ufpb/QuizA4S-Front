@@ -190,6 +190,7 @@ const TournamentRoom = () => {
                 rounds={tournament.rounds}
                 players={tournament.players}
                 myPlayerId={myPlayerId}
+                tournamentCode={code}
               />
             </Box>
           )}

@@ -9,7 +9,10 @@ import {
   Alert,
   TextField,
   Typography,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
+import { BsEye, BsEyeSlash } from "react-icons/bs";
 import Loading from "../loading/Loading";
 import { AuthenticationContext } from "../../context/AuthenticationContext";
 import { useForm, type SubmitHandler } from "react-hook-form";
@@ -48,6 +51,11 @@ const FormTemplate = ({
   const [activeInformationBox, setInformationBox] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+
+  function togglePassword(fieldName: string) {
+    setShowPasswords((prev) => ({ ...prev, [fieldName]: !prev[fieldName] }));
+  }
   const navigate = useNavigate();
   const { setAuthenticated } = useContext(AuthenticationContext);
   const registerUserMutation = useRegisterUserMutation();
@@ -157,19 +165,33 @@ const FormTemplate = ({
           </Typography>
 
           <Box component="form" onSubmit={onSubmit(handleSubmit)}>
-            {fields.map((field) => (
-              <TextField
-                key={field.name}
-                type={field.type}
-                label={field.label}
-                placeholder={field.placeholder}
-                fullWidth
-                margin="normal"
-                error={!!errors[field.name as keyof FormValues]}
-                helperText={errors[field.name as keyof FormValues]?.message}
-                {...register(field.name as keyof FormValues)}
-              />
-            ))}
+            {fields.map((field) => {
+              const isPassword = field.type === "password";
+              return (
+                <TextField
+                  key={field.name}
+                  type={isPassword && showPasswords[field.name] ? "text" : field.type}
+                  label={field.label}
+                  placeholder={field.placeholder}
+                  fullWidth
+                  margin="normal"
+                  error={!!errors[field.name as keyof FormValues]}
+                  helperText={errors[field.name as keyof FormValues]?.message}
+                  slotProps={isPassword ? {
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => togglePassword(field.name)} edge="end" tabIndex={-1}>
+                            {showPasswords[field.name] ? <BsEyeSlash /> : <BsEye />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  } : undefined}
+                  {...register(field.name as keyof FormValues)}
+                />
+              );
+            })}
 
             {loading && <Loading />}
 

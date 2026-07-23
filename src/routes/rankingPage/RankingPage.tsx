@@ -30,6 +30,7 @@ function RankingPage() {
             path="/theme"
             onClickFunction={showRanking}
             title="Selecione o Ranking por Quiz"
+            searchOnButton
           />
           {isShowRanking && (
             <Ranking navigatePath={"/ranking"} setShowRanking={setShowRanking} />

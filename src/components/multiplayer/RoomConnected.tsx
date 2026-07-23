@@ -18,9 +18,10 @@ import RoomExitScreen from "./RoomExitScreen";
 interface RoomConnectedProps {
   code: string;
   avatar?: string;
+  tournamentCode?: string;
 }
 
-const RoomConnected = ({ code, avatar }: RoomConnectedProps) => {
+const RoomConnected = ({ code, avatar, tournamentCode }: RoomConnectedProps) => {
   const room = useGameRoom(code, avatar);
   const navigate = useNavigate();
 
@@ -182,7 +183,7 @@ const RoomConnected = ({ code, avatar }: RoomConnectedProps) => {
       {(status === "IN_QUESTION" || status === "BETWEEN") && (
         <GamePlay room={room} />
       )}
-      {status === "FINISHED" && <ResultsView room={room} />}
+      {status === "FINISHED" && <ResultsView room={room} tournamentCode={tournamentCode} />}
     </div>
   );
 };

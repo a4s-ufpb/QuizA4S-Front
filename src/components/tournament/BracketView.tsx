@@ -8,6 +8,7 @@ interface BracketViewProps {
   rounds: MatchView[][];
   players: TournamentPlayerView[];
   myPlayerId: string;
+  tournamentCode?: string;
 }
 
 function findPlayer(players: TournamentPlayerView[], id: string | null) {
@@ -62,7 +63,7 @@ const STATUS_LABELS: Record<MatchView["status"], string> = {
   BYE: "Bye (avanço direto)",
 };
 
-const BracketView = ({ rounds, players, myPlayerId }: BracketViewProps) => {
+const BracketView = ({ rounds, players, myPlayerId, tournamentCode }: BracketViewProps) => {
   const navigate = useNavigate();
 
   return (
@@ -108,7 +109,9 @@ const BracketView = ({ rounds, players, myPlayerId }: BracketViewProps) => {
                       size="small"
                       color="primary"
                       label="Entrar na sua partida"
-                      onClick={() => navigate(`/room/${match.roomCode}`)}
+                      onClick={() => navigate(
+                        `/room/${match.roomCode}${tournamentCode ? `?tournament=${tournamentCode}` : ""}`
+                      )}
                       sx={{ cursor: "pointer" }}
                     />
                   </Box>

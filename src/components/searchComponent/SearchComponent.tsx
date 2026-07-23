@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
-import { Box, Button, TextField, InputAdornment, Typography, Stack } from "@mui/material";
-import { BsSearch } from "react-icons/bs";
+import { Box, Button, TextField, InputAdornment, IconButton, Typography, Stack } from "@mui/material";
+import { BsSearch, BsX } from "react-icons/bs";
 import { ApiFetch } from "../../util/ApiFetch";
 import Loading from "../loading/Loading";
 
@@ -62,6 +62,11 @@ const SearchComponent = ({
     }
   }
 
+  function handleClear() {
+    setName("");
+    doSearch("");
+  }
+
   return (
     <Box sx={{ mb: 4 }}>
       {title && (
@@ -86,6 +91,13 @@ const SearchComponent = ({
                   <BsSearch />
                 </InputAdornment>
               ),
+              endAdornment: name ? (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={handleClear} edge="end" aria-label="Limpar busca">
+                    <BsX />
+                  </IconButton>
+                </InputAdornment>
+              ) : undefined,
             },
           }}
         />
