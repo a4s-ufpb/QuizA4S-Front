@@ -62,10 +62,10 @@ const Menu = ({
       <div className="menu">
       {isAuth && user && (
         <div
-          className={`menu-user-header ${bannerClassName(user.equippedBanner)}`}
+          className={`menu-user-header ${bannerClassName(user.equippedBanner) || "menu-user-header--default"}`}
         >
           <FramedAvatar code={user.equippedFrame} size={56}>
-            <BsPersonCircle size={38} color="#fff" />
+            <BsPersonCircle size={38} color={user.equippedFrame ? "#1a3a6e" : "#fff"} />
           </FramedAvatar>
           <span className="menu-user-name">
             <PlayerName

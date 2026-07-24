@@ -31,9 +31,18 @@
     padding: 16px 10px;
     margin-bottom: 1.2em;
     border-radius: 15px;
-    background: linear-gradient(135deg, #3f7fd6 0%, #0055cc 100%);
     color: #fff;
     box-shadow: 0 4px 12px rgba(0, 85, 204, 0.35);
+    /* sem background fixo — banner ou --default sobrescrevem */
+}
+
+/* Fundo padrão quando nenhum banner está equipado */
+.menu-user-header--default {
+    background: linear-gradient(135deg, #3f7fd6 0%, #0055cc 100%);
+}
+/* Banners são semi-transparentes: base escura faz a cor aparecer sobre o card claro */
+.menu-user-header[class*="cos-banner"] {
+    background-color: #1a2a4a;
 }
 
 .menu-user-avatar{
