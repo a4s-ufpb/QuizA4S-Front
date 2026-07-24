@@ -123,9 +123,11 @@ function EquippedPreview({
         className={bannerClassName(banner)}
         sx={{ p: 2.5, display: "flex", alignItems: "center", gap: 2 }}
       >
-        <FramedAvatar code={frame} size={64}>
-          <BsPersonCircle size={40} color="#3f7fd6" />
-        </FramedAvatar>
+        <Box sx={{ flexShrink: 0 }}>
+          <FramedAvatar code={frame} size={64}>
+            <BsPersonCircle size={40} color="#3f7fd6" />
+          </FramedAvatar>
+        </Box>
         <Box>
           <Typography variant="caption" color="text.secondary" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             <BsStars /> Sua aparência atual
@@ -238,7 +240,7 @@ const Store = () => {
               whiteSpace: "nowrap",
               fontWeight: "bold",
               border: "2px solid #3f7fd6 !important",
-              color: "#3f7fd6",
+              color: "#fff",
               borderRadius: "8px !important",
               "&.Mui-selected": {
                 bgcolor: "#3f7fd6",
