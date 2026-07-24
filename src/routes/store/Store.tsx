@@ -227,10 +227,27 @@ const Store = () => {
         exclusive
         value={category}
         onChange={(_e, next) => next && setCategory(next as Category)}
-        sx={{ mb: 2, flexWrap: "wrap" }}
+        sx={{ mb: 2, flexWrap: "wrap", width: "100%", gap: "4px" }}
       >
         {CATEGORIES.map((c) => (
-          <ToggleButton key={c} value={c} sx={{ flex: "1 1 auto", whiteSpace: "nowrap" }}>
+          <ToggleButton
+            key={c}
+            value={c}
+            sx={{
+              flex: "1 1 auto",
+              whiteSpace: "nowrap",
+              fontWeight: "bold",
+              border: "2px solid #3f7fd6 !important",
+              color: "#3f7fd6",
+              borderRadius: "8px !important",
+              "&.Mui-selected": {
+                bgcolor: "#3f7fd6",
+                color: "#fff",
+                "&:hover": { bgcolor: "#2c63b5" },
+              },
+              "&:hover": { bgcolor: "rgba(63,127,214,0.1)" },
+            }}
+          >
             {CATEGORY_LABELS[c]}
           </ToggleButton>
         ))}
