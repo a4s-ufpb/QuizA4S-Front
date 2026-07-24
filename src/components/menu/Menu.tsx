@@ -17,7 +17,6 @@ import {
   BsAwardFill,
   BsDiagram3Fill,
   BsShopWindow,
-  BsArrowLeft,
 } from "react-icons/bs";
 import { getStoredUser } from "../../util/storage";
 import { clearAuthStorage } from "../../util/token";
@@ -58,13 +57,9 @@ const Menu = ({
   }
 
   return (
-    <div className="menu">
-      <div className="container-btn-fechar">
-        <button type="button" className="menu-btn-close" onClick={() => setMenu(false)} title="Fechar menu">
-          <BsArrowLeft size={20} />
-        </button>
-      </div>
-
+    <>
+      <div className="menu-backdrop" onClick={() => setMenu(false)} />
+      <div className="menu">
       {isAuth && user && (
         <div
           className={`menu-user-header ${bannerClassName(user.equippedBanner)}`}
@@ -203,7 +198,8 @@ const Menu = ({
         </div>
       )}
 
-    </div>
+      </div>
+    </>
   );
 };
 
