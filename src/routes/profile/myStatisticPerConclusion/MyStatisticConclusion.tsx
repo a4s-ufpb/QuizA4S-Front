@@ -19,6 +19,7 @@ import {
   ToggleButton,
 } from "@mui/material";
 import { useCreateStatisticFeedbackMutation, useStatisticFeedbackByStatQuery } from "../../../query/useStatisticFeedbackQueries";
+import RichTextEditor from "../../../components/richText/RichTextEditor";
 import {
   BarChart,
   Bar,
@@ -58,10 +59,17 @@ function MyStatisticConclusion() {
   const createFeedbackMut = useCreateStatisticFeedbackMutation();
   const feedbackListQuery = useStatisticFeedbackByStatQuery(feedbackStat?.id ?? 0, !!feedbackStat);
 
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
   async function sendFeedback() {
-    if (!feedbackStat || !feedbackText.trim()) return;
-    await createFeedbackMut.mutateAsync({ statisticId: feedbackStat.id, text: feedbackText.trim() });
-    setFeedbackText("");
+    if (!feedbackStat) return;
+    const stripped = feedbackText.replace(/<[^>]*>/g, "").trim();
+    if (stripped.length < 5) {
+      setFeedbackError("O feedback deve ter no mínimo 5 caracteres");
+      return;
+    }
+    setFeedbackError(null);
+    const res = await createFeedbackMut.mutateAsync({ statisticId: feedbackStat.id, text: feedbackText });
+    if (res.success) setFeedbackText("");
   }
 
   const [filters, setFilters] = useState<AdvancedFilterValues>({
@@ -280,15 +288,16 @@ function MyStatisticConclusion() {
           Feedback para {feedbackStat?.studentName} — {feedbackStat?.themeName}
         </DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            multiline
-            minRows={3}
-            label="Escreva seu feedback"
-            value={feedbackText}
-            onChange={(e) => setFeedbackText(e.target.value)}
-            sx={{ mt: 1 }}
-          />
+          <Box sx={{ mt: 1 }}>
+            <RichTextEditor
+              value={feedbackText}
+              onChange={setFeedbackText}
+              placeholder="Escreva seu feedback (mín. 5 caracteres)"
+              minRows={3}
+              error={!!feedbackError}
+              helperText={feedbackError ?? "Mínimo 5 caracteres. Use as estilizações acima."}
+            />
+          </Box>
           <Box sx={{ mt: 2 }}>
             <strong>Feedbacks anteriores:</strong>
             {(feedbackListQuery.data?.data ?? []).length === 0 ? (
@@ -296,7 +305,7 @@ function MyStatisticConclusion() {
             ) : (
               (feedbackListQuery.data?.data ?? []).map((f) => (
                 <Paper key={f.id} sx={{ p: 1, my: 1 }}>
-                  <div style={{ whiteSpace: "pre-wrap" }}>{f.text}</div>
+                  <div dangerouslySetInnerHTML={{ __html: f.text }} />
                   <small style={{ opacity: 0.6 }}>{f.createdAt}</small>
                 </Paper>
               ))

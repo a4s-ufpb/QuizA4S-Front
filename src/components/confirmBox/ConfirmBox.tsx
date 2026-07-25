@@ -13,6 +13,11 @@ interface ConfirmBoxProps {
   textBtn2: string;
   onClickBtn1: () => void;
   onClickBtn2: () => void;
+  /**
+   * Se passado, é chamado ao clicar fora / ESC. Se ausente, `onClickBtn2`
+   * assume o dismiss (comportamento antigo).
+   */
+  onDismiss?: () => void;
 }
 
 const ConfirmBox = ({
@@ -21,9 +26,10 @@ const ConfirmBox = ({
   textBtn2,
   onClickBtn1,
   onClickBtn2,
+  onDismiss,
 }: ConfirmBoxProps) => {
   return (
-    <Dialog open={true} onClose={onClickBtn2} fullWidth maxWidth="xs">
+    <Dialog open={true} onClose={onDismiss ?? onClickBtn2} fullWidth maxWidth="xs">
       <DialogTitle>{title}</DialogTitle>
       <DialogContent sx={{ textAlign: "center" }}>
         <BsQuestionCircle size="3rem" color="#0055cc" />

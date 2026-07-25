@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { BsArrowsFullscreen, BsFullscreenExit, BsArrowLeft } from "react-icons/bs";
+import { BsArrowsFullscreen, BsFullscreenExit, BsArrowLeft, BsLightbulbFill } from "react-icons/bs";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button,
+  Typography,
+  Divider,
+} from "@mui/material";
 import Question from "../../components/question/Question";
 import InformationBox from "../../components/informationBox/InformationBox";
 import Loading from "../../components/loading/Loading";
@@ -16,12 +25,11 @@ import type { QuizQuestion } from "../../types";
 import correctSoundFile from "../../assets/sounds/alternative-success.mp3";
 import errorSoundFile from "../../assets/sounds/alternative-error.mp3";
 import { getSoundMuted, getSoundVolume } from "../../util/sound";
+import { APP_TOKEN_KEY } from "../../util/token";
 
-// CSS
 import "./Quiz.css";
 
 const Quiz = () => {
-  // Instanciados uma única vez (não a cada render) via ref com lazy-init.
   const correctSoundRef = useRef<HTMLAudioElement | null>(null);
   const errorSoundRef = useRef<HTMLAudioElement | null>(null);
   if (!correctSoundRef.current) correctSoundRef.current = new Audio(correctSoundFile);
@@ -40,7 +48,7 @@ const Quiz = () => {
   const navigate = useNavigate();
 
   const user = getStoredUser();
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem(APP_TOKEN_KEY);
 
   const [quizFinished, setQuizFinished] = useState(false);
 
@@ -53,6 +61,11 @@ const Quiz = () => {
   const loading = questionsQuery.isLoading;
 
   const currentQuestion = questions[currentQuestionIndex];
+
+  const showExplanation = (() => {
+    const s = localStorage.getItem("quiz:showExplanation");
+    return s === null ? true : s === "true";
+  })();
 
   useEffect(() => {
     if (!questionsQuery.data) return;
@@ -69,7 +82,6 @@ const Quiz = () => {
       setTextAlert("Cadastre no mínimo 5 questões para jogar esse quiz");
       setInformationAlert(true);
     } else {
-      // Em desktop tenta entrar em tela cheia automaticamente; mobile fica sem.
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
       if (!isMobile) {
         containerRef.current?.requestFullscreen?.().catch(() => {});
@@ -86,7 +98,6 @@ const Quiz = () => {
     };
   }, []);
 
-  // Sai da tela cheia ao exibir o modal de pontuação final.
   useEffect(() => {
     if (quizFinished && document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});
@@ -105,20 +116,14 @@ const Quiz = () => {
 
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [feedbackColor, setFeedbackColor] = useState("");
-  const [feedbackSubtitle, setFeedbackSubtitle] = useState<string | undefined>(undefined);
   const [showFeedback, setShowFeedback] = useState(false);
 
-  const [showExplanation, setShowExplanation] = useState(() => {
-    const s = localStorage.getItem("quiz:showExplanation");
-    return s === null ? true : s === "true";
-  });
-  function toggleExplanation() {
-    setShowExplanation((prev) => {
-      const next = !prev;
-      localStorage.setItem("quiz:showExplanation", String(next));
-      return next;
-    });
-  }
+  const [explanationModal, setExplanationModal] = useState<{
+    open: boolean;
+    text: string;
+    onContinue: () => void;
+  }>({ open: false, text: "", onContinue: () => {} });
+  const [timerPaused, setTimerPaused] = useState(false);
 
   function handleAnswerClick(
     event: MouseEvent<HTMLLIElement>,
@@ -148,8 +153,6 @@ const Quiz = () => {
       }
     });
 
-    // Borda demarcando qual alternativa o jogador marcou (some junto com o
-    // reset ao carregar a próxima questão).
     event.currentTarget.classList.add("alternative-selected");
 
     if (isCorrect) {
@@ -157,39 +160,23 @@ const Quiz = () => {
       setScore(score + 1);
       setFeedbackMessage("Parabéns, você acertou!");
       setFeedbackColor("green");
-      setFeedbackSubtitle(undefined);
-      // Play correct sound
       if (!getSoundMuted() && correctSoundRef.current) {
         correctSoundRef.current.volume = getSoundVolume();
-        correctSoundRef.current.play().catch((error) => {
-          console.error("Error playing correct sound:", error);
-        });
+        correctSoundRef.current.play().catch(() => {});
       }
     } else {
       event.currentTarget.classList.add("wrong-answer");
       setFeedbackMessage("Que pena, você errou!");
       setFeedbackColor("red");
-      if (showExplanation && currentQuestion?.explanation) {
-        setFeedbackSubtitle(currentQuestion.explanation);
-      } else {
-        setFeedbackSubtitle(undefined);
-      }
-      // Play error sound
       if (!getSoundMuted() && errorSoundRef.current) {
         errorSoundRef.current.volume = getSoundVolume();
-        errorSoundRef.current.play().catch((error) => {
-          console.error("Error playing error sound:", error);
-        });
+        errorSoundRef.current.play().catch(() => {});
       }
     }
 
     setShowFeedback(true);
 
-    const wrongWithExplanation =
-      !isCorrect && showExplanation && !!currentQuestion?.explanation;
-    const pauseMs = wrongWithExplanation ? 7000 : 3500;
-
-    setTimeout(() => {
+    const finalizeAdvance = () => {
       setShowFeedback(false);
       setClickEnabled(true);
 
@@ -215,7 +202,29 @@ const Quiz = () => {
       }
 
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }, pauseMs);
+    };
+
+    const wrongWithExplanation =
+      !isCorrect && showExplanation && !!currentQuestion?.explanation;
+
+    if (wrongWithExplanation) {
+      // Pausa o timer e abre modal com a explicação; só avança ao clicar em Entendi.
+      setTimeout(() => {
+        setShowFeedback(false);
+        setTimerPaused(true);
+        setExplanationModal({
+          open: true,
+          text: currentQuestion.explanation ?? "",
+          onContinue: () => {
+            setExplanationModal((prev) => ({ ...prev, open: false }));
+            setTimerPaused(false);
+            finalizeAdvance();
+          },
+        });
+      }, 1500);
+    } else {
+      setTimeout(finalizeAdvance, 3500);
+    }
 
     if (token) {
       postResponse(user.uuid, questionId, alternativeId as number);
@@ -247,11 +256,12 @@ const Quiz = () => {
 
   const [time, setTime] = useState(0);
 
-  function incrementTime() {
-    setTimeout(() => {
-      setTime(time + 1);
-    }, 1000);
-  }
+  // Timer único via setInterval, respeitando pausa (explicação) e término do quiz.
+  useEffect(() => {
+    if (quizFinished || timerPaused || questions.length === 0) return;
+    const id = setInterval(() => setTime((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [quizFinished, timerPaused, questions.length]);
 
   return (
     <div className="container-quiz-external" ref={containerRef}>
@@ -263,16 +273,6 @@ const Quiz = () => {
         aria-label="Voltar"
       >
         <BsArrowLeft size={20} />
-      </button>
-      <button
-        type="button"
-        className="quiz-back-btn"
-        style={{ left: 56 }}
-        onClick={toggleExplanation}
-        title={showExplanation ? "Ocultar explicação ao errar" : "Exibir explicação ao errar"}
-        aria-label="Alternar explicação"
-      >
-        {showExplanation ? "💡" : "🚫"}
       </button>
       <button
         type="button"
@@ -309,11 +309,7 @@ const Quiz = () => {
               lastQuestion={questions.length}
             />
             {showFeedback && (
-              <FeedbackBox
-                title={feedbackMessage}
-                color={feedbackColor}
-                subtitle={feedbackSubtitle}
-              />
+              <FeedbackBox title={feedbackMessage} color={feedbackColor} />
             )}
           </>
         )}
@@ -330,8 +326,6 @@ const Quiz = () => {
         />
       )}
 
-      {!quizFinished ? (incrementTime(), null) : null}
-
       {quizFinished && (
         <QuestionFinished
           percentage={Number(((score / questions.length) * 100).toFixed(0))}
@@ -341,6 +335,48 @@ const Quiz = () => {
           total={questions.length}
         />
       )}
+
+      <Dialog
+        open={explanationModal.open}
+        maxWidth="sm"
+        fullWidth
+        slotProps={{
+          paper: {
+            sx: {
+              bgcolor: "#ffffff",
+              borderRadius: 1,
+            },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            fontWeight: 700,
+            color: "primary.main",
+          }}
+        >
+          <BsLightbulbFill size={22} color="#3f7fd6" />
+          Aprendendo com o erro
+        </DialogTitle>
+        <Divider />
+        <DialogContent>
+          <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+            {explanationModal.text}
+          </Typography>
+        </DialogContent>
+        <Divider />
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            variant="contained"
+            onClick={explanationModal.onContinue}
+          >
+            Entendi
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

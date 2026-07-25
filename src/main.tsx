@@ -26,7 +26,6 @@ import CreateJoinTournament from "./routes/tournament/CreateJoinTournament";
 import TournamentRoom from "./routes/tournament/TournamentRoom";
 import Store from "./routes/store/Store";
 import PublicProfile from "./routes/publicProfile/PublicProfile";
-import MyFeedbacks from "./routes/profile/feedbacks/MyFeedbacks";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -99,14 +98,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                 element={
                   <PrivateRoute>
                     <Store />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/profile/feedbacks"
-                element={
-                  <PrivateRoute>
-                    <MyFeedbacks />
                   </PrivateRoute>
                 }
               />

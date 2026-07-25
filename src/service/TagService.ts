@@ -10,6 +10,10 @@ export class TagService extends BaseService {
     return this.handleRequest<Tag[]>("get", "/tag/mine");
   }
 
+  listAll() {
+    return this.handleRequest<Tag[]>("get", "/tag/all");
+  }
+
   listByCreator(uuid: string) {
     return this.handleRequest<Tag[]>("get", `/tag/creator/${uuid}`);
   }

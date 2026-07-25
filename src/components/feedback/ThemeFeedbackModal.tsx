@@ -5,8 +5,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Stack,
-  TextField,
+  Box,
   List,
   ListItem,
   ListItemText,
@@ -17,6 +16,8 @@ import {
   useThemeFeedbackByThemeQuery,
   useCreateThemeFeedbackMutation,
 } from "../../query/useThemeFeedbackQueries";
+import RichTextEditor from "../richText/RichTextEditor";
+import { APP_TOKEN_KEY } from "../../util/token";
 
 interface Props {
   themeId: number;
@@ -31,12 +32,20 @@ const ThemeFeedbackModal = ({ themeId, themeName, allowCreate = false, onClose }
   const [text, setText] = useState("");
 
   const feedbacks = data?.data ?? [];
-  const isAuth = Boolean(localStorage.getItem("token"));
+  const isAuth = Boolean(localStorage.getItem(APP_TOKEN_KEY));
+  const [error, setError] = useState<string | null>(null);
 
   async function send() {
-    if (!text.trim()) return;
-    await createMut.mutateAsync({ themeId, text: text.trim() });
-    setText("");
+    const stripped = text.replace(/<[^>]*>/g, "").trim();
+    if (stripped.length < 5) {
+      setError("O feedback deve ter no mínimo 5 caracteres");
+      return;
+    }
+    setError(null);
+    const res = await createMut.mutateAsync({ themeId, text });
+    if (res.success) {
+      setText("");
+    }
   }
 
   return (
@@ -45,20 +54,24 @@ const ThemeFeedbackModal = ({ themeId, themeName, allowCreate = false, onClose }
       <DialogContent>
         {(allowCreate || isAuth) && (
           <>
-            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-              <TextField
-                fullWidth
-                size="small"
-                multiline
-                minRows={2}
-                label="Escreva seu feedback"
+            <Box sx={{ mb: 1 }}>
+              <Typography variant="body2" sx={{ mb: 0.5 }}>
+                Escreva seu feedback
+              </Typography>
+              <RichTextEditor
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={setText}
+                placeholder="Digite seu feedback (mín. 5 caracteres)"
+                minRows={3}
+                error={!!error}
+                helperText={error ?? "Você pode usar negrito, itálico, listas etc."}
               />
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
               <Button variant="contained" onClick={send} disabled={createMut.isPending}>
                 Enviar
               </Button>
-            </Stack>
+            </Box>
             <Divider sx={{ mb: 2 }} />
           </>
         )}
@@ -73,8 +86,11 @@ const ThemeFeedbackModal = ({ themeId, themeName, allowCreate = false, onClose }
                   primary={f.userName}
                   secondary={
                     <>
-                      <span>{f.text}</span>
-                      <br />
+                      <Box
+                        component="span"
+                        sx={{ display: "block", "& p": { m: 0 }, "& ul, & ol": { pl: 3, my: 0 } }}
+                        dangerouslySetInnerHTML={{ __html: f.text }}
+                      />
                       <Typography variant="caption" color="text.secondary">
                         {f.createdAt}
                       </Typography>

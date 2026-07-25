@@ -1,5 +1,6 @@
 import { Chip, Stack, Typography, Box } from "@mui/material";
 import { useMyTagsQuery } from "../../query/useTagQueries";
+import { APP_TOKEN_KEY } from "../../util/token";
 
 interface Props {
   selected: number[];
@@ -7,7 +8,7 @@ interface Props {
 }
 
 const MyTagFilterBar = ({ selected, onChange }: Props) => {
-  const isAuth = Boolean(localStorage.getItem("token"));
+  const isAuth = Boolean(localStorage.getItem(APP_TOKEN_KEY));
   const { data } = useMyTagsQuery(isAuth);
   const tags = data?.data ?? [];
   if (!isAuth || tags.length === 0) return null;

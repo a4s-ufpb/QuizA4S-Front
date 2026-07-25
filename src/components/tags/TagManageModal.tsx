@@ -36,10 +36,15 @@ const TagManageModal = ({ open, onClose }: Props) => {
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
 
   async function handleCreate() {
     const name = newName.trim();
-    if (!name) return;
+    if (name.length < 3) {
+      setNameError("Mínimo de 3 caracteres");
+      return;
+    }
+    setNameError(null);
     await createMut.mutateAsync(name);
     setNewName("");
   }
@@ -52,7 +57,7 @@ const TagManageModal = ({ open, onClose }: Props) => {
   async function saveEdit() {
     if (editingId == null) return;
     const name = editingName.trim();
-    if (!name) return;
+    if (name.length < 3) return;
     await updateMut.mutateAsync({ id: editingId, name });
     setEditingId(null);
   }
@@ -69,6 +74,8 @@ const TagManageModal = ({ open, onClose }: Props) => {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+            error={!!nameError}
+            helperText={nameError ?? "Mínimo 3 caracteres"}
           />
           <Button
             variant="contained"

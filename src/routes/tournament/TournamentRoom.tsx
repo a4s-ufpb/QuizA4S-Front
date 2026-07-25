@@ -39,6 +39,7 @@ import ConfirmBox from "../../components/confirmBox/ConfirmBox";
 import { generateTournamentImage, downloadImage } from "../../util/shareImage";
 import { getGuestId, getGuestName, setGuestName } from "../../util/guest";
 import { getStoredUser } from "../../util/storage";
+import { APP_TOKEN_KEY } from "../../util/token";
 import {
   useStartTournamentMutation,
   useConfigureTournamentMutation,
@@ -61,7 +62,7 @@ const TournamentRoom = () => {
   const myPlayerId = getGuestId();
 
   const loggedUser = getStoredUser();
-  const isLoggedIn = Boolean(localStorage.getItem("token") && loggedUser?.name);
+  const isLoggedIn = Boolean(localStorage.getItem(APP_TOKEN_KEY) && loggedUser?.name);
 
   const startMutation = useStartTournamentMutation();
   const configureMutation = useConfigureTournamentMutation();

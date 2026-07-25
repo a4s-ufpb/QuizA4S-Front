@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { StoreService } from "../service/StoreService";
 import { queryKeys } from "./queryKeys";
+import { APP_USER_KEY } from "../util/token";
 
 const storeService = new StoreService();
 
@@ -26,8 +27,8 @@ export function usePurchaseItemMutation() {
 function persistEquip(user: { equippedTitle?: string | null; equippedFrame?: string | null; equippedBanner?: string | null }) {
   // Mantém o localStorage do usuário logado em dia com os cosméticos equipados.
   try {
-    const stored = JSON.parse(localStorage.getItem("user") || "{}");
-    localStorage.setItem("user", JSON.stringify({ ...stored, ...user }));
+    const stored = JSON.parse(localStorage.getItem(APP_USER_KEY) || "{}");
+    localStorage.setItem(APP_USER_KEY, JSON.stringify({ ...stored, ...user }));
   } catch {
     /* ignore */
   }

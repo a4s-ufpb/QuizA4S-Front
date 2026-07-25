@@ -6,6 +6,7 @@ import {
   AVATAR_CATEGORY_UNLOCK_LEVEL,
 } from "../../util/avatars";
 import { useFindUserQuery } from "../../query/useUserQueries";
+import { APP_TOKEN_KEY } from "../../util/token";
 
 interface AvatarSelectorProps {
   value: string;
@@ -17,7 +18,7 @@ const CATEGORY_NAMES = Object.keys(AVATAR_CATEGORIES);
 
 /** Grid inline (não popover) com todos os avatares disponíveis, agrupados por categoria. */
 const AvatarSelector = ({ value, onChange, label }: AvatarSelectorProps) => {
-  const isLoggedIn = Boolean(localStorage.getItem("token"));
+  const isLoggedIn = Boolean(localStorage.getItem(APP_TOKEN_KEY));
   const findUserQuery = useFindUserQuery(isLoggedIn);
   const myLevel = isLoggedIn && findUserQuery.data?.success
     ? findUserQuery.data.data.level ?? 1

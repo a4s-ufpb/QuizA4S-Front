@@ -6,6 +6,7 @@ import ThemeFormDialog, {
   type ThemeFormValues,
 } from "../themeForm/ThemeFormDialog";
 import type { InformationData, Theme } from "../../types";
+import { setStoredTheme } from "../../util/storage";
 
 interface ThemeMenuProps {
   setThemeMenu: (value: boolean) => void;
@@ -32,7 +33,7 @@ const ThemeMenu = ({ setThemeMenu }: ThemeMenuProps) => {
   }
 
   function navigateCreateQuestion(theme: Theme) {
-    sessionStorage.setItem("theme", JSON.stringify(theme));
+    setStoredTheme(theme);
     navigate(`/create/quiz/${theme.id}/question`);
   }
 

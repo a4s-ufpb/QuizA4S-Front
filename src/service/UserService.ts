@@ -1,5 +1,6 @@
 import { BaseService } from "./BaseService";
 import type { AuthResponse, Page, PublicProfileResponse, Role, User } from "../types";
+import { clearAuthStorage } from "../util/token";
 
 interface UserPasswordRequest {
   newPassword: string;
@@ -40,8 +41,7 @@ export class UserService extends BaseService {
       `/user/${userId}`
     );
     if (response.success) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      clearAuthStorage();
       window.location.href = "/login";
     }
     return response;

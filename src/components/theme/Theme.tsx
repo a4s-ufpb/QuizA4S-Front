@@ -30,6 +30,7 @@ import {
 
 import NotFoundComponent from "../notFound/NotFoundComponent";
 import type { InformationData, Theme as ThemeModel } from "../../types";
+import { setStoredTheme } from "../../util/storage";
 
 interface ThemeProps {
   themes: ThemeModel[];
@@ -116,7 +117,7 @@ const Theme = ({ themes, setThemes, setCurrentPage }: ThemeProps) => {
 
   function showQuestions(id: number, name: string, imageUrl: string) {
     const theme = { id, name, imageUrl };
-    sessionStorage.setItem("theme", JSON.stringify(theme));
+    setStoredTheme(theme);
     navigate(`/profile/theme/${id}/question`);
   }
 

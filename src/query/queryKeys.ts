@@ -19,6 +19,7 @@ export const queryKeys = {
     all: ["tags"] as const,
     mine: ["tags", "mine"] as const,
     byCreator: (uuid: string) => ["tags", "creator", uuid] as const,
+    everyone: ["tags", "all"] as const,
   },
   themeFeedback: {
     all: ["theme-feedback"] as const,

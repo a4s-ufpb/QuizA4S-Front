@@ -654,25 +654,21 @@ const CreateQuestions = () => {
                       ? " "
                       : "Insira uma URL válida (ex: https://exemplo.com/imagem.png)"
                   }
-                  slotProps={{ htmlInput: { maxLength: 255 } }}
-                />
-
-                <Button variant="outlined" onClick={() => setSearchImage(true)}>
-                  Pesquisar imagem na web
-                </Button>
-
-                <TextField
-                  label="Explicação da resposta correta (opcional)"
-                  placeholder="Explique por que a resposta correta é a certa. Aparece após o jogador errar (se habilitado)."
-                  value={question.explanation}
-                  onChange={(e) =>
-                    changeQuestion("explanation", e.target.value)
-                  }
-                  multiline
-                  minRows={2}
-                  maxRows={6}
-                  fullWidth
-                  slotProps={{ htmlInput: { maxLength: 5000 } }}
+                  slotProps={{
+                    htmlInput: { maxLength: 255 },
+                    input: {
+                      endAdornment: (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          sx={{ whiteSpace: "nowrap" }}
+                          onClick={() => setSearchImage(true)}
+                        >
+                          Pesquisar
+                        </Button>
+                      ),
+                    },
+                  }}
                 />
 
                 <Box
@@ -796,6 +792,18 @@ const CreateQuestions = () => {
                     </Stack>
                   </Box>
                 )}
+
+                <TextField
+                  label="Explicação da resposta correta (opcional)"
+                  placeholder="Explique por que a resposta correta é a certa. Aparece após o jogador errar (se habilitado)."
+                  value={question.explanation}
+                  onChange={(e) => changeQuestion("explanation", e.target.value)}
+                  multiline
+                  minRows={3}
+                  maxRows={8}
+                  fullWidth
+                  slotProps={{ htmlInput: { maxLength: 5000 } }}
+                />
               </Stack>
 
               <Box

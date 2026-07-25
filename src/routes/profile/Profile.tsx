@@ -20,6 +20,7 @@ import ConfirmBox from "../../components/confirmBox/ConfirmBox";
 import UpdateBox from "../../components/updateBox/UpdateBox";
 import MyStatistics from "./myStatisticPerResponse/MyStatistics";
 import MyStatisticConclusion from "./myStatisticPerConclusion/MyStatisticConclusion";
+import MyFeedbacks from "./feedbacks/MyFeedbacks";
 import { useNavigate } from "react-router-dom";
 import Users from "./users/Users";
 import { getStoredUser } from "../../util/storage";
@@ -31,6 +32,7 @@ import {
   useUpdateUserMutation,
 } from "../../query/useUserQueries";
 import type { InformationData } from "../../types";
+import { APP_USER_KEY } from "../../util/token";
 
 interface PasswordValidation {
   valid: boolean;
@@ -82,6 +84,7 @@ const Profile = () => {
     <MyResponse key="my-response" />,
     <MyStatistics key="my-statistics" />,
     <MyStatisticConclusion key="my-statistic-conclusion" />,
+    <MyFeedbacks key="my-feedbacks" />,
     isAdmin && <Users key="users" />,
   ];
 
@@ -99,7 +102,8 @@ const Profile = () => {
       label: "Estatísticas por Conclusão",
       index: 4,
     },
-    ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 5 }] : []),
+    { id: "btn-feedbacks", label: "Feedbacks", index: 5 },
+    ...(isAdmin ? [{ id: "btn-admin", label: "Usuários", index: 6 }] : []),
   ];
 
   const [newName, setNewName] = useState("");
@@ -175,7 +179,7 @@ const Profile = () => {
       return;
     }
     localStorage.setItem(
-      "user",
+      APP_USER_KEY,
       JSON.stringify({ uuid: uuid, name: userUpdate.name, email: email })
     );
     setLoading(false);

@@ -1,5 +1,6 @@
 import { API_URL } from "../vite-env";
 import type { ApiFetchResult } from "../types";
+import { APP_TOKEN_KEY } from "./token";
 
 export class ApiFetch {
   async getPages<T = unknown>(
@@ -13,7 +14,7 @@ export class ApiFetch {
       totalPages: 0,
     };
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(APP_TOKEN_KEY);
 
     let response: Response;
     try {

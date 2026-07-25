@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { getGuestName, setGuestName } from "../../util/guest";
 import { getStoredUser } from "../../util/storage";
+import { APP_TOKEN_KEY } from "../../util/token";
 import AvatarSelector from "../../components/multiplayer/AvatarSelector";
 import RoomConnected from "../../components/multiplayer/RoomConnected";
 
@@ -29,7 +30,7 @@ const Room = () => {
 
   const loggedUser = getStoredUser();
   const isLoggedIn = Boolean(
-    localStorage.getItem("token") && loggedUser?.name
+    localStorage.getItem(APP_TOKEN_KEY) && loggedUser?.name
   );
 
   const [name, setName] = useState(

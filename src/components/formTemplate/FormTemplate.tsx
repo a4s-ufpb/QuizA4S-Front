@@ -23,6 +23,7 @@ import {
   useRegisterUserMutation,
 } from "../../query/useUserQueries";
 import type { ApiResult, AuthResponse, FormField } from "../../types";
+import { APP_TOKEN_KEY } from "../../util/token";
 
 interface FormTemplateProps {
   title: string;
@@ -111,7 +112,7 @@ const FormTemplate = ({
     }
 
     if (response.data.token) {
-      window.localStorage.setItem("token", response.data.token);
+      window.localStorage.setItem(APP_TOKEN_KEY, response.data.token);
       setAuthenticated(true);
       navigate("/");
     }

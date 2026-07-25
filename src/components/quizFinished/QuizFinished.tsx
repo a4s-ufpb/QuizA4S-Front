@@ -1,4 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Box,
+  Typography,
+  Button,
+  Stack,
+  Chip,
+  LinearProgress,
+  Divider,
+  Tooltip,
+} from "@mui/material";
+import {
+  BsTrophyFill,
+  BsClockFill,
+  BsCheckCircleFill,
+  BsStars,
+  BsChatDotsFill,
+  BsShareFill,
+  BsArrowLeft,
+} from "react-icons/bs";
 import Loading from "../loading/Loading";
 import Ranking from "../ranking/Ranking";
 import ConfirmBox from "../confirmBox/ConfirmBox";
@@ -11,6 +34,7 @@ import { HIT_VALUE, REDUCE_VALUE, MIN_VALUE_PER_HIT } from "../../vite-env";
 import { useInsertStatisticMutation } from "../../query/useStatisticQueries";
 import { getStoredTheme, getStoredUser } from "../../util/storage";
 import { generateResultImage, downloadImage } from "../../util/shareImage";
+import { APP_TOKEN_KEY } from "../../util/token";
 import type { ScoreRequest, StatisticRequest } from "../../types";
 
 interface QuizFinishedProps {
@@ -27,6 +51,13 @@ function formatTime(seconds: number) {
   return m > 0 ? `${m}m ${s}s` : `${s}s`;
 }
 
+function feedbackMessage(pct: number) {
+  if (pct === 100) return { title: "Impecável!", text: "Pontuação máxima! Você é um verdadeiro mestre neste assunto." };
+  if (pct > 60) return { title: "Muito bom!", text: "Impressionante — mais um passo e chega à perfeição." };
+  if (pct > 30) return { title: "Bom trabalho!", text: "Você está indo bem. Um pouco mais de prática e domina o quiz." };
+  return { title: "Não desanime!", text: "Cada erro é uma oportunidade de aprender algo novo." };
+}
+
 const QuizFinished = ({
   percentage,
   restart,
@@ -40,7 +71,7 @@ const QuizFinished = ({
   const [loading, setLoading] = useState(false);
   const [confirmBox, setConfirmBox] = useState(false);
   const [informationBox, setInformationBox] = useState(false);
-  const isAuth = localStorage.getItem("token");
+  const isAuth = localStorage.getItem(APP_TOKEN_KEY);
 
   const [activeRanking, setActiveRanking] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -48,19 +79,20 @@ const QuizFinished = ({
   const navigate = useNavigate();
   const storedTheme = getStoredTheme();
 
+  // Guard contra double-run em React StrictMode (dev) que causava statistic salva 2x.
+  const statisticSentRef = useRef(false);
   useEffect(() => {
-    if (isLoggedUser()) {
-      const user = getStoredUser();
-      const theme = getStoredTheme();
-
-      const statistic: StatisticRequest = {
-        studentName: user.name,
-        themeName: theme.name,
-        percentagemOfHits: percentage,
-      };
-
-      saveStatistic(statistic);
-    }
+    if (statisticSentRef.current) return;
+    if (!isLoggedUser()) return;
+    statisticSentRef.current = true;
+    const user = getStoredUser();
+    const theme = getStoredTheme();
+    const statistic: StatisticRequest = {
+      studentName: user.name,
+      themeName: theme.name,
+      percentagemOfHits: percentage,
+    };
+    saveStatistic(statistic);
   }, []);
 
   function saveStatistic(statistic: StatisticRequest) {
@@ -79,7 +111,7 @@ const QuizFinished = ({
     }
   }
 
-  function calculateResult(): string | number {
+  function calculateResult(): string {
     const raw = score * HIT_VALUE - time * REDUCE_VALUE;
     const floor = score * MIN_VALUE_PER_HIT;
     return Math.max(raw, floor).toFixed(2);
@@ -100,7 +132,6 @@ const QuizFinished = ({
     }
 
     setConfirmBox(false);
-
     setLoading(true);
     const scoreResponse = await insertScoreMutation.mutateAsync({
       score: scoreRequest,
@@ -113,7 +144,6 @@ const QuizFinished = ({
       setActiveRanking(true);
       return;
     }
-
     setInformationBox(true);
   }
 
@@ -140,64 +170,159 @@ const QuizFinished = ({
     downloadImage(dataUrl, "quiz-a4s-resultado.png");
   }
 
+  const msg = feedbackMessage(percentage);
+  const finalPoints = calculateResult();
+  // Cor do medalhão baseada na performance, mas dentro da paleta do projeto.
+  const medalColor =
+    percentage === 100
+      ? "#ffb300"
+      : percentage > 60
+        ? "#3f7fd6"
+        : percentage > 30
+          ? "#5bcebf"
+          : "#607d8b";
+
   return (
-    <div className="container-quiz-finished">
-      <div className="quiz-finished">
-        <h2 className="quiz-finished-title">Quiz Finalizado!</h2>
+    <>
+      <Dialog
+        open
+        fullWidth
+        maxWidth="md"
+        slotProps={{
+          paper: {
+            sx: {
+              bgcolor: "#ffffff",
+              borderRadius: 1,
+            },
+          },
+        }}
+      >
+        <DialogTitle sx={{ py: 3, textAlign: "center" }}>
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 1.5 }}>
+            <Box
+              sx={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                bgcolor: medalColor,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "3px solid #fff",
+                boxShadow: 3,
+              }}
+            >
+              <BsTrophyFill size={34} color="#fff" />
+            </Box>
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "primary.main" }}>
+            Quiz Finalizado!
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {msg.title}
+          </Typography>
+        </DialogTitle>
+        <Divider />
+        <DialogContent sx={{ py: 3 }}>
+          <Stack direction="row" spacing={1} sx={{ justifyContent: "center", mb: 3, flexWrap: "wrap", rowGap: 1 }}>
+            {isAuth && (
+              <Chip
+                icon={<BsStars />}
+                label={`Pontuação: ${finalPoints}`}
+                color="warning"
+                variant="outlined"
+              />
+            )}
+            <Chip
+              icon={<BsClockFill />}
+              label={`Tempo: ${formatTime(time)}`}
+              variant="outlined"
+            />
+            <Chip
+              icon={<BsCheckCircleFill />}
+              label={`Acertos: ${score}/${total}`}
+              color="success"
+              variant="outlined"
+            />
+          </Stack>
 
-        <div style={{ marginTop: 12, marginBottom: 12, textAlign: "center", lineHeight: 1.8 }}>
-          <p><strong>Pontuação final:</strong> {calculateResult()}</p>
-          <p><strong>Tempo total:</strong> {formatTime(time)}</p>
-          <p><strong>Acertos:</strong> {score} / {total}</p>
-        </div>
+          <Box sx={{ mb: 3 }}>
+            <Stack direction="row" sx={{ justifyContent: "space-between", mb: 0.75 }}>
+              <Typography variant="caption" color="text.secondary">
+                Aproveitamento
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                {percentage}%
+              </Typography>
+            </Stack>
+            <LinearProgress
+              variant="determinate"
+              value={percentage}
+              sx={{
+                height: 10,
+                borderRadius: 1,
+              }}
+            />
+          </Box>
 
-        {percentage >= 0 && percentage <= 30 && (
-          <div className="quiz-finished-score">
-            <span>{`${percentage}% de acertos!`}</span>
-            <p>Não desanime! Cada erro é uma oportunidade de aprender algo novo.</p>
-          </div>
-        )}
-        {percentage > 30 && percentage <= 60 && (
-          <div className="quiz-finished-score">
-            <span>{`${percentage}% de acertos!`}</span>
-            <p>Você está indo bem! Com um pouco mais de prática, vai dominar este quiz!</p>
-          </div>
-        )}
-        {percentage > 60 && percentage <= 90 && (
-          <div className="quiz-finished-score">
-            <span>{`${percentage}% de acertos!`}</span>
-            <p>Impressionante! Você está quase lá, apenas mais um passo para a perfeição!</p>
-          </div>
-        )}
-        {percentage == 100 && (
-          <div className="quiz-finished-score">
-            <span>{`${percentage}% de acertos!`}</span>
-            <p>Uau! Pontuação máxima! Você é um verdadeiro mestre neste assunto!</p>
-          </div>
-        )}
-
-        <div className="container-quiz-finished-btn">
-          <button onClick={restart} className="quiz-finished-btn">
-            Voltar
-          </button>
-          <button onClick={handleShare} className="quiz-finished-btn">
-            Compartilhar
-          </button>
+          <Typography sx={{ textAlign: "center", color: "text.secondary" }}>
+            {msg.text}
+          </Typography>
+        </DialogContent>
+        <Divider />
+        <DialogActions
+          sx={{
+            px: 3,
+            py: 2,
+            flexWrap: "wrap",
+            gap: 1,
+            justifyContent: { xs: "center", sm: "flex-end" },
+            "& > :not(style) ~ :not(style)": { ml: 0 },
+          }}
+        >
+          <Tooltip title="Voltar para a tela de temas">
+            <Button
+              variant="outlined"
+              startIcon={<BsArrowLeft />}
+              onClick={restart}
+            >
+              Voltar
+            </Button>
+          </Tooltip>
+          <Tooltip title="Baixar imagem do resultado para compartilhar">
+            <Button
+              variant="outlined"
+              startIcon={<BsShareFill />}
+              onClick={handleShare}
+            >
+              Compartilhar
+            </Button>
+          </Tooltip>
           {isAuth && storedTheme?.id && (
-            <button onClick={() => setFeedbackOpen(true)} className="quiz-finished-btn">
-              Feedback do tema
-            </button>
+            <Tooltip title="Enviar feedback ao criador deste tema">
+              <Button
+                variant="outlined"
+                color="secondary"
+                startIcon={<BsChatDotsFill />}
+                onClick={() => setFeedbackOpen(true)}
+              >
+                Feedback
+              </Button>
+            </Tooltip>
           )}
           {isAuth && (
-            <button
-              onClick={() => setConfirmBox(true)}
-              className="quiz-finished-btn"
-            >
-              Ranking
-            </button>
+            <Tooltip title="Salvar sua pontuação e ver o ranking deste tema">
+              <Button
+                variant="contained"
+                startIcon={<BsTrophyFill />}
+                onClick={() => setConfirmBox(true)}
+              >
+                Ranking
+              </Button>
+            </Tooltip>
           )}
-        </div>
-      </div>
+        </DialogActions>
+      </Dialog>
 
       {activeRanking && (
         <Ranking navigatePath={"/theme"} setShowRanking={setActiveRanking} />
@@ -218,9 +343,10 @@ const QuizFinished = ({
         <ConfirmBox
           title="Deseja salvar sua pontuação?"
           textBtn1="Sim"
-          textBtn2="Não"
+          textBtn2="Não, voltar"
           onClickBtn1={saveResult}
           onClickBtn2={closeBox}
+          onDismiss={() => setConfirmBox(false)}
         />
       )}
 
@@ -232,7 +358,7 @@ const QuizFinished = ({
           icon="exclamation"
         />
       )}
-    </div>
+    </>
   );
 };
 

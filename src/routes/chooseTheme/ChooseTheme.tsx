@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ThemeTemplate from "../../components/themeTemplate/ThemeTemplate";
 import ThemeDetailsDialog from "../../components/themeForm/ThemeDetailsDialog";
-import MyTagFilterBar from "../../components/tags/MyTagFilterBar";
+import ThemeTagFilterBar from "../../components/tags/ThemeTagFilterBar";
 import type { Theme } from "../../types";
+import { setStoredTheme } from "../../util/storage";
 
 const ChooseTheme = () => {
   const navigate = useNavigate();
@@ -11,9 +12,10 @@ const ChooseTheme = () => {
 
   const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
   const [tagIds, setTagIds] = useState<number[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   function startQuiz(theme: Theme) {
-    sessionStorage.setItem("theme", JSON.stringify(theme));
+    setStoredTheme(theme);
     navigate(`/theme/quiz/${theme.id}`);
   }
 
@@ -25,7 +27,8 @@ const ChooseTheme = () => {
         title="Escolha o Tema do seu Quiz"
         searchOnButton
         tagIds={tagIds}
-        extraHeader={<MyTagFilterBar selected={tagIds} onChange={setTagIds} />}
+        refreshKey={refreshKey}
+        extraHeader={<ThemeTagFilterBar selected={tagIds} onChange={setTagIds} />}
       />
 
       <ThemeDetailsDialog
@@ -33,6 +36,7 @@ const ChooseTheme = () => {
         onClose={() => setSelectedTheme(null)}
         onPlay={() => selectedTheme && startQuiz(selectedTheme)}
         playLabel="Jogar"
+        onChanged={() => setRefreshKey((k) => k + 1)}
       />
     </>
   );

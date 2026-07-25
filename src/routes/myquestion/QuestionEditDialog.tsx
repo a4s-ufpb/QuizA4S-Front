@@ -92,6 +92,7 @@ export default function QuestionEditDialog({
   const [imageUrl, setImageUrl] = useState("");
   const [imageOneUrl, setImageOneUrl] = useState("");
   const [imageTwoUrl, setImageTwoUrl] = useState("");
+  const [explanation, setExplanation] = useState("");
   const [imagesOrder, setImagesOrder] = useState<ImageSlotKey[]>([...ALL_IMAGE_SLOTS]);
 
   const [uploadFileObjects, setUploadFileObjects] = useState<{ IMAGE_1?: File; IMAGE_2?: File }>({});
@@ -108,6 +109,7 @@ export default function QuestionEditDialog({
     setImageUrl(initialQuestion.imageUrl ?? "");
     setImageOneUrl(initialQuestion.imageOneUrl ?? "");
     setImageTwoUrl(initialQuestion.imageTwoUrl ?? "");
+    setExplanation(initialQuestion.explanation ?? "");
 
     const orderFromField = (initialQuestion.imagesOrder ?? "")
       .split(",")
@@ -248,6 +250,7 @@ export default function QuestionEditDialog({
     else fd.append("imageTwoUrl", imageTwoUrl || "");
 
     fd.append("imagesOrder", presentSlots.join(","));
+    fd.append("explanation", explanation ?? "");
 
     const qRes = await updateQuestionMutation.mutateAsync({
       questionId: initialQuestion.id,
@@ -400,6 +403,18 @@ export default function QuestionEditDialog({
                   </Stack>
                 </Box>
               )}
+
+              <TextField
+                label="Explicação da resposta correta (opcional)"
+                placeholder="Explique por que a resposta correta é a certa"
+                value={explanation}
+                onChange={(e) => setExplanation(e.target.value)}
+                multiline
+                minRows={3}
+                maxRows={8}
+                fullWidth
+                slotProps={{ htmlInput: { maxLength: 5000 } }}
+              />
             </Stack>
 
             {/* Right column: alternatives */}

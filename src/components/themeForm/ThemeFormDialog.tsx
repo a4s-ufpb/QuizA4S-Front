@@ -26,6 +26,7 @@ import {
 import Loading from "../loading/Loading";
 import SearchImage from "../searchImageComponent/SearchImage";
 import TagSelector from "../tags/TagSelector";
+import RichTextEditor from "../richText/RichTextEditor";
 import type { Material, MaterialType, Tag } from "../../types";
 
 export interface ThemeFormValues {
@@ -172,15 +173,18 @@ const ThemeFormDialog = ({
             fullWidth
           />
 
-          <TextField
-            label="Conteúdos abordados"
-            placeholder="Descreva os conteúdos que este tema aborda"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            multiline
-            minRows={3}
-            fullWidth
-          />
+          <Box>
+            <Typography variant="body2" sx={{ mb: 0.5 }}>
+              Conteúdos abordados
+            </Typography>
+            <RichTextEditor
+              value={description}
+              onChange={setDescription}
+              placeholder="Descreva os conteúdos que este tema aborda"
+              minRows={4}
+              helperText="Você pode usar negrito, itálico, listas etc."
+            />
+          </Box>
 
           <Box>
             <Typography variant="body2" sx={{ mb: 1 }}>

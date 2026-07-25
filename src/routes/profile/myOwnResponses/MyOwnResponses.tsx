@@ -20,7 +20,9 @@ import {
   Paper,
   MenuItem,
 } from "@mui/material";
-import type { ResponseItem } from "../../../types";
+import type { ResponseItem, Question } from "../../../types";
+import QuestionImageGallery from "../../../components/questionImageGallery/QuestionImageGallery";
+import { getOrderedQuestionImages } from "../../../util/questionImages";
 import {
   BsTrophyFill,
   BsCheckCircleFill,
@@ -216,6 +218,20 @@ const MyOwnResponses = () => {
               <Typography sx={{ mt: 2, mb: 1 }}>
                 <strong>Questão:</strong> {selectedResponse.question.title}
               </Typography>
+
+              {(() => {
+                const images = getOrderedQuestionImages(
+                  selectedResponse.question as Partial<Question>
+                );
+                return (
+                  images.length > 0 && (
+                    <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+                      <QuestionImageGallery images={images} />
+                    </Box>
+                  )
+                );
+              })()}
+
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 {selectedResponse.questionAlternatives.map((alt, index) => {
                   const wasChosen = alt.text === selectedResponse.alternative.text;

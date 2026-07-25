@@ -27,6 +27,7 @@ import { BsQuestionCircle } from "react-icons/bs";
 import { GameService } from "../../service/GameService";
 import { getGuestId, getGuestName, setGuestName } from "../../util/guest";
 import { getStoredUser } from "../../util/storage";
+import { APP_TOKEN_KEY } from "../../util/token";
 import { useIsAdminQuery } from "../../query/useUserQueries";
 import Loading from "../../components/loading/Loading";
 import type { RoomMode } from "../../types/game";
@@ -37,7 +38,7 @@ const Multiplayer = () => {
 
   const loggedUser = getStoredUser();
   const isLoggedIn = Boolean(
-    localStorage.getItem("token") && loggedUser?.name
+    localStorage.getItem(APP_TOKEN_KEY) && loggedUser?.name
   );
   const isAdminQuery = useIsAdminQuery(loggedUser?.uuid ?? "", isLoggedIn);
   const isAdmin = isAdminQuery.data?.data.isAdmin ?? false;

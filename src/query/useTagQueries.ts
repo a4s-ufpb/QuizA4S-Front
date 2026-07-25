@@ -12,6 +12,14 @@ export function useMyTagsQuery(enabled = true) {
   });
 }
 
+export function useAllTagsQuery(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.tags.everyone,
+    queryFn: () => tagService.listAll(),
+    enabled,
+  });
+}
+
 export function useTagsByCreatorQuery(uuid: string, enabled = true) {
   return useQuery({
     queryKey: queryKeys.tags.byCreator(uuid),

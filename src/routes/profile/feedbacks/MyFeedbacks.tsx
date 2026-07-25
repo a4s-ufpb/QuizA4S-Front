@@ -40,7 +40,10 @@ const FeedbackList = ({ items, mode }: { items: StatisticFeedback[]; mode: "rece
               </Typography>
               <Chip label={f.themeName} size="small" />
             </Stack>
-            <Typography sx={{ whiteSpace: "pre-wrap" }}>{f.text}</Typography>
+            <Box
+              sx={{ "& p": { m: 0 }, "& ul, & ol": { pl: 3, my: 0 } }}
+              dangerouslySetInnerHTML={{ __html: f.text }}
+            />
             <Typography variant="caption" color="text.secondary">
               {f.createdAt}
             </Typography>

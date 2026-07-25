@@ -2,6 +2,31 @@
 // aqui só olhamos o campo `exp` para evitar mandar um token já vencido e
 // limpar o localStorage proativamente (evita "conflitos" de sessão).
 
+// Chaves de storage próprias da aplicação (evita colisão com outras apps
+// hospedadas no mesmo domínio e evita nomes genéricos como "token"/"user").
+export const APP_TOKEN_KEY = "quiz-a4s:token";
+export const APP_USER_KEY = "quiz-a4s:user";
+export const APP_THEME_KEY = "quiz-a4s:theme";
+
+// Chaves legadas mantidas apenas para migração/limpeza.
+const LEGACY_KEYS = ["token", "user", "@token", "@user"];
+
+/**
+ * Migra valores das chaves legadas para as novas, se ainda não houver valor
+ * na chave nova. Chamado uma vez no bootstrap da autenticação.
+ */
+export function migrateLegacyAuthKeys(): void {
+  const legacyToken = localStorage.getItem("token") ?? localStorage.getItem("@token");
+  const legacyUser = localStorage.getItem("user") ?? localStorage.getItem("@user");
+  if (legacyToken && !localStorage.getItem(APP_TOKEN_KEY)) {
+    localStorage.setItem(APP_TOKEN_KEY, legacyToken);
+  }
+  if (legacyUser && !localStorage.getItem(APP_USER_KEY)) {
+    localStorage.setItem(APP_USER_KEY, legacyUser);
+  }
+  LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
+}
+
 interface JwtPayload {
   exp?: number;
 }
@@ -27,8 +52,10 @@ export function isTokenExpired(token: string | null): boolean {
   return payload.exp * 1000 <= Date.now();
 }
 
-/** Remove token e user do localStorage (usado ao detectar sessão expirada). */
+/** Remove token e user do localStorage (usado no logout e ao detectar sessão expirada). */
 export function clearAuthStorage(): void {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
+  localStorage.removeItem(APP_TOKEN_KEY);
+  localStorage.removeItem(APP_USER_KEY);
+  // Chaves legadas de versões anteriores (defensivo).
+  LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
 }

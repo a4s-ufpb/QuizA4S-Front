@@ -5,13 +5,14 @@ import "./RankingPage.css";
 import Ranking from "../../components/ranking/Ranking";
 import GlobalRanking from "../../components/globalRanking/GlobalRanking";
 import type { Theme } from "../../types";
+import { setStoredTheme } from "../../util/storage";
 
 function RankingPage() {
   const [isShowRanking, setShowRanking] = useState(false);
   const [tab, setTab] = useState(0);
 
   function showRanking(theme: Theme) {
-    sessionStorage.setItem("theme", JSON.stringify(theme));
+    setStoredTheme(theme);
     setShowRanking(true);
   }
 

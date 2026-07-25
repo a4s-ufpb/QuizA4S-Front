@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import ThemeTemplate from "../../components/themeTemplate/ThemeTemplate";
 import type { Theme } from "../../types";
+import { setStoredTheme } from "../../util/storage";
 
 import "./SelectTheme.css";
 
@@ -9,7 +10,7 @@ const SelectTheme = () => {
   const navigate = useNavigate();
 
   function showCreateQuestion(theme: Theme) {
-    sessionStorage.setItem("theme", JSON.stringify(theme));
+    setStoredTheme(theme);
     navigate(`/create/quiz/${theme.id}/question`);
   }
 

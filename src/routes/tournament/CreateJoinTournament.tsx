@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import { getGuestId, getGuestName, setGuestName } from "../../util/guest";
 import { getStoredUser } from "../../util/storage";
+import { APP_TOKEN_KEY } from "../../util/token";
 import Loading from "../../components/loading/Loading";
 import {
   useCreateTournamentMutation,
@@ -29,7 +30,7 @@ const CreateJoinTournament = () => {
   const joinMutation = useJoinTournamentMutation();
 
   const loggedUser = getStoredUser();
-  const isLoggedIn = Boolean(localStorage.getItem("token") && loggedUser?.name);
+  const isLoggedIn = Boolean(localStorage.getItem(APP_TOKEN_KEY) && loggedUser?.name);
 
   const [name, setName] = useState(isLoggedIn ? loggedUser.name : getGuestName());
   const [tournamentName, setTournamentName] = useState("");
