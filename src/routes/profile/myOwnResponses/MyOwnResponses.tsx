@@ -1,8 +1,14 @@
 import { useState } from "react";
 import {
+  Alert,
   Box,
+  Button,
   Card,
   CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Typography,
   TextField,
   TableContainer,
@@ -14,6 +20,7 @@ import {
   Paper,
   MenuItem,
 } from "@mui/material";
+import type { ResponseItem } from "../../../types";
 import {
   BsTrophyFill,
   BsCheckCircleFill,
@@ -38,8 +45,11 @@ const FILTER_FIELDS: AdvancedField[] = [
   { name: "endDate", label: "Data Final", type: "date" },
 ];
 
+const ALTERNATIVE_LABELS = ["A", "B", "C", "D", "E", "F"];
+
 const MyOwnResponses = () => {
   const [currentPage, setCurrentPage] = useState(0);
+  const [selectedResponse, setSelectedResponse] = useState<ResponseItem | null>(null);
 
   const [filters, setFilters] = useState<AdvancedFilterValues>({
     themeName: "",
@@ -83,18 +93,21 @@ const MyOwnResponses = () => {
 
   return (
     <Box sx={{ py: 4 }}>
+      <Alert severity="info" sx={{ mb: 2 }}>
+        Aqui você encontra todas as suas respostas nos quizzes que jogou. Filtre por tema, data ou modo de jogo para acompanhar sua evolução!
+      </Alert>
       <AdvancedSearch
         fields={FILTER_FIELDS}
         values={filters}
         onChange={applyFilters}
-        leftExtra={
+        modalExtra={
           <TextField
             select
             size="small"
             label="Modo de jogo"
             value={gameMode}
             onChange={(e) => setGameMode(e.target.value as GameMode)}
-            sx={{ minWidth: 180 }}
+            fullWidth
           >
             <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
             <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
@@ -152,7 +165,12 @@ const MyOwnResponses = () => {
           </TableHead>
           <TableBody>
             {responses.map((response) => (
-              <TableRow key={response.id} hover>
+              <TableRow
+                key={response.id}
+                hover
+                sx={{ cursor: "pointer" }}
+                onClick={() => setSelectedResponse(response)}
+              >
                 <TableCell>{response.question.theme.name}</TableCell>
                 <TableCell>{response.question.title}</TableCell>
                 <TableCell>{response.alternative.text}</TableCell>
@@ -182,6 +200,58 @@ const MyOwnResponses = () => {
       />
 
       {loading && <Loading />}
+
+      <Dialog
+        open={Boolean(selectedResponse)}
+        onClose={() => setSelectedResponse(null)}
+        fullWidth
+        maxWidth="sm"
+      >
+        {selectedResponse && (
+          <>
+            <DialogTitle>Detalhes da resposta</DialogTitle>
+            <DialogContent>
+              <Typography><strong>Tema:</strong> {selectedResponse.question.theme.name}</Typography>
+              <Typography><strong>Data:</strong> {selectedResponse.dateTime}</Typography>
+              <Typography sx={{ mt: 2, mb: 1 }}>
+                <strong>Questão:</strong> {selectedResponse.question.title}
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                {selectedResponse.questionAlternatives.map((alt, index) => {
+                  const wasChosen = alt.text === selectedResponse.alternative.text;
+                  return (
+                    <Card
+                      key={alt.id ?? index}
+                      sx={{
+                        bgcolor: alt.correct
+                          ? "rgba(46, 125, 50, 0.5)"
+                          : wasChosen
+                            ? "rgba(211, 47, 47, 0.3)"
+                            : undefined,
+                      }}
+                    >
+                      <CardContent sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Typography sx={{ fontWeight: "bold" }}>
+                          {ALTERNATIVE_LABELS[index]}
+                        </Typography>
+                        <Typography sx={{ flexGrow: 1 }}>{alt.text}</Typography>
+                        {wasChosen && (
+                          <Typography variant="body2" color="text.secondary">Escolhida</Typography>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <Button variant="contained" onClick={() => setSelectedResponse(null)}>
+                Fechar
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </Box>
   );
 };

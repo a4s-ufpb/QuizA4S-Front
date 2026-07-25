@@ -10,10 +10,14 @@ export class ThemeService extends BaseService {
     return this.handleRequest<void>("delete", `/theme/${themeId}`);
   }
 
-  findAllThemes(name: string, currentPage: number) {
+  findAllThemes(name: string, currentPage: number, tagIds?: number[]) {
+    const tagQuery =
+      tagIds && tagIds.length > 0
+        ? `&tagIds=${tagIds.join(",")}`
+        : "";
     return this.handleRequest<Page<Theme>>(
       "get",
-      `/theme?name=${name}&page=${currentPage}`
+      `/theme?name=${name}&page=${currentPage}${tagQuery}`
     );
   }
 
@@ -30,5 +34,13 @@ export class ThemeService extends BaseService {
 
   updateTheme(themeId: number, formData: FormData) {
     return this.handleMultipartRequest<Theme>("patch", `/theme/${themeId}`, formData);
+  }
+
+  likeTheme(themeId: number) {
+    return this.handleRequest<Theme>("post", `/theme/${themeId}/like`);
+  }
+
+  unlikeTheme(themeId: number) {
+    return this.handleRequest<Theme>("delete", `/theme/${themeId}/like`);
   }
 }

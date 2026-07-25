@@ -41,6 +41,8 @@ interface AdvancedSearchProps {
   leftExtra?: ReactNode;
   /** Controles extras à direita (ex.: alternância tabela/gráfico). */
   rightExtra?: ReactNode;
+  /** Conteúdo extra renderizado dentro do modal, acima dos campos. */
+  modalExtra?: ReactNode;
 }
 
 /**
@@ -54,6 +56,7 @@ const AdvancedSearch = ({
   onChange,
   leftExtra,
   rightExtra,
+  modalExtra,
 }: AdvancedSearchProps) => {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<AdvancedFilterValues>(values);
@@ -140,6 +143,7 @@ const AdvancedSearch = ({
         </DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
+            {modalExtra}
             {fields.map((field) => {
               const value = draft[field.name] ?? "";
               const setValue = (v: string) =>

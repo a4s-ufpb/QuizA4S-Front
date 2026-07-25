@@ -17,6 +17,7 @@ import {
   BsAwardFill,
   BsDiagram3Fill,
   BsShopWindow,
+  BsChatSquareTextFill,
 } from "react-icons/bs";
 import { getStoredUser } from "../../util/storage";
 import { clearAuthStorage } from "../../util/token";
@@ -140,6 +141,12 @@ const Menu = ({
             onClick={() => handleButtonClick(onOpenAchievements)}
           >
             <BsAwardFill /> Conquistas
+          </button>
+          <button
+            type="button"
+            onClick={() => handleButtonClick(() => navigate("/profile/feedbacks"))}
+          >
+            <BsChatSquareTextFill /> Feedbacks
           </button>
           <button
             type="button"

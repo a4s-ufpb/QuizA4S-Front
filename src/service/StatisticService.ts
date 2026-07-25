@@ -1,9 +1,29 @@
+import { AxiosError } from "axios";
 import { BaseService } from "./BaseService";
-import type { Page, Statistic, StatisticRequest } from "../types";
+import { apiAxios } from "../axios/AxiosConfig";
+import type { ApiResult, Page, Statistic, StatisticRequest } from "../types";
 
 export class StatisticService extends BaseService {
-  insertStatistic(statistic: StatisticRequest) {
-    return this.handleRequest<Statistic>("post", "/statistic", statistic);
+  async insertStatistic(statistic: StatisticRequest, studentUuid?: string) {
+    const response: ApiResult<Statistic> = {
+      data: {} as Statistic,
+      message: "",
+      success: false,
+    };
+    try {
+      const res = await apiAxios.request<Statistic>({
+        method: "post",
+        url: "/statistic",
+        data: statistic,
+        headers: studentUuid ? { "X-Student-Uuid": studentUuid } : {},
+      });
+      response.data = res.data;
+      response.success = true;
+    } catch (error) {
+      const ax = error as AxiosError<{ message?: string }>;
+      response.message = ax.response?.data?.message || "Tente novamente mais tarde!";
+    }
+    return response;
   }
 
   findAllStatisticByCreator(

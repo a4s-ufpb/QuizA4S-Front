@@ -13,7 +13,8 @@ import {
   Chip,
   Stack,
 } from "@mui/material";
-import { BsPersonPlusFill, BsCheckLg, BsXLg, BsTrash, BsEyeFill } from "react-icons/bs";
+import { BsPersonPlusFill, BsCheckLg, BsXLg, BsTrash, BsEyeFill, BsArrowClockwise } from "react-icons/bs";
+import { PlayerName, TitleBadge, FramedAvatar } from "../../../components/cosmetics/Cosmetic";
 import { useNavigate } from "react-router-dom";
 import { UserService } from "../../../service/UserService";
 import {
@@ -62,8 +63,26 @@ const Friends = ({ onNavigateAway }: FriendsProps) => {
     setSearching(false);
   }
 
+  function refreshAll() {
+    myFriendsQuery.refetch();
+    pendingQuery.refetch();
+  }
+
+  const refreshing = myFriendsQuery.isFetching || pendingQuery.isFetching;
+
   return (
     <Box>
+      <Stack direction="row" sx={{ mb: 1, justifyContent: "flex-end" }}>
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<BsArrowClockwise />}
+          onClick={refreshAll}
+          disabled={refreshing}
+        >
+          Atualizar
+        </Button>
+      </Stack>
       <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 1 }}>
         Adicionar amigo
       </Typography>
@@ -182,10 +201,22 @@ const Friends = ({ onNavigateAway }: FriendsProps) => {
                   onClick={() => openProfile(friend.uuid)}
                 >
                   <ListItemAvatar>
-                    <Avatar />
+                    <FramedAvatar code={friend.equippedFrame} size={40}>
+                      <Avatar />
+                    </FramedAvatar>
                   </ListItemAvatar>
                   <ListItemText
-                    primary={friend.name}
+                    primary={
+                      <span>
+                        <PlayerName
+                          name={friend.name}
+                          font={friend.equippedFont}
+                          style={friend.equippedNameStyle}
+                          effect={friend.equippedNameEffect}
+                        />
+                        <TitleBadge code={friend.equippedTitle} />
+                      </span>
+                    }
                     secondary={
                       <Chip
                         size="small"

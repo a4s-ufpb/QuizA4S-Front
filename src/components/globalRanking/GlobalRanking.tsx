@@ -16,6 +16,7 @@ import {
 import { BsTrophyFill } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { useGlobalRankingQuery } from "../../query/useGlobalRankingQuery";
+import { PlayerName, TitleBadge, FramedAvatar } from "../cosmetics/Cosmetic";
 
 const GlobalRanking = () => {
   const navigate = useNavigate();
@@ -69,8 +70,18 @@ const GlobalRanking = () => {
                     sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
                     onClick={() => navigate(`/profile/public/${entry.user.uuid}`)}
                   >
-                    <Avatar sx={{ width: 28, height: 28 }} />
-                    <span style={{ color: "#1976d2", textDecoration: "underline" }}>{entry.user.name}</span>
+                    <FramedAvatar code={entry.user.equippedFrame} size={28}>
+                      <Avatar sx={{ width: 28, height: 28 }} />
+                    </FramedAvatar>
+                    <span style={{ color: "#1976d2", textDecoration: "underline" }}>
+                      <PlayerName
+                        name={entry.user.name}
+                        font={entry.user.equippedFont}
+                        style={entry.user.equippedNameStyle}
+                        effect={entry.user.equippedNameEffect}
+                      />
+                      <TitleBadge code={entry.user.equippedTitle} />
+                    </span>
                   </TableCell>
                   <TableCell align="right">{entry.totalScore.toFixed(2)}</TableCell>
                 </TableRow>

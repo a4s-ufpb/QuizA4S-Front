@@ -25,7 +25,8 @@ import {
 } from "react-icons/bs";
 import Loading from "../loading/Loading";
 import SearchImage from "../searchImageComponent/SearchImage";
-import type { Material, MaterialType } from "../../types";
+import TagSelector from "../tags/TagSelector";
+import type { Material, MaterialType, Tag } from "../../types";
 
 export interface ThemeFormValues {
   name: string;
@@ -33,6 +34,7 @@ export interface ThemeFormValues {
   imageFile?: File;
   description: string;
   materials: Material[];
+  tags: Tag[];
 }
 
 interface ThemeFormDialogProps {
@@ -76,6 +78,7 @@ const ThemeFormDialog = ({
   const [materials, setMaterials] = useState<Material[]>(
     initial?.materials ?? []
   );
+  const [tags, setTags] = useState<Tag[]>(initial?.tags ?? []);
   const [imageMode, setImageMode] = useState<"url" | "upload">("url");
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -149,6 +152,7 @@ const ThemeFormDialog = ({
       imageFile: imageMode === "upload" ? (uploadedFile ?? undefined) : undefined,
       description: description.trim(),
       materials: cleanMaterials,
+      tags,
     });
   }
 
@@ -275,6 +279,10 @@ const ThemeFormDialog = ({
               </Box>
             )}
           </Box>
+
+          <Divider />
+
+          <TagSelector value={tags} onChange={setTags} />
 
           <Divider />
 

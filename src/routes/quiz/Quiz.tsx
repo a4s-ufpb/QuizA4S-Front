@@ -105,7 +105,20 @@ const Quiz = () => {
 
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [feedbackColor, setFeedbackColor] = useState("");
+  const [feedbackSubtitle, setFeedbackSubtitle] = useState<string | undefined>(undefined);
   const [showFeedback, setShowFeedback] = useState(false);
+
+  const [showExplanation, setShowExplanation] = useState(() => {
+    const s = localStorage.getItem("quiz:showExplanation");
+    return s === null ? true : s === "true";
+  });
+  function toggleExplanation() {
+    setShowExplanation((prev) => {
+      const next = !prev;
+      localStorage.setItem("quiz:showExplanation", String(next));
+      return next;
+    });
+  }
 
   function handleAnswerClick(
     event: MouseEvent<HTMLLIElement>,
@@ -144,6 +157,7 @@ const Quiz = () => {
       setScore(score + 1);
       setFeedbackMessage("Parabéns, você acertou!");
       setFeedbackColor("green");
+      setFeedbackSubtitle(undefined);
       // Play correct sound
       if (!getSoundMuted() && correctSoundRef.current) {
         correctSoundRef.current.volume = getSoundVolume();
@@ -155,6 +169,11 @@ const Quiz = () => {
       event.currentTarget.classList.add("wrong-answer");
       setFeedbackMessage("Que pena, você errou!");
       setFeedbackColor("red");
+      if (showExplanation && currentQuestion?.explanation) {
+        setFeedbackSubtitle(currentQuestion.explanation);
+      } else {
+        setFeedbackSubtitle(undefined);
+      }
       // Play error sound
       if (!getSoundMuted() && errorSoundRef.current) {
         errorSoundRef.current.volume = getSoundVolume();
@@ -166,8 +185,10 @@ const Quiz = () => {
 
     setShowFeedback(true);
 
-    // Pausa maior (era 2s) pro jogador ver com calma se acertou/errou e qual
-    // era a alternativa correta antes de avançar.
+    const wrongWithExplanation =
+      !isCorrect && showExplanation && !!currentQuestion?.explanation;
+    const pauseMs = wrongWithExplanation ? 7000 : 3500;
+
     setTimeout(() => {
       setShowFeedback(false);
       setClickEnabled(true);
@@ -194,7 +215,7 @@ const Quiz = () => {
       }
 
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }, 3500);
+    }, pauseMs);
 
     if (token) {
       postResponse(user.uuid, questionId, alternativeId as number);
@@ -245,6 +266,16 @@ const Quiz = () => {
       </button>
       <button
         type="button"
+        className="quiz-back-btn"
+        style={{ left: 56 }}
+        onClick={toggleExplanation}
+        title={showExplanation ? "Ocultar explicação ao errar" : "Exibir explicação ao errar"}
+        aria-label="Alternar explicação"
+      >
+        {showExplanation ? "💡" : "🚫"}
+      </button>
+      <button
+        type="button"
         className="fullscreen-btn"
         onClick={toggleFullscreen}
         title={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
@@ -278,7 +309,11 @@ const Quiz = () => {
               lastQuestion={questions.length}
             />
             {showFeedback && (
-              <FeedbackBox title={feedbackMessage} color={feedbackColor} />
+              <FeedbackBox
+                title={feedbackMessage}
+                color={feedbackColor}
+                subtitle={feedbackSubtitle}
+              />
             )}
           </>
         )}

@@ -1,5 +1,6 @@
 import { useLayoutEffect, useState, type MouseEvent } from "react";
-import { Box, Card, CardContent, CardMedia, Container, Typography } from "@mui/material";
+import { Box, Card, CardContent, CardMedia, Chip, Container, Stack, Typography } from "@mui/material";
+import { BsHeartFill } from "react-icons/bs";
 import Loading from "../loading/Loading";
 import SearchComponent from "../searchComponent/SearchComponent";
 import NotFoundComponent from "../notFound/NotFoundComponent";
@@ -13,6 +14,8 @@ interface ThemeTemplateProps {
   onClickFunction: (theme: Theme) => void;
   title: string;
   searchOnButton?: boolean;
+  tagIds?: number[];
+  extraHeader?: React.ReactNode;
 }
 
 const ThemeTemplate = ({
@@ -20,6 +23,8 @@ const ThemeTemplate = ({
   onClickFunction,
   title,
   searchOnButton = false,
+  tagIds,
+  extraHeader,
 }: ThemeTemplateProps) => {
   const apiFetch = new ApiFetch();
 
@@ -36,8 +41,9 @@ const ThemeTemplate = ({
   useLayoutEffect(() => {
     setLoading(true);
 
+    const tagQuery = tagIds && tagIds.length > 0 ? `&tagIds=${tagIds.join(",")}` : "";
     const promise = apiFetch.getPages<Theme>(
-      `${path}?page=${currentPage}&name=${themeName}`,
+      `${path}?page=${currentPage}&name=${themeName}${tagQuery}`,
       "Tema não encontrado"
     );
 
@@ -53,7 +59,7 @@ const ThemeTemplate = ({
       setTotalPages(response.totalPages);
       setThemes(response.data);
     });
-  }, [currentPage, path, themeName]);
+  }, [currentPage, path, themeName, tagIds?.join(",")]);
 
   return (
     <Container sx={{ py: 4 }}>
@@ -67,6 +73,8 @@ const ThemeTemplate = ({
         setTotalPages={setTotalPages}
         searchOnButton={searchOnButton}
       />
+
+      {extraHeader}
 
       <Box
         sx={{
@@ -115,6 +123,17 @@ const ThemeTemplate = ({
               />
               <CardContent>
                 <Typography>{theme.name}</Typography>
+                <Stack direction="row" spacing={0.5} sx={{ mt: 1, justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
+                  <Chip
+                    icon={<BsHeartFill color="#e74c3c" />}
+                    label={theme.likeCount ?? 0}
+                    size="small"
+                    variant="outlined"
+                  />
+                  {(theme.tags ?? []).slice(0, 2).map((t) => (
+                    <Chip key={t.id} label={t.name} size="small" variant="outlined" />
+                  ))}
+                </Stack>
               </CardContent>
             </Card>
           ))}

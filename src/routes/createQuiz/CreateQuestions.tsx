@@ -1,4 +1,9 @@
-import { useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
+import {
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+  type FormEvent,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Alert,
@@ -54,7 +59,7 @@ import {
 
 import "./CreateQuestions.css";
 
-type QuestionField = "title" | "imageUrl";
+type QuestionField = "title" | "imageUrl" | "explanation";
 type AlternativeField = "text" | "correct";
 
 const MIN_ALTERNATIVES = 4;
@@ -103,7 +108,14 @@ const CreateQuestions = () => {
     imageUrl: string;
     imageOneUrl: string;
     imageTwoUrl: string;
-  }>({ title: "", imageUrl: "", imageOneUrl: "", imageTwoUrl: "" });
+    explanation: string;
+  }>({
+    title: "",
+    imageUrl: "",
+    imageOneUrl: "",
+    imageTwoUrl: "",
+    explanation: "",
+  });
 
   const [imagesOrder, setImagesOrder] = useState<ImageSlotKey[]>([
     ...ALL_IMAGE_SLOTS,
@@ -137,12 +149,15 @@ const CreateQuestions = () => {
   ]);
 
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const [originalAlternativeIds, setOriginalAlternativeIds] = useState<number[]>([]);
+  const [originalAlternativeIds, setOriginalAlternativeIds] = useState<
+    number[]
+  >([]);
 
   // Returns the display URL for a given slot (blob URL for new uploads, server URL for existing)
   function getDisplayImageBySlot(slot: ImageSlotKey): string | undefined {
     if (slot === "URL") return question.imageUrl || undefined;
-    if (slot === "IMAGE_1") return blobUrls.IMAGE_1 || question.imageOneUrl || undefined;
+    if (slot === "IMAGE_1")
+      return blobUrls.IMAGE_1 || question.imageOneUrl || undefined;
     return blobUrls.IMAGE_2 || question.imageTwoUrl || undefined;
   }
 
@@ -173,6 +188,7 @@ const CreateQuestions = () => {
       Boolean(getDisplayImageBySlot(slot))
     );
     fd.append("imagesOrder", presentSlots.join(","));
+    fd.append("explanation", question.explanation ?? "");
 
     return fd;
   }
@@ -212,10 +228,12 @@ const CreateQuestions = () => {
 
   async function postAllAltervatives(idQuestion: number) {
     setLoading(true);
-    const alternativeResponse = await insertAllAlternativesMutation.mutateAsync({
-      idQuestion,
-      alternatives,
-    });
+    const alternativeResponse = await insertAllAlternativesMutation.mutateAsync(
+      {
+        idQuestion,
+        alternatives,
+      }
+    );
     setLoading(false);
 
     if (!alternativeResponse.success) {
@@ -274,7 +292,8 @@ const CreateQuestions = () => {
 
   async function removeQuestion(idQuestion: number) {
     setLoading(true);
-    const questionResponse = await removeQuestionMutation.mutateAsync(idQuestion);
+    const questionResponse =
+      await removeQuestionMutation.mutateAsync(idQuestion);
     setLoading(false);
 
     if (!questionResponse.success) {
@@ -289,6 +308,7 @@ const CreateQuestions = () => {
       imageUrl: questionToEdit.imageUrl ?? "",
       imageOneUrl: questionToEdit.imageOneUrl ?? "",
       imageTwoUrl: questionToEdit.imageTwoUrl ?? "",
+      explanation: questionToEdit.explanation ?? "",
     });
 
     const orderFromField = (questionToEdit.imagesOrder ?? "")
@@ -303,7 +323,9 @@ const CreateQuestions = () => {
     setImagesOrder([...orderFromField, ...missingSlots]);
 
     // Clear any pending uploads when starting edit
-    Object.values(blobUrls).forEach((url) => { if (url) URL.revokeObjectURL(url); });
+    Object.values(blobUrls).forEach((url) => {
+      if (url) URL.revokeObjectURL(url);
+    });
     setBlobUrls({});
     setUploadFileObjects({});
     setUploadedFileNames({});
@@ -336,12 +358,20 @@ const CreateQuestions = () => {
 
   function clearForm() {
     // Revoke blob URLs before clearing
-    Object.values(blobUrls).forEach((url) => { if (url) URL.revokeObjectURL(url); });
+    Object.values(blobUrls).forEach((url) => {
+      if (url) URL.revokeObjectURL(url);
+    });
     setBlobUrls({});
     setUploadFileObjects({});
     setUploadedFileNames({});
 
-    setQuestion({ title: "", imageUrl: "", imageOneUrl: "", imageTwoUrl: "" });
+    setQuestion({
+      title: "",
+      imageUrl: "",
+      imageOneUrl: "",
+      imageTwoUrl: "",
+      explanation: "",
+    });
     setImagesOrder([...ALL_IMAGE_SLOTS]);
 
     setAlternatives([
@@ -363,7 +393,10 @@ const CreateQuestions = () => {
   ) => {
     setAlternatives((prevAlternatives) => {
       const updatedAlternatives = [...prevAlternatives];
-      updatedAlternatives[index] = { ...updatedAlternatives[index], [field]: data };
+      updatedAlternatives[index] = {
+        ...updatedAlternatives[index],
+        [field]: data,
+      };
       return updatedAlternatives;
     });
   };
@@ -412,9 +445,14 @@ const CreateQuestions = () => {
       return;
     }
 
-    const filesToAssign = fileList.slice(0, Math.min(emptySlots.length, MAX_UPLOAD_IMAGES));
+    const filesToAssign = fileList.slice(
+      0,
+      Math.min(emptySlots.length, MAX_UPLOAD_IMAGES)
+    );
 
-    const oversizedFile = filesToAssign.find((f) => f.size > MAX_IMAGE_SIZE_BYTES);
+    const oversizedFile = filesToAssign.find(
+      (f) => f.size > MAX_IMAGE_SIZE_BYTES
+    );
     if (oversizedFile) {
       activeInformationBox(true, "Cada imagem deve ter no máximo 2MB");
       return;
@@ -422,7 +460,10 @@ const CreateQuestions = () => {
 
     const totalSize = filesToAssign.reduce((sum, f) => sum + f.size, 0);
     if (totalSize > MAX_TOTAL_IMAGES_SIZE_BYTES) {
-      activeInformationBox(true, "O total das imagens enviadas deve ser de no máximo 4MB");
+      activeInformationBox(
+        true,
+        "O total das imagens enviadas deve ser de no máximo 4MB"
+      );
       return;
     }
 
@@ -478,7 +519,9 @@ const CreateQuestions = () => {
 
   function moveImage(slot: ImageSlotKey, direction: -1 | 1) {
     setImagesOrder((prevOrder) => {
-      const present = prevOrder.filter((s) => Boolean(getDisplayImageBySlot(s)));
+      const present = prevOrder.filter((s) =>
+        Boolean(getDisplayImageBySlot(s))
+      );
       const currentIndex = present.indexOf(slot);
       const newIndex = currentIndex + direction;
 
@@ -499,7 +542,11 @@ const CreateQuestions = () => {
 
   function activeInformationBox(isFail: boolean, message: string) {
     if (isFail) {
-      setInformationBoxData({ text: message, color: "red", icon: "exclamation" });
+      setInformationBoxData({
+        text: message,
+        color: "red",
+        icon: "exclamation",
+      });
     } else {
       setInformationBoxData({ text: message, color: "green", icon: "check" });
     }
@@ -511,7 +558,9 @@ const CreateQuestions = () => {
       <QuestionListComponent onEditQuestion={startEditingQuestion} />
 
       <Container maxWidth="lg" sx={{ py: 3 }}>
-        <Breadcrumbs sx={{ mb: 2, "& .MuiBreadcrumbs-separator": { color: "#fff" } }}>
+        <Breadcrumbs
+          sx={{ mb: 2, "& .MuiBreadcrumbs-separator": { color: "#fff" } }}
+        >
           <MuiLink
             component="button"
             type="button"
@@ -537,7 +586,10 @@ const CreateQuestions = () => {
             <Typography variant="h6" sx={{ color: "#fff", lineHeight: 1.2 }}>
               {themeName}
             </Typography>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.85)" }}>
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.85)" }}
+            >
               Crie no mínimo 5 questões para o seu quiz
             </Typography>
           </Box>
@@ -548,7 +600,12 @@ const CreateQuestions = () => {
             severity="info"
             sx={{ mb: 2 }}
             action={
-              <Button variant="contained" color="error" size="small" onClick={stopEditing}>
+              <Button
+                variant="contained"
+                color="error"
+                size="small"
+                onClick={stopEditing}
+              >
                 Parar de editar
               </Button>
             }
@@ -604,6 +661,20 @@ const CreateQuestions = () => {
                   Pesquisar imagem na web
                 </Button>
 
+                <TextField
+                  label="Explicação da resposta correta (opcional)"
+                  placeholder="Explique por que a resposta correta é a certa. Aparece após o jogador errar (se habilitado)."
+                  value={question.explanation}
+                  onChange={(e) =>
+                    changeQuestion("explanation", e.target.value)
+                  }
+                  multiline
+                  minRows={2}
+                  maxRows={6}
+                  fullWidth
+                  slotProps={{ htmlInput: { maxLength: 5000 } }}
+                />
+
                 <Box
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -618,10 +689,15 @@ const CreateQuestions = () => {
                     p: 2,
                     textAlign: "center",
                     bgcolor: isDraggingOver ? "action.hover" : "transparent",
-                    transition: "background-color 0.15s ease, border-color 0.15s ease",
+                    transition:
+                      "background-color 0.15s ease, border-color 0.15s ease",
                   }}
                 >
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
                     Arraste e solte imagens aqui ou faça upload
                   </Typography>
                   <Button
@@ -629,7 +705,7 @@ const CreateQuestions = () => {
                     component="label"
                     startIcon={<BsCloudUpload />}
                   >
-                    Fazer upload de imagens (até 2)
+                    Fazer upload de imagens
                     <input
                       type="file"
                       accept="image/*"
@@ -638,16 +714,16 @@ const CreateQuestions = () => {
                       hidden
                     />
                   </Button>
+                  <br />
+                  <Typography variant="caption" color="text.secondary">
+                    Máximo de 2MB por imagem (total de 4MB). Até 2 imagens.
+                  </Typography>
                 </Box>
 
-                <Typography variant="caption" color="text.secondary">
-                  Cada imagem enviada pode ter no máximo 2MB (total de 4MB). Você
-                  pode combinar um link de imagem com até 2 uploads (3 imagens no
-                  total).
-                </Typography>
-
                 {presentImageSlots.length > 0 && (
-                  <Box sx={{ bgcolor: "action.hover", borderRadius: 1, p: 1.5 }}>
+                  <Box
+                    sx={{ bgcolor: "action.hover", borderRadius: 1, p: 1.5 }}
+                  >
                     <Typography variant="subtitle2" sx={{ mb: 1 }}>
                       Ordem das imagens na tela do quiz
                     </Typography>
@@ -657,7 +733,8 @@ const CreateQuestions = () => {
                         const label =
                           slot === "URL"
                             ? IMAGE_SLOT_LABELS[slot]
-                            : uploadedFileNames[slot] ?? IMAGE_SLOT_LABELS[slot];
+                            : (uploadedFileNames[slot] ??
+                              IMAGE_SLOT_LABELS[slot]);
                         return (
                           <Stack
                             key={slot}
@@ -699,7 +776,9 @@ const CreateQuestions = () => {
                             </IconButton>
                             <IconButton
                               size="small"
-                              onClick={() => imageSrc && setPreviewImage(imageSrc)}
+                              onClick={() =>
+                                imageSrc && setPreviewImage(imageSrc)
+                              }
                               title="Visualizar imagem"
                             >
                               <BsEye />
@@ -719,20 +798,44 @@ const CreateQuestions = () => {
                 )}
               </Stack>
 
-              <Box sx={{ display: { xs: "block", md: "flex" }, justifyContent: "center" }}>
-                <Divider orientation="vertical" flexItem sx={{ display: { xs: "none", md: "block" }, mr: 3 }} />
+              <Box
+                sx={{
+                  display: { xs: "block", md: "flex" },
+                  justifyContent: "center",
+                }}
+              >
+                <Divider
+                  orientation="vertical"
+                  flexItem
+                  sx={{ display: { xs: "none", md: "block" }, mr: 3 }}
+                />
                 <Stack spacing={1.5} sx={{ width: "100%" }}>
                   <Typography variant="subtitle1">Alternativas</Typography>
 
                   {alternatives.map((alternative, index) => (
-                    <Stack key={index} direction="row" spacing={1} sx={{ alignItems: "flex-start" }}>
-                      <Avatar sx={{ width: 32, height: 32, mt: 1, color: "#fff", bgcolor: "primary.main" }}>
+                    <Stack
+                      key={index}
+                      direction="row"
+                      spacing={1}
+                      sx={{ alignItems: "flex-start" }}
+                    >
+                      <Avatar
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          mt: 1,
+                          color: "#fff",
+                          bgcolor: "primary.main",
+                        }}
+                      >
                         {ALTERNATIVE_LABELS[index]}
                       </Avatar>
                       <TextField
                         placeholder="Digite o texto da alternativa"
                         value={alternative.text}
-                        onChange={(e) => changeAlternative(index, "text", e.target.value)}
+                        onChange={(e) =>
+                          changeAlternative(index, "text", e.target.value)
+                        }
                         multiline
                         minRows={1}
                         maxRows={6}
@@ -795,7 +898,10 @@ const CreateQuestions = () => {
         />
       )}
       {showSearchImage && (
-        <SearchImage setSearchImage={setSearchImage} getUrlOfImage={getUrlOfImage} />
+        <SearchImage
+          setSearchImage={setSearchImage}
+          getUrlOfImage={getUrlOfImage}
+        />
       )}
       <Modal open={Boolean(previewImage)} onClose={() => setPreviewImage(null)}>
         <Box

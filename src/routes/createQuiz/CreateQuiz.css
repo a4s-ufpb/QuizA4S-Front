@@ -9,6 +9,10 @@
   background-size: cover;
 }
 
+[data-theme="dark"] .container-create-quiz {
+  background: linear-gradient(145deg, #16202e, #0a0f16);
+}
+
 .container-create {
   width: 80%;
   min-height: 600px;

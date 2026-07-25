@@ -41,6 +41,7 @@ const ThemeMenu = ({ setThemeMenu }: ThemeMenuProps) => {
     formData.append("name", values.name);
     formData.append("description", values.description ?? "");
     formData.append("materials", JSON.stringify(values.materials));
+    formData.append("tagIds", JSON.stringify(values.tags.map((t) => t.id)));
     if (values.imageFile) {
       formData.append("imageFile", values.imageFile);
     } else if (values.imageUrl) {

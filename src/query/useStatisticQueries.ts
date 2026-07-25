@@ -89,8 +89,8 @@ export function useDistinctStudentNameByCreatorIdQuery(
 export function useInsertStatisticMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (statistic: StatisticRequest) =>
-      statisticService.insertStatistic(statistic),
+    mutationFn: (payload: { statistic: StatisticRequest; studentUuid?: string }) =>
+      statisticService.insertStatistic(payload.statistic, payload.studentUuid),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all });
     },

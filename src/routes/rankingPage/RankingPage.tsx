@@ -18,7 +18,19 @@ function RankingPage() {
   return (
     <div className="container-external-ranking">
       <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-        <Tabs value={tab} onChange={(_e, v) => setTab(v)}>
+        <Tabs
+          value={tab}
+          onChange={(_e, v) => setTab(v)}
+          textColor="primary"
+          indicatorColor="primary"
+          sx={{
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 1,
+            "& .MuiTab-root": { fontWeight: "bold", fontSize: "1rem", px: 4 },
+            "& .Mui-selected": { color: "primary.main" },
+          }}
+        >
           <Tab label="Por Tema" />
           <Tab label="Global" />
         </Tabs>

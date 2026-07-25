@@ -7,3 +7,7 @@
   background-size: cover;
   padding-left: 44px;
 }
+
+[data-theme="dark"] .container-create-questions {
+  background: linear-gradient(145deg, #16202e, #0a0f16);
+}

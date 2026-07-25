@@ -1,14 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ThemeService } from "../service/ThemeService";
 import { queryKeys } from "./queryKeys";
-import type { Theme } from "../types";
 
 const themeService = new ThemeService();
 
-export function useAllThemesQuery(name: string, page: number, enabled = true) {
+export function useAllThemesQuery(
+  name: string,
+  page: number,
+  enabled = true,
+  tagIds?: number[]
+) {
   return useQuery({
-    queryKey: queryKeys.themes.list(name, page),
-    queryFn: () => themeService.findAllThemes(name, page),
+    queryKey: queryKeys.themes.list(name, page, tagIds),
+    queryFn: () => themeService.findAllThemes(name, page, tagIds),
     enabled,
   });
 }
@@ -63,6 +67,26 @@ export function useRemoveThemeMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (themeId: number) => themeService.removeTheme(themeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.themes.all });
+    },
+  });
+}
+
+export function useLikeThemeMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (themeId: number) => themeService.likeTheme(themeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.themes.all });
+    },
+  });
+}
+
+export function useUnlikeThemeMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (themeId: number) => themeService.unlikeTheme(themeId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.themes.all });
     },

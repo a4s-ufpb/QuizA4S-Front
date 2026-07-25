@@ -16,6 +16,7 @@ import Loading from "../loading/Loading";
 import { useRankingByThemeQuery } from "../../query/useScoreQueries";
 import NotFoundComponent from "../notFound/NotFoundComponent";
 import { getStoredTheme } from "../../util/storage";
+import { PlayerName, TitleBadge } from "../cosmetics/Cosmetic";
 import "./Ranking.css";
 
 interface RankingProps {
@@ -66,7 +67,13 @@ const Ranking = ({ navigatePath, setShowRanking }: RankingProps) => {
                         style={{ color: "#1976d2", textDecoration: "underline", cursor: "pointer" }}
                         onClick={() => navigate(`/profile/public/${score.user.uuid}`)}
                       >
-                        {score.user.name}
+                        <PlayerName
+                          name={score.user.name}
+                          font={score.user.equippedFont}
+                          style={score.user.equippedNameStyle}
+                          effect={score.user.equippedNameEffect}
+                        />
+                        <TitleBadge code={score.user.equippedTitle} />
                       </span>
                     </TableCell>
                     <TableCell align="center">{score.result}</TableCell>

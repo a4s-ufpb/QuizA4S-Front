@@ -2,14 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ThemeTemplate from "../../components/themeTemplate/ThemeTemplate";
 import ThemeDetailsDialog from "../../components/themeForm/ThemeDetailsDialog";
+import MyTagFilterBar from "../../components/tags/MyTagFilterBar";
 import type { Theme } from "../../types";
 
 const ChooseTheme = () => {
   const navigate = useNavigate();
   const baseUrl = "/theme";
 
-  // No modo um jogador, clicar num tema abre os detalhes antes de começar.
   const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
+  const [tagIds, setTagIds] = useState<number[]>([]);
 
   function startQuiz(theme: Theme) {
     sessionStorage.setItem("theme", JSON.stringify(theme));
@@ -23,6 +24,8 @@ const ChooseTheme = () => {
         onClickFunction={setSelectedTheme}
         title="Escolha o Tema do seu Quiz"
         searchOnButton
+        tagIds={tagIds}
+        extraHeader={<MyTagFilterBar selected={tagIds} onChange={setTagIds} />}
       />
 
       <ThemeDetailsDialog

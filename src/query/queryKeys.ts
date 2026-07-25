@@ -9,11 +9,27 @@
 export const queryKeys = {
   themes: {
     all: ["themes"] as const,
-    list: (name: string, page: number) =>
-      ["themes", "list", name, page] as const,
+    list: (name: string, page: number, tagIds?: number[]) =>
+      ["themes", "list", name, page, (tagIds ?? []).join(",")] as const,
     byCreator: (name: string, page: number) =>
       ["themes", "creator", name, page] as const,
     detail: (id: number) => ["themes", "detail", id] as const,
+  },
+  tags: {
+    all: ["tags"] as const,
+    mine: ["tags", "mine"] as const,
+    byCreator: (uuid: string) => ["tags", "creator", uuid] as const,
+  },
+  themeFeedback: {
+    all: ["theme-feedback"] as const,
+    byTheme: (themeId: number) => ["theme-feedback", "theme", themeId] as const,
+    count: (themeId: number) => ["theme-feedback", "count", themeId] as const,
+  },
+  statisticFeedback: {
+    all: ["statistic-feedback"] as const,
+    byStatistic: (id: number) => ["statistic-feedback", "stat", id] as const,
+    mine: ["statistic-feedback", "mine"] as const,
+    creatorMine: ["statistic-feedback", "creator-mine"] as const,
   },
   questions: {
     all: ["questions"] as const,

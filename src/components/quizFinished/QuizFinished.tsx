@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Loading from "../loading/Loading";
 import Ranking from "../ranking/Ranking";
 import ConfirmBox from "../confirmBox/ConfirmBox";
+import ThemeFeedbackModal from "../feedback/ThemeFeedbackModal";
 import "./QuizFinished.css";
 import { useInsertScoreMutation } from "../../query/useScoreQueries";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,12 @@ interface QuizFinishedProps {
   total: number;
 }
 
+function formatTime(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
 const QuizFinished = ({
   percentage,
   restart,
@@ -36,8 +43,10 @@ const QuizFinished = ({
   const isAuth = localStorage.getItem("token");
 
   const [activeRanking, setActiveRanking] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const navigate = useNavigate();
+  const storedTheme = getStoredTheme();
 
   useEffect(() => {
     if (isLoggedUser()) {
@@ -57,8 +66,10 @@ const QuizFinished = ({
   function saveStatistic(statistic: StatisticRequest) {
     try {
       setLoading(true);
-
-      insertStatisticMutation.mutate(statistic);
+      insertStatisticMutation.mutate({
+        statistic,
+        studentUuid: getStoredUser().uuid || undefined,
+      });
     } catch (error) {
       console.error(error);
       setInformationBox(true);
@@ -69,8 +80,6 @@ const QuizFinished = ({
   }
 
   function calculateResult(): string | number {
-    // Espelha Score.calculateResult do backend: piso de MIN_VALUE_PER_HIT por
-    // acerto, pra quem acertou ao menos 1 questão nunca ficar zerado.
     const raw = score * HIT_VALUE - time * REDUCE_VALUE;
     const floor = score * MIN_VALUE_PER_HIT;
     return Math.max(raw, floor).toFixed(2);
@@ -136,46 +145,37 @@ const QuizFinished = ({
       <div className="quiz-finished">
         <h2 className="quiz-finished-title">Quiz Finalizado!</h2>
 
-        {isAuth && (
-          <p className="quiz-finished-point">
-            Sua pontuação: {calculateResult()}
-          </p>
-        )}
+        <div style={{ marginTop: 12, marginBottom: 12, textAlign: "center", lineHeight: 1.8 }}>
+          <p><strong>Pontuação final:</strong> {calculateResult()}</p>
+          <p><strong>Tempo total:</strong> {formatTime(time)}</p>
+          <p><strong>Acertos:</strong> {score} / {total}</p>
+        </div>
 
         {percentage >= 0 && percentage <= 30 && (
           <div className="quiz-finished-score">
             <span>{`${percentage}% de acertos!`}</span>
-            <p>
-              Não desanime! Cada erro é uma oportunidade de aprender algo novo.
-            </p>
+            <p>Não desanime! Cada erro é uma oportunidade de aprender algo novo.</p>
           </div>
         )}
         {percentage > 30 && percentage <= 60 && (
           <div className="quiz-finished-score">
             <span>{`${percentage}% de acertos!`}</span>
-            <p>
-              Você está indo bem! Com um pouco mais de prática, vai dominar este
-              quiz!
-            </p>
+            <p>Você está indo bem! Com um pouco mais de prática, vai dominar este quiz!</p>
           </div>
         )}
         {percentage > 60 && percentage <= 90 && (
           <div className="quiz-finished-score">
             <span>{`${percentage}% de acertos!`}</span>
-            <p>
-              Impressionante! Você está quase lá, apenas mais um passo para a
-              perfeição!
-            </p>
+            <p>Impressionante! Você está quase lá, apenas mais um passo para a perfeição!</p>
           </div>
         )}
         {percentage == 100 && (
           <div className="quiz-finished-score">
             <span>{`${percentage}% de acertos!`}</span>
-            <p>
-              Uau! Pontuação máxima! Você é um verdadeiro mestre neste assunto!
-            </p>
+            <p>Uau! Pontuação máxima! Você é um verdadeiro mestre neste assunto!</p>
           </div>
         )}
+
         <div className="container-quiz-finished-btn">
           <button onClick={restart} className="quiz-finished-btn">
             Voltar
@@ -183,6 +183,11 @@ const QuizFinished = ({
           <button onClick={handleShare} className="quiz-finished-btn">
             Compartilhar
           </button>
+          {isAuth && storedTheme?.id && (
+            <button onClick={() => setFeedbackOpen(true)} className="quiz-finished-btn">
+              Feedback do tema
+            </button>
+          )}
           {isAuth && (
             <button
               onClick={() => setConfirmBox(true)}
@@ -196,6 +201,15 @@ const QuizFinished = ({
 
       {activeRanking && (
         <Ranking navigatePath={"/theme"} setShowRanking={setActiveRanking} />
+      )}
+
+      {feedbackOpen && storedTheme?.id && (
+        <ThemeFeedbackModal
+          themeId={storedTheme.id}
+          themeName={storedTheme.name}
+          allowCreate
+          onClose={() => setFeedbackOpen(false)}
+        />
       )}
 
       {loading && <Loading />}

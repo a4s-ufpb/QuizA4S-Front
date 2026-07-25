@@ -115,6 +115,12 @@ export interface Material {
   type: MaterialType;
 }
 
+export interface Tag {
+  id: number;
+  name: string;
+  creatorId?: string;
+}
+
 export interface Theme {
   id: number;
   name: string;
@@ -123,6 +129,29 @@ export interface Theme {
   description?: string | null;
   /** Materiais de apoio associados ao tema. */
   materials?: Material[];
+  tags?: Tag[];
+  likeCount?: number;
+  likedByMe?: boolean;
+}
+
+export interface ThemeFeedback {
+  id: number;
+  themeId: number;
+  userUuid: string;
+  userName: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface StatisticFeedback {
+  id: number;
+  statisticId: number;
+  themeName: string;
+  studentName: string;
+  creatorUuid: string;
+  creatorName: string;
+  text: string;
+  createdAt: string;
 }
 
 export interface Alternative {
@@ -139,6 +168,7 @@ export interface QuizQuestion {
   imageOneUrl?: string;
   imageTwoUrl?: string;
   imagesOrder?: string;
+  explanation?: string | null;
   alternatives: Alternative[];
 }
 
@@ -149,6 +179,7 @@ export interface Question {
   imageOneUrl?: string;
   imageTwoUrl?: string;
   imagesOrder?: string;
+  explanation?: string | null;
   creatorId?: string;
   alternatives?: Alternative[];
   theme?: Theme;
@@ -167,6 +198,8 @@ export interface ScoreRequest {
 
 export interface Statistic {
   id: number;
+  creatorId?: string;
+  studentUuid?: string | null;
   studentName: string;
   themeName: string;
   date: string;
@@ -177,6 +210,7 @@ export interface StatisticRequest {
   studentName: string;
   themeName: string;
   percentagemOfHits: number;
+  studentUuid?: string;
 }
 
 export interface ResponseStatistic {

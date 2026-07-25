@@ -116,12 +116,6 @@ function MyStatistics() {
         </FormControl>
       </Box>
 
-      {fetchError && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          Não foi possível carregar as estatísticas. Tente novamente mais tarde.
-        </Alert>
-      )}
-
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
         <ToggleButtonGroup
           size="small"
@@ -156,7 +150,13 @@ function MyStatistics() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {statistics &&
+              {fetchError ? (
+                <TableRow>
+                  <TableCell colSpan={6} sx={{ border: 0 }}>
+                    <NotFoundComponent title="Nenhuma estatística encontrada para este tema" />
+                  </TableCell>
+                </TableRow>
+              ) : (
                 statistics.map((statistic) => (
                   <TableRow key={statistic.questionId} hover>
                     <TableCell>{statistic.questionTitle}</TableCell>
@@ -170,7 +170,8 @@ function MyStatistics() {
                       {statistic.percentageOfAnswersIncorrect.toFixed(1)}%
                     </TableCell>
                   </TableRow>
-                ))}
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>

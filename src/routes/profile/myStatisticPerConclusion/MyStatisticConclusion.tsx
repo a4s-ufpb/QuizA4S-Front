@@ -2,6 +2,12 @@ import { useMemo, useState } from "react";
 import {
   Alert,
   Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
   TableContainer,
   Table,
   TableHead,
@@ -12,6 +18,7 @@ import {
   ToggleButtonGroup,
   ToggleButton,
 } from "@mui/material";
+import { useCreateStatisticFeedbackMutation, useStatisticFeedbackByStatQuery } from "../../../query/useStatisticFeedbackQueries";
 import {
   BarChart,
   Bar,
@@ -46,6 +53,16 @@ interface ThemeAverage {
 function MyStatisticConclusion() {
   const [currentPage, setCurrentPage] = useState(0);
   const [view, setView] = useState<"table" | "chart">("table");
+  const [feedbackStat, setFeedbackStat] = useState<{ id: number; studentName: string; themeName: string } | null>(null);
+  const [feedbackText, setFeedbackText] = useState("");
+  const createFeedbackMut = useCreateStatisticFeedbackMutation();
+  const feedbackListQuery = useStatisticFeedbackByStatQuery(feedbackStat?.id ?? 0, !!feedbackStat);
+
+  async function sendFeedback() {
+    if (!feedbackStat || !feedbackText.trim()) return;
+    await createFeedbackMut.mutateAsync({ statisticId: feedbackStat.id, text: feedbackText.trim() });
+    setFeedbackText("");
+  }
 
   const [filters, setFilters] = useState<AdvancedFilterValues>({
     studentName: "",
@@ -182,6 +199,7 @@ function MyStatisticConclusion() {
                   <TableCell>Tema</TableCell>
                   <TableCell>Data</TableCell>
                   <TableCell>Porcentagem de Acertos</TableCell>
+                  <TableCell align="center">Feedback</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -193,6 +211,22 @@ function MyStatisticConclusion() {
                       <TableCell>{statistic.date}</TableCell>
                       <TableCell>
                         {statistic.percentagemOfHits.toFixed(1)}%
+                      </TableCell>
+                      <TableCell align="center">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => {
+                            setFeedbackStat({
+                              id: statistic.id,
+                              studentName: statistic.studentName,
+                              themeName: statistic.themeName,
+                            });
+                            setFeedbackText("");
+                          }}
+                        >
+                          Feedback
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -240,6 +274,42 @@ function MyStatisticConclusion() {
       )}
 
       {loading && <Loading />}
+
+      <Dialog open={!!feedbackStat} onClose={() => setFeedbackStat(null)} fullWidth maxWidth="sm">
+        <DialogTitle>
+          Feedback para {feedbackStat?.studentName} — {feedbackStat?.themeName}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            multiline
+            minRows={3}
+            label="Escreva seu feedback"
+            value={feedbackText}
+            onChange={(e) => setFeedbackText(e.target.value)}
+            sx={{ mt: 1 }}
+          />
+          <Box sx={{ mt: 2 }}>
+            <strong>Feedbacks anteriores:</strong>
+            {(feedbackListQuery.data?.data ?? []).length === 0 ? (
+              <p style={{ opacity: 0.6 }}>Nenhum feedback ainda.</p>
+            ) : (
+              (feedbackListQuery.data?.data ?? []).map((f) => (
+                <Paper key={f.id} sx={{ p: 1, my: 1 }}>
+                  <div style={{ whiteSpace: "pre-wrap" }}>{f.text}</div>
+                  <small style={{ opacity: 0.6 }}>{f.createdAt}</small>
+                </Paper>
+              ))
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setFeedbackStat(null)}>Fechar</Button>
+          <Button variant="contained" onClick={sendFeedback} disabled={createFeedbackMut.isPending}>
+            Enviar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

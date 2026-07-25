@@ -166,18 +166,21 @@ const MyResponse = () => {
 
   return (
     <Box sx={{ py: 4 }}>
+      <Alert severity="info" sx={{ mb: 2 }}>
+        Aqui você acompanha as respostas dos jogadores nos seus quizzes. Veja quem jogou, o que respondeu e como se saiu em cada questão!
+      </Alert>
       <AdvancedSearch
         fields={filterFields}
         values={filters}
         onChange={applyFilters}
-        leftExtra={
+        modalExtra={
           <TextField
             select
             size="small"
             label="Modo de jogo"
             value={gameMode}
             onChange={(e) => setGameMode(e.target.value as GameMode)}
-            sx={{ minWidth: 180 }}
+            fullWidth
           >
             <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
             <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
