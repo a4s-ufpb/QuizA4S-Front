@@ -62,16 +62,21 @@ describe("ThemeDetailsDialog", () => {
 
   it("toggle explicação alterna SIM/NÃO e persiste em localStorage", async () => {
     wrap(<ThemeDetailsDialog theme={theme} onClose={vi.fn()} />);
-    const btn = screen.getByRole("button", { name: /SIM|NÃO/ });
-    // Default true (SIM).
-    expect(btn).toHaveTextContent("SIM");
+    const simBtn = screen.getByRole("button", { name: "SIM" });
+    const naoBtn = screen.getByRole("button", { name: "NÃO" });
 
-    await userEvent.click(btn);
-    expect(btn).toHaveTextContent("NÃO");
+    // Default true: SIM selecionado.
+    expect(simBtn).toHaveAttribute("aria-pressed", "true");
+    expect(naoBtn).toHaveAttribute("aria-pressed", "false");
+
+    await userEvent.click(naoBtn);
+    expect(simBtn).toHaveAttribute("aria-pressed", "false");
+    expect(naoBtn).toHaveAttribute("aria-pressed", "true");
     expect(localStorage.getItem("quiz:showExplanation")).toBe("false");
 
-    await userEvent.click(btn);
-    expect(btn).toHaveTextContent("SIM");
+    await userEvent.click(simBtn);
+    expect(simBtn).toHaveAttribute("aria-pressed", "true");
+    expect(naoBtn).toHaveAttribute("aria-pressed", "false");
     expect(localStorage.getItem("quiz:showExplanation")).toBe("true");
   });
 
