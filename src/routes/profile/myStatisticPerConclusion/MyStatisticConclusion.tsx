@@ -22,6 +22,7 @@ import {
 import { useCreateStatisticFeedbackMutation, useStatisticFeedbackByStatQuery } from "../../../query/useStatisticFeedbackQueries";
 import RichTextEditor from "../../../components/richText/RichTextEditor";
 import type { GameMode } from "../../../types";
+import { usePersistedState } from "../../../hooks/usePersistedState";
 import {
   BarChart,
   Bar,
@@ -55,6 +56,7 @@ interface ThemeAverage {
 
 function MyStatisticConclusion() {
   const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = usePersistedState<number>("myStatisticConclusion:size", 20);
   const [view, setView] = useState<"table" | "chart">("table");
   const [feedbackStat, setFeedbackStat] = useState<{ id: number; studentName: string; themeName: string } | null>(null);
   const [feedbackText, setFeedbackText] = useState("");
@@ -74,13 +76,14 @@ function MyStatisticConclusion() {
     if (res.success) setFeedbackText("");
   }
 
-  const [filters, setFilters] = useState<AdvancedFilterValues>({
-    studentName: "",
-    themeName: "",
-    startDate: "",
-    endDate: "",
-  });
-  const [gameMode, setGameMode] = useState<GameMode | "">("");
+  const [filters, setFilters] = usePersistedState<AdvancedFilterValues>(
+    "myStatisticConclusion:filters",
+    { studentName: "", themeName: "", startDate: "", endDate: "" }
+  );
+  const [gameMode, setGameMode] = usePersistedState<GameMode | "">(
+    "myStatisticConclusion:gameMode",
+    ""
+  );
 
   const studentName = filters.studentName ?? "";
   const themeName = filters.themeName ?? "";
@@ -126,7 +129,9 @@ function MyStatisticConclusion() {
     themeName,
     startDate,
     endDate,
-    gameMode
+    gameMode,
+    true,
+    pageSize
   );
   const hasThemeFilter = themeName.trim() !== "";
   const chartQuery = useAllStatisticByCreatorForChartQuery(
@@ -272,6 +277,9 @@ function MyStatisticConclusion() {
             setCurrentPage={setCurrentPage}
             totalPages={totalPages}
             color={"dark"}
+            pageItemsCount={statisticList.length}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
           />
         </>
       ) : !hasThemeFilter ? (

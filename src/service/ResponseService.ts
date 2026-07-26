@@ -9,7 +9,8 @@ import type {
 
 export class ResponseService extends BaseService {
   insertResponse(idUser: string, idQuestion: number, idAlternative: number) {
-    return this.handleRequest<ResponseItem>(
+    // Backend responde 201 sem body — front só precisa saber que salvou.
+    return this.handleRequest<void>(
       "post",
       `/response/${idUser}/${idQuestion}/${idAlternative}`
     );
@@ -37,12 +38,14 @@ export class ResponseService extends BaseService {
     themeName: string,
     startDate: string,
     endDate: string,
-    gameMode: GameMode | "" = ""
+    gameMode: GameMode | "" = "",
+    size?: number
   ) {
     const mode = gameMode ? `&gameMode=${gameMode}` : "";
+    const sizeQ = size != null ? `&size=${size}` : "";
     return this.handleRequest<Page<ResponseItem>>(
       "get",
-      `/response/user?page=${currentPage}&theme=${themeName}&startDate=${startDate}&endDate=${endDate}${mode}`
+      `/response/user?page=${currentPage}&theme=${themeName}&startDate=${startDate}&endDate=${endDate}${mode}${sizeQ}`
     );
   }
 
@@ -72,12 +75,14 @@ export class ResponseService extends BaseService {
     themeName: string,
     currentDate: string,
     finalDate: string,
-    gameMode: GameMode | "" = ""
+    gameMode: GameMode | "" = "",
+    size?: number
   ) {
     const mode = gameMode ? `&gameMode=${gameMode}` : "";
+    const sizeQ = size != null ? `&size=${size}` : "";
     return this.handleRequest<Page<ResponseItem>>(
       "get",
-      `/response/query?page=${currentPage}&username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}${mode}`
+      `/response/query?page=${currentPage}&username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}${mode}${sizeQ}`
     );
   }
 

@@ -16,6 +16,8 @@ import {
   Chip,
   IconButton,
   Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import {
   BsBoxArrowUpRight,
@@ -110,48 +112,82 @@ const ThemeDetailsDialog = ({
             }}
           />
 
-          <Stack direction="row" spacing={1} sx={{ mb: 1, alignItems: "center" }}>
-            <Tooltip title={!isAuth ? "Faça login para curtir" : liked ? "Você já curtiu este tema" : "Curtir"}>
-              <span>
-                <IconButton
-                  onClick={handleLike}
-                  color={liked ? "error" : "default"}
-                  disabled={!isAuth || liked || likeMut.isPending}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            sx={{
+              mb: 2,
+              alignItems: { xs: "stretch", sm: "flex-start" },
+              justifyContent: "space-between",
+            }}
+          >
+            {/* Gostei */}
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+              <Tooltip title={!isAuth ? "Faça login para curtir" : liked ? "Você já curtiu este tema" : "Curtir"}>
+                <span>
+                  <IconButton
+                    onClick={handleLike}
+                    color={liked ? "error" : "default"}
+                    disabled={!isAuth || liked || likeMut.isPending}
+                  >
+                    {liked ? <BsHeartFill /> : <BsHeart />}
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Typography variant="body2">{count} gostei</Typography>
+            </Stack>
+
+            {/* Modo de explicação: label + ? em cima, toggle SIM/NÃO embaixo */}
+            <Stack spacing={0.5} sx={{ alignItems: { xs: "flex-start", sm: "center" } }}>
+              <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
+                <Typography variant="body2">Modo de explicação</Typography>
+                <Tooltip title="Se ativado, ao errar uma questão o quiz pausa e exibe a explicação da resposta correta. Você pode ler com calma e clicar em 'Entendi' para continuar.">
+                  <IconButton size="small">
+                    <span style={{ fontWeight: "bold", fontSize: 14 }}>?</span>
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+              <ToggleButtonGroup
+                size="small"
+                exclusive
+                value={explanationEnabled ? "sim" : "nao"}
+                onChange={(_e, val) => {
+                  if (val != null && (val === "sim") !== explanationEnabled) toggleExplanation();
+                }}
+              >
+                <ToggleButton
+                  value="sim"
+                  sx={{
+                    px: 2,
+                    fontWeight: 700,
+                    "&.Mui-selected": { bgcolor: "success.main", color: "#fff", "&:hover": { bgcolor: "success.dark" } },
+                  }}
                 >
-                  {liked ? <BsHeartFill /> : <BsHeart />}
-                </IconButton>
-              </span>
-            </Tooltip>
-            <Typography variant="body2">{count} gostei</Typography>
-          </Stack>
+                  SIM
+                </ToggleButton>
+                <ToggleButton
+                  value="nao"
+                  sx={{
+                    px: 2,
+                    fontWeight: 700,
+                    "&.Mui-selected": { bgcolor: "error.main", color: "#fff", "&:hover": { bgcolor: "error.dark" } },
+                  }}
+                >
+                  NÃO
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Stack>
 
-          <Stack direction="row" spacing={1} sx={{ mb: 1, alignItems: "center" }}>
-            <Typography variant="body2" sx={{ mr: 1 }}>
-              Ativar modo de explicação
-            </Typography>
-            <Button
-              size="small"
-              variant={explanationEnabled ? "contained" : "outlined"}
-              color={explanationEnabled ? "success" : "inherit"}
-              onClick={toggleExplanation}
-            >
-              {explanationEnabled ? "SIM" : "NÃO"}
-            </Button>
-            <Tooltip title="Se ativado, ao errar uma questão o quiz pausa e exibe a explicação da resposta correta. Você pode ler com calma e clicar em 'Entendi' para continuar.">
-              <IconButton size="small">
-                <span style={{ fontWeight: "bold", fontSize: 14 }}>?</span>
-              </IconButton>
-            </Tooltip>
-          </Stack>
-
-          <Stack direction="row" spacing={1} sx={{ mb: 2, alignItems: "center" }}>
-            <Button
-              size="small"
-              startIcon={<BsChatDotsFill />}
-              onClick={() => setFeedbackOpen(true)}
-            >
-              Ver feedbacks
-            </Button>
+            {/* Ver feedbacks */}
+            <Stack direction="row" sx={{ alignItems: "center" }}>
+              <Button
+                size="small"
+                startIcon={<BsChatDotsFill />}
+                onClick={() => setFeedbackOpen(true)}
+              >
+                Ver feedbacks
+              </Button>
+            </Stack>
           </Stack>
 
           {tags.length > 0 && (

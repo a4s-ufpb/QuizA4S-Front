@@ -11,6 +11,7 @@ import {
   Typography,
   IconButton,
   InputAdornment,
+  Link as MuiLink,
 } from "@mui/material";
 import { BsEye, BsEyeSlash } from "react-icons/bs";
 import Loading from "../loading/Loading";
@@ -212,9 +213,15 @@ const FormTemplate = ({
             </Button>
 
             <Box sx={{ textAlign: "center" }}>
-              <Link to={redirectLink} style={{ textDecoration: "none" }}>
+              <MuiLink
+                component={Link}
+                to={redirectLink}
+                underline="hover"
+                color="primary"
+                sx={{ fontWeight: 500 }}
+              >
                 {redirectText}
-              </Link>
+              </MuiLink>
             </Box>
           </Box>
         </CardContent>

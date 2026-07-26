@@ -55,23 +55,26 @@ import QuestionImageGallery from "../../../components/questionImageGallery/Quest
 import { getOrderedQuestionImages } from "../../../util/questionImages";
 import { getStoredUser } from "../../../util/storage";
 import type { GameMode, Question, ResponseItem } from "../../../types";
+import { usePersistedState } from "../../../hooks/usePersistedState";
 
 const ALTERNATIVE_LABELS = ["A", "B", "C", "D", "E", "F"];
 
 const MyResponse = () => {
   const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = usePersistedState<number>("myResponse:size", 20);
   const [selectedResponse, setSelectedResponse] = useState<ResponseItem | null>(
     null
   );
 
-  const [filters, setFilters] = useState<AdvancedFilterValues>({
-    username: "",
-    themeName: "",
-    currentDate: "",
-    finalDate: "",
-  });
+  const [filters, setFilters] = usePersistedState<AdvancedFilterValues>(
+    "myResponse:filters",
+    { username: "", themeName: "", currentDate: "", finalDate: "" }
+  );
   const [view, setView] = useState<"table" | "chart">("table");
-  const [gameMode, setGameMode] = useState<GameMode | "">("");
+  const [gameMode, setGameMode] = usePersistedState<GameMode | "">(
+    "myResponse:gameMode",
+    ""
+  );
   const isMultiplayer = gameMode === "MULTIPLAYER";
 
   const username = filters.username ?? "";
@@ -116,7 +119,9 @@ const MyResponse = () => {
     themeName,
     currentDate,
     finalDate,
-    gameMode
+    gameMode,
+    true,
+    pageSize
   );
   // O gráfico só busca com um tema selecionado — sem esse filtro a query
   // varria todas as respostas do banco (lenta com muitos dados).
@@ -259,6 +264,9 @@ const MyResponse = () => {
             totalPages={totalPages}
             setCurrentPage={setCurrentPage}
             color={"dark"}
+            pageItemsCount={responses.length}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
           />
         </>
       ) : !hasThemeFilter ? (

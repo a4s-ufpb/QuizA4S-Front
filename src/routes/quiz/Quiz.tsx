@@ -343,7 +343,8 @@ const Quiz = () => {
         slotProps={{
           paper: {
             sx: {
-              bgcolor: "#ffffff",
+              bgcolor: "background.paper",
+              color: "text.primary",
               borderRadius: 1,
             },
           },

@@ -19,18 +19,16 @@ export function useMyResponsesQuery(
   startDate: string,
   endDate: string,
   gameMode: GameMode | "",
-  enabled = true
+  enabled = true,
+  size?: number
 ) {
   return useQuery({
-    queryKey: queryKeys.responses.myResponses(
-      page,
-      theme,
-      startDate,
-      endDate,
-      gameMode
-    ),
+    queryKey: [
+      ...queryKeys.responses.myResponses(page, theme, startDate, endDate, gameMode),
+      size ?? "",
+    ],
     queryFn: () =>
-      responseService.findMyResponses(page, theme, startDate, endDate, gameMode),
+      responseService.findMyResponses(page, theme, startDate, endDate, gameMode, size),
     enabled,
   });
 }
@@ -68,17 +66,14 @@ export function useResponsesQueryFilterQuery(
   currentDate: string,
   finalDate: string,
   gameMode: GameMode | "",
-  enabled = true
+  enabled = true,
+  size?: number
 ) {
   return useQuery({
-    queryKey: queryKeys.responses.query(
-      page,
-      username,
-      theme,
-      currentDate,
-      finalDate,
-      gameMode
-    ),
+    queryKey: [
+      ...queryKeys.responses.query(page, username, theme, currentDate, finalDate, gameMode),
+      size ?? "",
+    ],
     queryFn: () =>
       responseService.findResponsesByQuestionCreatorAndUsernameAndDateAndThemeName(
         page,
@@ -86,7 +81,8 @@ export function useResponsesQueryFilterQuery(
         theme,
         currentDate,
         finalDate,
-        gameMode
+        gameMode,
+        size
       ),
     enabled,
   });

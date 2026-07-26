@@ -23,6 +23,7 @@ import {
 import type { ResponseItem, Question } from "../../../types";
 import QuestionImageGallery from "../../../components/questionImageGallery/QuestionImageGallery";
 import { getOrderedQuestionImages } from "../../../util/questionImages";
+import { usePersistedState } from "../../../hooks/usePersistedState";
 import {
   BsTrophyFill,
   BsCheckCircleFill,
@@ -51,14 +52,17 @@ const ALTERNATIVE_LABELS = ["A", "B", "C", "D", "E", "F"];
 
 const MyOwnResponses = () => {
   const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = usePersistedState<number>("myOwnResponses:size", 20);
   const [selectedResponse, setSelectedResponse] = useState<ResponseItem | null>(null);
 
-  const [filters, setFilters] = useState<AdvancedFilterValues>({
-    themeName: "",
-    startDate: "",
-    endDate: "",
-  });
-  const [gameMode, setGameMode] = useState<GameMode | "">("");
+  const [filters, setFilters] = usePersistedState<AdvancedFilterValues>(
+    "myOwnResponses:filters",
+    { themeName: "", startDate: "", endDate: "" }
+  );
+  const [gameMode, setGameMode] = usePersistedState<GameMode | "">(
+    "myOwnResponses:gameMode",
+    ""
+  );
 
   const themeName = filters.themeName ?? "";
   const startDate = filters.startDate ?? "";
@@ -74,7 +78,9 @@ const MyOwnResponses = () => {
     themeName,
     startDate,
     endDate,
-    gameMode
+    gameMode,
+    true,
+    pageSize
   );
   const summaryQuery = useMySummaryQuery(themeName, startDate, endDate, gameMode);
 
@@ -200,6 +206,9 @@ const MyOwnResponses = () => {
         totalPages={totalPages}
         setCurrentPage={setCurrentPage}
         color={"dark"}
+        pageItemsCount={responses.length}
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
       />
 
       {loading && <Loading />}

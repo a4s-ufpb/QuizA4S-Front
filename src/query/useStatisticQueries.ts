@@ -13,16 +13,18 @@ export function useAllStatisticByCreatorQuery(
   startDate: string,
   endDate: string,
   gameMode: GameMode | "",
-  enabled = true
+  enabled = true,
+  size?: number
 ) {
   return useQuery({
     queryKey: [
       ...queryKeys.statistics.byCreator(page, creatorId, studentName, themeName, startDate, endDate),
       gameMode,
+      size ?? "",
     ],
     queryFn: () =>
       statisticService.findAllStatisticByCreator(
-        page, creatorId, studentName, themeName, startDate, endDate, gameMode
+        page, creatorId, studentName, themeName, startDate, endDate, gameMode, size
       ),
     enabled: enabled && Boolean(creatorId),
   });

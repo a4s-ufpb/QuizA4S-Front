@@ -33,12 +33,14 @@ export class StatisticService extends BaseService {
     themeName: string,
     startDate: string,
     endDate: string,
-    gameMode: GameMode | ""
+    gameMode: GameMode | "",
+    size?: number
   ) {
     const modeQuery = gameMode ? `&gameMode=${gameMode}` : "";
+    const sizeQ = size != null ? `&size=${size}` : "";
     return this.handleRequest<Page<Statistic>>(
       "get",
-      `/statistic/${creatorId}?page=${currentPage}&studentName=${studentName}&themeName=${themeName}&startDate=${startDate}&endDate=${endDate}${modeQuery}`
+      `/statistic/${creatorId}?page=${currentPage}&studentName=${studentName}&themeName=${themeName}&startDate=${startDate}&endDate=${endDate}${modeQuery}${sizeQ}`
     );
   }
 

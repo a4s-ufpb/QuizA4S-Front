@@ -11,12 +11,12 @@ import {
   ListItemText,
   Typography,
   Divider,
+  TextField,
 } from "@mui/material";
 import {
   useThemeFeedbackByThemeQuery,
   useCreateThemeFeedbackMutation,
 } from "../../query/useThemeFeedbackQueries";
-import RichTextEditor from "../richText/RichTextEditor";
 import { APP_TOKEN_KEY } from "../../util/token";
 
 interface Props {
@@ -36,13 +36,13 @@ const ThemeFeedbackModal = ({ themeId, themeName, allowCreate = false, onClose }
   const [error, setError] = useState<string | null>(null);
 
   async function send() {
-    const stripped = text.replace(/<[^>]*>/g, "").trim();
-    if (stripped.length < 5) {
+    const trimmed = text.trim();
+    if (trimmed.length < 5) {
       setError("O feedback deve ter no mínimo 5 caracteres");
       return;
     }
     setError(null);
-    const res = await createMut.mutateAsync({ themeId, text });
+    const res = await createMut.mutateAsync({ themeId, text: trimmed });
     if (res.success) {
       setText("");
     }
@@ -54,19 +54,17 @@ const ThemeFeedbackModal = ({ themeId, themeName, allowCreate = false, onClose }
       <DialogContent>
         {(allowCreate || isAuth) && (
           <>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                Escreva seu feedback
-              </Typography>
-              <RichTextEditor
-                value={text}
-                onChange={setText}
-                placeholder="Digite seu feedback (mín. 5 caracteres)"
-                minRows={3}
-                error={!!error}
-                helperText={error ?? "Você pode usar negrito, itálico, listas etc."}
-              />
-            </Box>
+            <TextField
+              label="Escreva seu feedback"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              multiline
+              minRows={3}
+              fullWidth
+              error={!!error}
+              helperText={error ?? "Mínimo 5 caracteres"}
+              sx={{ mb: 1 }}
+            />
             <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
               <Button variant="contained" onClick={send} disabled={createMut.isPending}>
                 Enviar
@@ -86,11 +84,9 @@ const ThemeFeedbackModal = ({ themeId, themeName, allowCreate = false, onClose }
                   primary={f.userName}
                   secondary={
                     <>
-                      <Box
-                        component="span"
-                        sx={{ display: "block", "& p": { m: 0 }, "& ul, & ol": { pl: 3, my: 0 } }}
-                        dangerouslySetInnerHTML={{ __html: f.text }}
-                      />
+                      <Typography component="span" sx={{ display: "block", whiteSpace: "pre-wrap" }}>
+                        {f.text}
+                      </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {f.createdAt}
                       </Typography>

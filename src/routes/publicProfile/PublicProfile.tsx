@@ -1,8 +1,10 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
+  Breadcrumbs,
   Card,
   CardContent,
+  Link as MuiLink,
   Typography,
   LinearProgress,
   Grid,
@@ -15,6 +17,7 @@ import { TitleBadge, FramedAvatar, bannerClassName, PlayerName } from "../../com
 
 const PublicProfile = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const profileQuery = usePublicProfileQuery(id ?? "");
 
   if (profileQuery.isLoading) return <Loading />;
@@ -28,6 +31,17 @@ const PublicProfile = () => {
 
   return (
     <Box sx={{ py: 4, minHeight: "100vh" }}>
+      <Breadcrumbs sx={{ mb: 2, px: { xs: 2, md: 3 } }}>
+        <MuiLink
+          component="button"
+          type="button"
+          underline="hover"
+          onClick={() => navigate(-1)}
+        >
+          Voltar
+        </MuiLink>
+        <Typography color="text.primary">Perfil público</Typography>
+      </Breadcrumbs>
       <Box
         sx={{
           display: "grid",
