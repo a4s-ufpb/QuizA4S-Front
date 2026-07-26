@@ -58,7 +58,7 @@ const MyOwnResponses = () => {
     startDate: "",
     endDate: "",
   });
-  const [gameMode, setGameMode] = useState<GameMode>("SINGLE_PLAYER");
+  const [gameMode, setGameMode] = useState<GameMode | "">("");
 
   const themeName = filters.themeName ?? "";
   const startDate = filters.startDate ?? "";
@@ -108,9 +108,10 @@ const MyOwnResponses = () => {
             size="small"
             label="Modo de jogo"
             value={gameMode}
-            onChange={(e) => setGameMode(e.target.value as GameMode)}
+            onChange={(e) => setGameMode(e.target.value as GameMode | "")}
             fullWidth
           >
+            <MenuItem value="">Todos</MenuItem>
             <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
             <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
           </TextField>

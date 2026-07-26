@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  MenuItem,
   TableContainer,
   Table,
   TableHead,
@@ -20,6 +21,7 @@ import {
 } from "@mui/material";
 import { useCreateStatisticFeedbackMutation, useStatisticFeedbackByStatQuery } from "../../../query/useStatisticFeedbackQueries";
 import RichTextEditor from "../../../components/richText/RichTextEditor";
+import type { GameMode } from "../../../types";
 import {
   BarChart,
   Bar,
@@ -78,6 +80,7 @@ function MyStatisticConclusion() {
     startDate: "",
     endDate: "",
   });
+  const [gameMode, setGameMode] = useState<GameMode | "">("");
 
   const studentName = filters.studentName ?? "";
   const themeName = filters.themeName ?? "";
@@ -122,10 +125,9 @@ function MyStatisticConclusion() {
     studentName,
     themeName,
     startDate,
-    endDate
+    endDate,
+    gameMode
   );
-  // O gráfico só busca com um tema selecionado — sem esse filtro a query
-  // varria todas as estatísticas do banco (lenta com muitos dados).
   const hasThemeFilter = themeName.trim() !== "";
   const chartQuery = useAllStatisticByCreatorForChartQuery(
     creatorId,
@@ -133,6 +135,7 @@ function MyStatisticConclusion() {
     themeName,
     startDate,
     endDate,
+    gameMode,
     view === "chart" && hasThemeFilter
   );
 
@@ -180,6 +183,20 @@ function MyStatisticConclusion() {
         fields={filterFields}
         values={filters}
         onChange={applyFilters}
+        modalExtra={
+          <TextField
+            select
+            size="small"
+            label="Modo de jogo"
+            value={gameMode}
+            onChange={(e) => setGameMode(e.target.value as GameMode | "")}
+            fullWidth
+          >
+            <MenuItem value="">Todos</MenuItem>
+            <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
+            <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
+          </TextField>
+        }
         rightExtra={
           <ToggleButtonGroup
             size="small"
@@ -206,6 +223,7 @@ function MyStatisticConclusion() {
                   <TableCell>Usuário</TableCell>
                   <TableCell>Tema</TableCell>
                   <TableCell>Data</TableCell>
+                  <TableCell>Modo</TableCell>
                   <TableCell>Porcentagem de Acertos</TableCell>
                   <TableCell align="center">Feedback</TableCell>
                 </TableRow>
@@ -217,6 +235,9 @@ function MyStatisticConclusion() {
                       <TableCell>{statistic.studentName}</TableCell>
                       <TableCell>{statistic.themeName}</TableCell>
                       <TableCell>{statistic.date}</TableCell>
+                      <TableCell>
+                        {statistic.gameMode === "MULTIPLAYER" ? "Multiplayer" : "Um jogador"}
+                      </TableCell>
                       <TableCell>
                         {statistic.percentagemOfHits.toFixed(1)}%
                       </TableCell>

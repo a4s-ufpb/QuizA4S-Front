@@ -11,6 +11,7 @@ vi.mock("../../util/matchHistory", () => ({ addMatchHistoryEntry: vi.fn() }));
 vi.mock("../../util/storage", () => ({ getStoredUser: () => ({ uuid: "" }) }));
 vi.mock("../../query/useMatchHistoryQueries", () => ({ useRecordMatchMutation: () => ({ mutate: vi.fn() }) }));
 vi.mock("../../query/useUserQueries", () => ({ useLikeUserMutation: () => ({ mutate: vi.fn() }) }));
+vi.mock("../../query/useStatisticQueries", () => ({ useInsertStatisticMutation: () => ({ mutate: vi.fn() }) }));
 
 function makeRoom(hostPlays: boolean): UseGameRoom {
   const state = {

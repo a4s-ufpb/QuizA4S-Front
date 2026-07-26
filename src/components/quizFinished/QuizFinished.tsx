@@ -91,6 +91,7 @@ const QuizFinished = ({
       studentName: user.name,
       themeName: theme.name,
       percentagemOfHits: percentage,
+      gameMode: "SINGLE_PLAYER",
     };
     saveStatistic(statistic);
   }, []);

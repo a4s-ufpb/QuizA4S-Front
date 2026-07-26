@@ -25,6 +25,7 @@ import { useLikeUserMutation } from "../../query/useUserQueries";
 import { getStoredUser } from "../../util/storage";
 import { addMatchHistoryEntry } from "../../util/matchHistory";
 import { useRecordMatchMutation } from "../../query/useMatchHistoryQueries";
+import { useInsertStatisticMutation } from "../../query/useStatisticQueries";
 import { generateResultImage, downloadImage } from "../../util/shareImage";
 import { TitleBadge, FramedAvatar, bannerClassName } from "../cosmetics/Cosmetic";
 import "./multiplayer.css";
@@ -159,6 +160,7 @@ function rankBadge(index: number) {
 const ResultsView = ({ room, tournamentCode }: ResultsViewProps) => {
   const navigate = useNavigate();
   const recordMatchMutation = useRecordMatchMutation();
+  const insertStatisticMutation = useInsertStatisticMutation();
   const state = room.state!;
   const isTeam = state.config.roomMode === "TEAM";
   // Curtir é uma ação de conta (não de equipe) — só faz sentido no modo
@@ -242,13 +244,30 @@ const ResultsView = ({ room, tournamentCode }: ResultsViewProps) => {
       score: myHits,
       total: state.totalQuestions,
     });
-    if (getStoredUser().uuid) {
+    const storedUser = getStoredUser();
+    if (storedUser.uuid) {
       recordMatchMutation.mutate({
         mode: "MULTIPLAYER",
         themeName: matchThemeName,
         score: myHits,
         total: state.totalQuestions,
       });
+
+      // Salva estatística por conclusão só quando NÃO é torneio.
+      if (!tournamentCode && state.themeName) {
+        const percentage = state.totalQuestions > 0
+          ? Number(((myHits / state.totalQuestions) * 100).toFixed(0))
+          : 0;
+        insertStatisticMutation.mutate({
+          statistic: {
+            studentName: storedUser.name,
+            themeName: state.themeName,
+            percentagemOfHits: percentage,
+            gameMode: "MULTIPLAYER",
+          },
+          studentUuid: storedUser.uuid,
+        });
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

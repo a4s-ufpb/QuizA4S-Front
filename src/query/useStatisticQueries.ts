@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { StatisticService } from "../service/StatisticService";
 import { queryKeys } from "./queryKeys";
-import type { StatisticRequest } from "../types";
+import type { GameMode, StatisticRequest } from "../types";
 
 const statisticService = new StatisticService();
 
@@ -12,25 +12,17 @@ export function useAllStatisticByCreatorQuery(
   themeName: string,
   startDate: string,
   endDate: string,
+  gameMode: GameMode | "",
   enabled = true
 ) {
   return useQuery({
-    queryKey: queryKeys.statistics.byCreator(
-      page,
-      creatorId,
-      studentName,
-      themeName,
-      startDate,
-      endDate
-    ),
+    queryKey: [
+      ...queryKeys.statistics.byCreator(page, creatorId, studentName, themeName, startDate, endDate),
+      gameMode,
+    ],
     queryFn: () =>
       statisticService.findAllStatisticByCreator(
-        page,
-        creatorId,
-        studentName,
-        themeName,
-        startDate,
-        endDate
+        page, creatorId, studentName, themeName, startDate, endDate, gameMode
       ),
     enabled: enabled && Boolean(creatorId),
   });
@@ -42,23 +34,17 @@ export function useAllStatisticByCreatorForChartQuery(
   themeName: string,
   startDate: string,
   endDate: string,
+  gameMode: GameMode | "",
   enabled = true
 ) {
   return useQuery({
-    queryKey: queryKeys.statistics.byCreatorChart(
-      creatorId,
-      studentName,
-      themeName,
-      startDate,
-      endDate
-    ),
+    queryKey: [
+      ...queryKeys.statistics.byCreatorChart(creatorId, studentName, themeName, startDate, endDate),
+      gameMode,
+    ],
     queryFn: () =>
       statisticService.findAllStatisticByCreatorForChart(
-        creatorId,
-        studentName,
-        themeName,
-        startDate,
-        endDate
+        creatorId, studentName, themeName, startDate, endDate, gameMode
       ),
     enabled: enabled && Boolean(creatorId),
   });

@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
 import { BaseService } from "./BaseService";
 import { apiAxios } from "../axios/AxiosConfig";
-import type { ApiResult, Page, Statistic, StatisticRequest } from "../types";
+import type { ApiResult, GameMode, Page, Statistic, StatisticRequest } from "../types";
 
 export class StatisticService extends BaseService {
   async insertStatistic(statistic: StatisticRequest, studentUuid?: string) {
@@ -32,11 +32,13 @@ export class StatisticService extends BaseService {
     studentName: string,
     themeName: string,
     startDate: string,
-    endDate: string
+    endDate: string,
+    gameMode: GameMode | ""
   ) {
+    const modeQuery = gameMode ? `&gameMode=${gameMode}` : "";
     return this.handleRequest<Page<Statistic>>(
       "get",
-      `/statistic/${creatorId}?page=${currentPage}&studentName=${studentName}&themeName=${themeName}&startDate=${startDate}&endDate=${endDate}`
+      `/statistic/${creatorId}?page=${currentPage}&studentName=${studentName}&themeName=${themeName}&startDate=${startDate}&endDate=${endDate}${modeQuery}`
     );
   }
 
@@ -45,11 +47,13 @@ export class StatisticService extends BaseService {
     studentName: string,
     themeName: string,
     startDate: string,
-    endDate: string
+    endDate: string,
+    gameMode: GameMode | ""
   ) {
+    const modeQuery = gameMode ? `&gameMode=${gameMode}` : "";
     return this.handleRequest<Statistic[]>(
       "get",
-      `/statistic/${creatorId}/chart?studentName=${studentName}&themeName=${themeName}&startDate=${startDate}&endDate=${endDate}`
+      `/statistic/${creatorId}/chart?studentName=${studentName}&themeName=${themeName}&startDate=${startDate}&endDate=${endDate}${modeQuery}`
     );
   }
 

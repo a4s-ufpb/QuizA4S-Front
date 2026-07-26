@@ -37,11 +37,12 @@ export class ResponseService extends BaseService {
     themeName: string,
     startDate: string,
     endDate: string,
-    gameMode: GameMode = "SINGLE_PLAYER"
+    gameMode: GameMode | "" = ""
   ) {
+    const mode = gameMode ? `&gameMode=${gameMode}` : "";
     return this.handleRequest<Page<ResponseItem>>(
       "get",
-      `/response/user?page=${currentPage}&theme=${themeName}&startDate=${startDate}&endDate=${endDate}&gameMode=${gameMode}`
+      `/response/user?page=${currentPage}&theme=${themeName}&startDate=${startDate}&endDate=${endDate}${mode}`
     );
   }
 
@@ -49,11 +50,12 @@ export class ResponseService extends BaseService {
     themeName: string,
     startDate: string,
     endDate: string,
-    gameMode: GameMode = "SINGLE_PLAYER"
+    gameMode: GameMode | "" = ""
   ) {
+    const mode = gameMode ? `&gameMode=${gameMode}` : "";
     return this.handleRequest<MySummary>(
       "get",
-      `/response/user/summary?theme=${themeName}&startDate=${startDate}&endDate=${endDate}&gameMode=${gameMode}`
+      `/response/user/summary?theme=${themeName}&startDate=${startDate}&endDate=${endDate}${mode}`
     );
   }
 
@@ -70,11 +72,12 @@ export class ResponseService extends BaseService {
     themeName: string,
     currentDate: string,
     finalDate: string,
-    gameMode: GameMode = "SINGLE_PLAYER"
+    gameMode: GameMode | "" = ""
   ) {
+    const mode = gameMode ? `&gameMode=${gameMode}` : "";
     return this.handleRequest<Page<ResponseItem>>(
       "get",
-      `/response/query?page=${currentPage}&username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}&gameMode=${gameMode}`
+      `/response/query?page=${currentPage}&username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}${mode}`
     );
   }
 
@@ -83,22 +86,24 @@ export class ResponseService extends BaseService {
     themeName: string,
     currentDate: string,
     finalDate: string,
-    gameMode: GameMode = "SINGLE_PLAYER"
+    gameMode: GameMode | "" = ""
   ) {
+    const mode = gameMode ? `&gameMode=${gameMode}` : "";
     return this.handleRequest<ResponseItem[]>(
       "get",
-      `/response/query/chart?username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}&gameMode=${gameMode}`
+      `/response/query/chart?username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}${mode}`
     );
   }
 
   findResponsesStatistics(
     themeName: string,
     userId: string,
-    gameMode: GameMode = "SINGLE_PLAYER"
+    gameMode: GameMode | "" = ""
   ) {
+    const mode = gameMode ? `?gameMode=${gameMode}` : "";
     return this.handleRequest<ResponseStatistic[]>(
       "get",
-      `/response/statistic/${themeName}/${userId}?gameMode=${gameMode}`
+      `/response/statistic/${themeName}/${userId}${mode}`
     );
   }
 

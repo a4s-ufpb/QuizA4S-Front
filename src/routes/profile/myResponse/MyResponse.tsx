@@ -71,7 +71,7 @@ const MyResponse = () => {
     finalDate: "",
   });
   const [view, setView] = useState<"table" | "chart">("table");
-  const [gameMode, setGameMode] = useState<GameMode>("SINGLE_PLAYER");
+  const [gameMode, setGameMode] = useState<GameMode | "">("");
   const isMultiplayer = gameMode === "MULTIPLAYER";
 
   const username = filters.username ?? "";
@@ -179,9 +179,10 @@ const MyResponse = () => {
             size="small"
             label="Modo de jogo"
             value={gameMode}
-            onChange={(e) => setGameMode(e.target.value as GameMode)}
+            onChange={(e) => setGameMode(e.target.value as GameMode | "")}
             fullWidth
           >
+            <MenuItem value="">Todos</MenuItem>
             <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
             <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
           </TextField>
@@ -216,6 +217,7 @@ const MyResponse = () => {
                       alternativa marcada. */}
                   {!isMultiplayer && <TableCell>Questão</TableCell>}
                   <TableCell>Respondeu</TableCell>
+                  <TableCell>Data</TableCell>
                   <TableCell align="center">Acertou</TableCell>
                 </TableRow>
               </TableHead>
@@ -234,6 +236,7 @@ const MyResponse = () => {
                         <TableCell>{response.question.title}</TableCell>
                       )}
                       <TableCell>{response.alternative.text}</TableCell>
+                      <TableCell>{response.dateTime}</TableCell>
                       <TableCell align="center">
                         {response.alternative.correct ? (
                           <BsCheckCircleFill color="green" />

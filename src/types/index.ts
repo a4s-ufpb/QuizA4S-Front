@@ -204,6 +204,7 @@ export interface Statistic {
   themeName: string;
   date: string;
   percentagemOfHits: number;
+  gameMode?: GameMode;
 }
 
 export interface StatisticRequest {
@@ -211,6 +212,7 @@ export interface StatisticRequest {
   themeName: string;
   percentagemOfHits: number;
   studentUuid?: string;
+  gameMode?: GameMode;
 }
 
 export interface ResponseStatistic {

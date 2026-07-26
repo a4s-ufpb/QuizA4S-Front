@@ -18,7 +18,7 @@ export function useMyResponsesQuery(
   theme: string,
   startDate: string,
   endDate: string,
-  gameMode: GameMode,
+  gameMode: GameMode | "",
   enabled = true
 ) {
   return useQuery({
@@ -39,7 +39,7 @@ export function useMySummaryQuery(
   theme: string,
   startDate: string,
   endDate: string,
-  gameMode: GameMode,
+  gameMode: GameMode | "",
   enabled = true
 ) {
   return useQuery({
@@ -67,7 +67,7 @@ export function useResponsesQueryFilterQuery(
   theme: string,
   currentDate: string,
   finalDate: string,
-  gameMode: GameMode,
+  gameMode: GameMode | "",
   enabled = true
 ) {
   return useQuery({
@@ -97,7 +97,7 @@ export function useResponsesQueryChartQuery(
   theme: string,
   currentDate: string,
   finalDate: string,
-  gameMode: GameMode,
+  gameMode: GameMode | "",
   enabled = true
 ) {
   return useQuery({
@@ -123,7 +123,7 @@ export function useResponsesQueryChartQuery(
 export function useResponsesStatisticsQuery(
   themeName: string,
   userId: string,
-  gameMode: GameMode,
+  gameMode: GameMode | "",
   enabled = true
 ) {
   return useQuery({
