@@ -2,6 +2,16 @@ import { AxiosError } from "axios";
 import { apiAxios } from "../axios/AxiosConfig";
 import type { ApiResult, HttpMethod } from "../types";
 
+// filename* vem primeiro: com charset, o filename simples chega em RFC 2047
+// (=?UTF-8?Q?...?=), o que corromperia o nome e a extensão do arquivo.
+export function parseDownloadFilename(disposition?: string): string {
+  const encoded = disposition?.match(/filename\*=UTF-8''([^;]+)/i);
+  if (encoded) return decodeURIComponent(encoded[1]);
+
+  const plain = disposition?.match(/filename="?([^";]+)"?/i);
+  return plain ? plain[1] : "export";
+}
+
 /**
  * Base class for the axios-backed services. Wraps every request in the
  * `{ data, message, success }` envelope used across the application.
@@ -50,8 +60,7 @@ export class BaseService {
       const disposition = asyncResponse.headers["content-disposition"] as
         | string
         | undefined;
-      const match = disposition?.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
-      const filename = match ? decodeURIComponent(match[1]) : "export";
+      const filename = parseDownloadFilename(disposition);
       response.data = { blob: asyncResponse.data, filename };
       response.success = true;
     } catch (error) {
