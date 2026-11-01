@@ -31,6 +31,38 @@ export class BaseService {
     return response;
   }
 
+  protected async handleFileDownloadRequest(
+    method: HttpMethod,
+    url: string
+  ): Promise<ApiResult<{ blob: Blob; filename: string }>> {
+    const response: ApiResult<{ blob: Blob; filename: string }> = {
+      data: { blob: new Blob(), filename: "" },
+      message: "",
+      success: false,
+    };
+
+    try {
+      const asyncResponse = await apiAxios.request<Blob>({
+        method,
+        url,
+        responseType: "blob",
+      });
+      const disposition = asyncResponse.headers["content-disposition"] as
+        | string
+        | undefined;
+      const match = disposition?.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+      const filename = match ? decodeURIComponent(match[1]) : "export";
+      response.data = { blob: asyncResponse.data, filename };
+      response.success = true;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
+      response.message =
+        axiosError.response?.data?.message || "Tente novamente mais tarde!";
+    }
+
+    return response;
+  }
+
   protected async handleMultipartRequest<T>(
     method: "post" | "patch",
     url: string,

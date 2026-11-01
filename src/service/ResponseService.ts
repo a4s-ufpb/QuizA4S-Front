@@ -112,6 +112,48 @@ export class ResponseService extends BaseService {
     );
   }
 
+  exportMyResponses(
+    themeName: string,
+    startDate: string,
+    endDate: string,
+    gameMode: GameMode | "",
+    format: "PDF" | "XLSX"
+  ) {
+    const mode = gameMode ? `&gameMode=${gameMode}` : "";
+    return this.handleFileDownloadRequest(
+      "get",
+      `/response/user/export?theme=${themeName}&startDate=${startDate}&endDate=${endDate}${mode}&format=${format}`
+    );
+  }
+
+  exportResponsesByUsernameOrDate(
+    username: string,
+    themeName: string,
+    currentDate: string,
+    finalDate: string,
+    gameMode: GameMode | "",
+    format: "PDF" | "XLSX"
+  ) {
+    const mode = gameMode ? `&gameMode=${gameMode}` : "";
+    return this.handleFileDownloadRequest(
+      "get",
+      `/response/query/export?username=${username}&currentDate=${currentDate}&finalDate=${finalDate}&theme=${themeName}${mode}&format=${format}`
+    );
+  }
+
+  exportResponsesStatistics(
+    themeName: string,
+    userId: string,
+    gameMode: GameMode | "",
+    format: "PDF" | "XLSX"
+  ) {
+    const mode = gameMode ? `&gameMode=${gameMode}` : "";
+    return this.handleFileDownloadRequest(
+      "get",
+      `/response/statistic/${themeName}/${userId}/export?format=${format}${mode}`
+    );
+  }
+
   removeResponse(responseId: number) {
     return this.handleRequest<void>("delete", `/response/${responseId}`);
   }

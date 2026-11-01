@@ -36,11 +36,15 @@ import AdvancedSearch, {
   type AdvancedField,
   type AdvancedFilterValues,
 } from "../../../components/advancedSearch/AdvancedSearch";
+import ExportButton from "../../../components/exportButton/ExportButton";
 import {
   useMyResponsesQuery,
   useMySummaryQuery,
 } from "../../../query/useResponseQueries";
+import { ResponseService } from "../../../service/ResponseService";
 import type { GameMode } from "../../../types";
+
+const responseService = new ResponseService();
 
 const FILTER_FIELDS: AdvancedField[] = [
   { name: "themeName", label: "Tema", type: "text", placeholder: "Filtrar por tema" },
@@ -121,6 +125,19 @@ const MyOwnResponses = () => {
             <MenuItem value="SINGLE_PLAYER">Um jogador</MenuItem>
             <MenuItem value="MULTIPLAYER">Multiplayer</MenuItem>
           </TextField>
+        }
+        rightExtra={
+          <ExportButton
+            onExport={(format) =>
+              responseService.exportMyResponses(
+                themeName,
+                startDate,
+                endDate,
+                gameMode,
+                format
+              )
+            }
+          />
         }
       />
 

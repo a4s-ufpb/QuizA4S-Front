@@ -36,6 +36,7 @@ import AdvancedSearch, {
   type AdvancedField,
   type AdvancedFilterValues,
 } from "../../../components/advancedSearch/AdvancedSearch";
+import ExportButton from "../../../components/exportButton/ExportButton";
 import Pagination from "../../../components/pagination/Pagination";
 import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
@@ -56,6 +57,9 @@ import { getOrderedQuestionImages } from "../../../util/questionImages";
 import { getStoredUser } from "../../../util/storage";
 import type { GameMode, Question, ResponseItem } from "../../../types";
 import { usePersistedState } from "../../../hooks/usePersistedState";
+import { ResponseService } from "../../../service/ResponseService";
+
+const responseService = new ResponseService();
 
 const ALTERNATIVE_LABELS = ["A", "B", "C", "D", "E", "F"];
 
@@ -193,19 +197,33 @@ const MyResponse = () => {
           </TextField>
         }
         rightExtra={
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={view}
-            onChange={(_e, newView) => newView && setView(newView)}
-          >
-            <ToggleButton value="table">
-              <BsTable style={{ marginRight: 6 }} /> Tabela
-            </ToggleButton>
-            <ToggleButton value="chart">
-              <BsBarChartFill style={{ marginRight: 6 }} /> Gráfico
-            </ToggleButton>
-          </ToggleButtonGroup>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              value={view}
+              onChange={(_e, newView) => newView && setView(newView)}
+            >
+              <ToggleButton value="table">
+                <BsTable style={{ marginRight: 6 }} /> Tabela
+              </ToggleButton>
+              <ToggleButton value="chart">
+                <BsBarChartFill style={{ marginRight: 6 }} /> Gráfico
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <ExportButton
+              onExport={(format) =>
+                responseService.exportResponsesByUsernameOrDate(
+                  username,
+                  themeName,
+                  currentDate,
+                  finalDate,
+                  gameMode,
+                  format
+                )
+              }
+            />
+          </Box>
         }
       />
 

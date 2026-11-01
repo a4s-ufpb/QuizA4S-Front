@@ -59,6 +59,22 @@ export class StatisticService extends BaseService {
     );
   }
 
+  exportAllStatisticByCreator(
+    creatorId: string,
+    studentName: string,
+    themeName: string,
+    startDate: string,
+    endDate: string,
+    gameMode: GameMode | "",
+    format: "PDF" | "XLSX"
+  ) {
+    const modeQuery = gameMode ? `&gameMode=${gameMode}` : "";
+    return this.handleFileDownloadRequest(
+      "get",
+      `/statistic/${creatorId}/export?studentName=${studentName}&themeName=${themeName}&startDate=${startDate}&endDate=${endDate}${modeQuery}&format=${format}`
+    );
+  }
+
   findDistinctThemeNameByCreatorId(creatorId: string) {
     return this.handleRequest<{ themeName: string }[]>(
       "get",

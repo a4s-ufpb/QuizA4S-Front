@@ -38,6 +38,7 @@ import AdvancedSearch, {
   type AdvancedField,
   type AdvancedFilterValues,
 } from "../../../components/advancedSearch/AdvancedSearch";
+import ExportButton from "../../../components/exportButton/ExportButton";
 import Pagination from "../../../components/pagination/Pagination";
 import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
@@ -48,6 +49,9 @@ import {
   useDistinctThemeNameByCreatorIdQuery,
 } from "../../../query/useStatisticQueries";
 import { getStoredUser } from "../../../util/storage";
+import { StatisticService } from "../../../service/StatisticService";
+
+const statisticService = new StatisticService();
 
 interface ThemeAverage {
   themeName: string;
@@ -203,19 +207,34 @@ function MyStatisticConclusion() {
           </TextField>
         }
         rightExtra={
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={view}
-            onChange={(_e, newView) => newView && setView(newView)}
-          >
-            <ToggleButton value="table">
-              <BsTable style={{ marginRight: 6 }} /> Tabela
-            </ToggleButton>
-            <ToggleButton value="chart">
-              <BsBarChartFill style={{ marginRight: 6 }} /> Gráfico
-            </ToggleButton>
-          </ToggleButtonGroup>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              value={view}
+              onChange={(_e, newView) => newView && setView(newView)}
+            >
+              <ToggleButton value="table">
+                <BsTable style={{ marginRight: 6 }} /> Tabela
+              </ToggleButton>
+              <ToggleButton value="chart">
+                <BsBarChartFill style={{ marginRight: 6 }} /> Gráfico
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <ExportButton
+              onExport={(format) =>
+                statisticService.exportAllStatisticByCreator(
+                  creatorId,
+                  studentName,
+                  themeName,
+                  startDate,
+                  endDate,
+                  gameMode,
+                  format
+                )
+              }
+            />
+          </Box>
         }
       />
 

@@ -30,6 +30,7 @@ import {
 import { BsTable, BsBarChartFill } from "react-icons/bs";
 import Loading from "../../../components/loading/Loading";
 import NotFoundComponent from "../../../components/notFound/NotFoundComponent";
+import ExportButton from "../../../components/exportButton/ExportButton";
 import { useResponsesStatisticsQuery } from "../../../query/useResponseQueries";
 import { useIsAdminQuery } from "../../../query/useUserQueries";
 import {
@@ -37,7 +38,10 @@ import {
   useThemesByCreatorQuery,
 } from "../../../query/useThemeQueries";
 import { getStoredUser } from "../../../util/storage";
+import { ResponseService } from "../../../service/ResponseService";
 import type { GameMode } from "../../../types";
+
+const responseService = new ResponseService();
 
 function MyStatistics() {
   const [selectedTheme, setSelectedTheme] = useState("");
@@ -116,7 +120,7 @@ function MyStatistics() {
         </FormControl>
       </Box>
 
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mb: 1 }}>
         <ToggleButtonGroup
           size="small"
           exclusive
@@ -130,6 +134,17 @@ function MyStatistics() {
             <BsBarChartFill style={{ marginRight: 6 }} /> Gráfico
           </ToggleButton>
         </ToggleButtonGroup>
+        <ExportButton
+          disabled={!selectedTheme}
+          onExport={(format) =>
+            responseService.exportResponsesStatistics(
+              selectedTheme,
+              userId,
+              gameMode,
+              format
+            )
+          }
+        />
       </Box>
 
       {!selectedTheme ? (
